@@ -468,7 +468,7 @@ body.gt-drawer-open{overflow:hidden}
 @media(max-width:370px){.gt-mag-stage{height:627px}.gt-mag-photo{flex-basis:292px}.gt-mag-copy{padding:20px}.gt-mag-copy h2{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.gt-mag-sheet{transition:none!important;animation:none!important}}
 
-/* GOOD THINGS, · 1.4.4 MOBILE SWIPE FIX LIGHT PAPER TURN
+/* GOOD THINGS, · 1.4.5 SEAMLESS TOUCH RELEASE & PAGE REVEAL
    Keeps tangible page depth without costly full-face 3D / CSS filters.
    Gestures move the cover with the reader's finger. */
 .gt-mag-stage{isolation:isolate;touch-action:pan-y;cursor:grab;perspective:1100px;background:#cac8bc;
@@ -1077,7 +1077,7 @@ let gtMagBusy=false;
 const gtReducedMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function gtMagMarkup(index){const s=gtSlides[index];const n=String(index+1).padStart(2,'0');return `<div class="gt-mag-sheet" data-mag-sheet="${index}"><div class="gt-mag-copy"><div><span class="gt-mag-type">FEATURED / ${esc(s.category)} &nbsp; · &nbsp; PAGE ${n}</span><h2>${esc(s.title)}</h2><p>${esc(s.excerpt)}</p></div><a class="gt-mag-read" href="${esc(s.href)}">READ THE STORY ${gtArrow()}</a></div><div class="gt-mag-photo" role="img" aria-label="${esc(s.alt)}">${s.art}<div class="gt-mag-photo-note"><span>EDITORIAL VISUAL STUDY / DEMO</span><span>${n} / ${String(gtSlides.length).padStart(2,'0')}</span></div></div></div>`}
 function gtMagControls(){const n=String(gtCarouselIndex+1).padStart(2,'0');const c=document.getElementById('gt-mag-counter');if(c)c.textContent=`${n} / ${String(gtSlides.length).padStart(2,'0')}`;document.querySelectorAll('[data-mag-goto]').forEach((b,i)=>b.setAttribute('aria-current',String(i===gtCarouselIndex)))}
-// Touch-driven soft paper turn (v1.4.4). Expensive filter/180deg rotations removed.
+// Touch-driven soft paper turn (v1.4.5). Smooth the next page after releasing touch.
 let gtTurnState=null;
 let gtTurnTimer=null;
 let gtSuppressClickUntil=0;
@@ -1126,21 +1126,38 @@ function gtMagFinish(st,commit){
   st.current.style.setProperty('--gt-duration',d+'ms');
   st.under.style.setProperty('--gt-duration',d+'ms');
   st.current.classList.add('gt-soft-settle');
-  // Reflow once to ensure Safari commits the drag position before easing.
+  // Flush the dragged positions before switching to the easing phase.
+  // Safari otherwise sometimes skips the first transition frame.
   void st.current.offsetWidth;
+  const onSettled=(ev)=>{
+    if(ev.target===st.current && ev.propertyName==='transform' && !ev.pseudoElement)finish();
+  };
+  st.current.addEventListener('transitionend',onSettled,{once:true});
   requestAnimationFrame(()=>{
     if(!st.stage.isConnected)return finish();
     st.current.style.transform=commit
       ?`translate3d(${st.dir==='next'?-102:102}%,0,0) rotate(${st.dir==='next'?-1.4:1.4}deg)`
       :'translate3d(0,0,0)';
-    if(commit)st.under.classList.add('gt-soft-reveal');
-    else{
+    if(commit){
+      // IMPORTANT: pointer-dragging sets inline transforms/opacity on the
+      // incoming article. The inline declarations previously WON over the
+      // .gt-soft-reveal CSS, so the new article froze at ~90% opacity/scale
+      // until finish() abruptly cleared them. Arrow clicks did not drag and
+      // therefore did not exhibit this jump. Restore stylesheet ownership
+      // when entering the settle phase so BOTH pages animate together.
+      st.under.classList.add('gt-soft-reveal');
+      st.under.style.transform='';
+      st.under.style.opacity='';
+      st.under.style.transition='';
+    }else{
+      // If the reader lets go early, the outgoing page returns smoothly.
+      // The under page is hidden again after the outgoing page settles.
       st.under.style.transform='translate3d(12px,0,0) scale(.991)';
       st.under.style.opacity='.87';
-      st.under.style.transition=`transform ${d}ms ease, opacity ${d}ms ease`;
     }
+    // Fallback when Safari suppresses transitionend (tab hidden etc.).
+    gtTurnTimer=setTimeout(finish,d+88);
   });
-  gtTurnTimer=setTimeout(finish,d+70);
 }
 function gtMagGo(target){
   if(gtMagBusy)return;
