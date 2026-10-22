@@ -16,3 +16,5 @@ After configuring environment settings, trigger a new preview deployment before 
 Never add API tokens or other credentials to this repository or HTML files. Keep production `main` untouched until authentication and persistence tests pass.
 
 Preview-only redeployment requested after configuring Cloudflare Access runtime variables. No production source changes.
+
+Preview-only redeployment requested after adding the encrypted Sanity editor token. Verify the deployed commit and then test saving a harmless test brand draft. Never paste the token into GitHub or website HTML.
