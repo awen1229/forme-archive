@@ -3,6 +3,8 @@ const API='https://8nqupq9u.api.sanity.io/v2025-02-19'
 export async function onRequestPost({request,env}){
  try{
   await requireEditor(request,env)
+  // Production publishing stays disabled until a deliberate launch configuration.
+  if(env.ENABLE_PRODUCTION_PUBLISH!=='true')throw new AuthError(403,'正式發布目前鎖定，請先使用獨立 Release Lab 測試')
   if(!env.SANITY_EDITOR_TOKEN)throw new AuthError(503,'Sanity 編輯 Token 尚未設定')
   if(request.headers.get('Origin')!==new URL(request.url).origin)throw new AuthError(403,'來源驗證失敗')
   if(request.headers.get('content-type')?.split(';')[0].trim()!=='application/json')throw new AuthError(415,'請使用 JSON')
