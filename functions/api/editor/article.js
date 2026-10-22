@@ -17,7 +17,7 @@ async function findBySlug(slug,token){
  u.searchParams.set('perspective','raw')
  u.searchParams.set('query','*[_type == "article" && slug.current == $slug && !(_id in path("versions.**"))][0...10]{...}')
  u.searchParams.set('$slug',JSON.stringify(slug))
- const result=(await api(u.pathname+u.search,token)).result
+ const result=(await api('/data/query/'+DATASET+u.search,token)).result
  const items=Array.isArray(result)?result:[]
  const draft=items.find(x=>x._id?.startsWith('drafts.'))
  const published=items.find(x=>x._id&&!x._id.startsWith('drafts.'))
@@ -62,7 +62,7 @@ export async function onRequestGet({request,env}){
    u.searchParams.set('perspective','raw')
    u.searchParams.set('query','*[_id==$id][0].url')
    u.searchParams.set('$id',JSON.stringify(row.cover.asset._ref))
-   const result=(await api(u.pathname+u.search,env.SANITY_EDITOR_TOKEN)).result
+   const result=(await api('/data/query/'+DATASET+u.search,env.SANITY_EDITOR_TOKEN)).result
    record.cover=typeof result==='string'?result:''
   }
   return Response.json({ok:true,record},{headers:noStore})
