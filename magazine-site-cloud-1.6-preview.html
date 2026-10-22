@@ -1044,8 +1044,8 @@ async function gtSaveBrandCloud(record){
  return payload;
 }
 async function gtLoadCloudPublishedBrands(){
- const query='*[_type == "brand" && !(_id in path("drafts.**"))]{name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}';
- const url='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?query='+encodeURIComponent(query);
+ const query='*[_type == "brand" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}';
+ const url='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(query);
  try{
   const response=await fetch(url);if(!response.ok)throw Error('HTTP '+response.status);
   const payload=await response.json();if(!Array.isArray(payload.result))return;
