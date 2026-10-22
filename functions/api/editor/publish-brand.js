@@ -41,10 +41,10 @@ export async function onRequestPost({request,env}) {
       headers:{Authorization:`Bearer ${env.SANITY_EDITOR_TOKEN}`,'Content-Type':'application/json'},
       body:JSON.stringify({mutations:[
         {createOrReplace:document},
-        {delete:{id:draft._id}}
+        {delete:{id:draft._id,ifRevisionID:draft._rev}}
       ]})
     })
-    if(!save.ok)throw new AuthError(502,'Sanity 發布失敗（'+save.status+'）')
+    if(!save.ok)throw new AuthError(save.status===409?409:502,save.status===409?'草稿已被其他裝置修改，請重新讀取後再發布':'Sanity 發布失敗（'+save.status+'）')
     return Response.json({ok:true,publishedId},{headers:{'Cache-Control':'no-store'}})
   }catch(e){
     if(!(e instanceof AuthError))console.error('Brand publish failed',e?.message)
