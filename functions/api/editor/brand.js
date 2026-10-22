@@ -69,7 +69,7 @@ async function api(path, token, options={}) {
 
 async function findBrand(slug, token) {
   const query = '*[_type == "brand" && slug.current == $slug]{_id,_type,name,slug,founder,foundedYear,country,japaneseName,summary,story,logo,cover,logoScale,logoOffsetX,logoOffsetY,tags,website}[0...20]'
-  const params = new URLSearchParams({query, '$slug': JSON.stringify(slug)})
+  const params = new URLSearchParams({query, '$slug': JSON.stringify(slug), perspective:'raw'})
   const {result} = await api('/data/query/' + DATASET + '?' + params, token)
   const docs = Array.isArray(result) ? result : []
   return docs.find(d => d._id.startsWith('drafts.')) || docs[0] || null
