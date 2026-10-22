@@ -25,6 +25,18 @@ export async function onRequestGet({request,env}){
    query('*[_id in path("drafts.**") && _type in ["brand","article","homepage","gtSiteContent"]][0...500]{_id,_type}',t,'raw')
   ])
   const issues=[],counts={brands:brands.length,articles:articles.length,unpublishedDrafts:drafts.length}
+  // A passing integrity check must not be confused with launch readiness.
+  if(counts.brands===0)issues.push({severity:'blocker',area:'BRANDS',message:'尚無任何已發布的品牌。請先完成真實品牌內容與發布驗證。'})
+  if(counts.articles===0)issues.push({severity:'blocker',area:'ARTICLES',message:'尚無任何已發布的文章。請先完成真實文章內容與發布驗證。'})
+  if(!home||!Array.isArray(home.slides)||home.slides.length===0)
+   issues.push({severity:'blocker',area:'HOMEPAGE',message:'尚無已發布的首頁精選，或精選列表為空。'})
+  if(!site||typeof site.fieldsJson!=='string')
+   issues.push({severity:'blocker',area:'SITE CONTENT',message:'尚無採用 fieldsJson 格式發布的網站文字。'})
+  if(counts.unpublishedDrafts>0)
+   issues.push({severity:'info',area:'DRAFTS',message:'雲端仍有未發布草稿，這些資料不等於公開內容。'})
+  // The legacy 1.6 HTML still ships with built-in demonstration stories;
+  // content audit cannot certify final copy or responsive/device behavior.
+  issues.push({severity:'info',area:'SITE',message:'仍需人工檢查示範文章、手機版、公開存取，以及瀏覽器本機草稿與公開內容的隔離。'})
   const slugs=new Set([...builtin])
   for(const a of articles){
    if(!a.slug?.current||!a.title||!a.excerpt||!Array.isArray(a.body)||!a.body.length)
@@ -50,6 +62,6 @@ export async function onRequestGet({request,env}){
   const duplicate=(items)=>{const values=new Set(),dupes=[];for(const item of items){const slug=item.slug?.current;if(!slug)continue;if(values.has(slug))dupes.push(slug);values.add(slug)}return dupes}
   for(const slug of duplicate(articles))issues.push({severity:'error',area:'ARTICLES',message:'已發布文章 slug 重複',id:slug})
   for(const slug of duplicate(brands))issues.push({severity:'error',area:'BRANDS',message:'已發布品牌 slug 重複',id:slug})
-  return Response.json({ok:true,mode:'read-only',dataset:DATASET,productionMutated:false,counts,homepagePublished:!!home,siteContentPublished:!!site,issues,readyForLaunch:!issues.some(x=>x.severity==='error')},{headers:NO_STORE})
+  return Response.json({ok:true,mode:'read-only',dataset:DATASET,productionMutated:false,counts,homepagePublished:!!home,siteContentPublished:!!site,issues,readyForLaunch:!issues.some(x=>x.severity==='error'||x.severity==='blocker'),integrityErrors:issues.filter(x=>x.severity==='error').length,launchBlockers:issues.filter(x=>x.severity==='blocker').length},{headers:NO_STORE})
  }catch(e){if(!(e instanceof AuthError))console.error('Launch audit failed',e?.message);return errorResponse(e)}
 }
