@@ -51,8 +51,8 @@ function loadDoc(doc,label){
  render();draw();
 }
 function preview(){
+ // Browser draft preview remains inside the editor, never enters public pages.
  gtHomeConfig={slides:gtHomeDraft.map(v=>({...v}))};
- gtSlides=gtResolvedSlides();
  previewDraft=true;
  render();draw();
 }
@@ -89,7 +89,7 @@ async function loadPublished(){
   const resp=await fetch(url,{cache:'no-store'});if(!resp.ok)return;
   const body=await resp.json(), slides=body.result?.slides;
   if(!Array.isArray(slides)||!slides.length||previewDraft)return;
-  gtHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||''}))};
+  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||''}))};
   gtSlides=gtResolvedSlides();
   if(!location.hash.includes('/admin'))render();
  }catch(e){console.info('目前保留既有首頁精選',e?.message)}
