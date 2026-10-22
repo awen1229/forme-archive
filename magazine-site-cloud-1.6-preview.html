@@ -1020,7 +1020,7 @@ function gtRenderCloudBrands(){
 }
 async function gtCloudPublishBrand(row){
  if(!row||row.status!=='draft'||!row.revision)return alert('請先重新讀取最新雲端草稿。');
- if(/\\btest\\b|測試/i.test(row.name))return alert('測試品牌不允許發布。');
+ if(/\btest\b|測試/i.test(row.name))return alert('測試品牌不允許發布。');
  if(!confirm('即將公開發布「'+row.name+'」。這會取代該品牌在 Sanity 的公開版本，確定繼續？'))return;
  const typed=prompt('最後確認：請輸入 PUBLISH 以公開發布 '+row.name);
  if(typed!=='PUBLISH')return;
