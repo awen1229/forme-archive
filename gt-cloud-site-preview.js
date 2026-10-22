@@ -55,7 +55,8 @@
     catch(e){console.info('已發布網站文字 JSON 格式無法解析');return}
    }
    if(!fields||typeof fields!=='object'||Array.isArray(fields))return;
-   gtSiteContent=Object.fromEntries(Object.entries(fields).filter(([key,val])=>Object.hasOwn(gtSiteDefaults,key)&&typeof val==='string'));
+   gtPublishedSiteContent=Object.fromEntries(Object.entries(fields).filter(([key,val])=>Object.hasOwn(gtSiteDefaults,key)&&typeof val==='string'));
+   gtSiteContent={...gtPublishedSiteContent};
    if(editorKind!=='site')gtSiteDraft={...gtSiteContent};
    if(!location.hash.includes('/admin'))render();
   }catch(e){console.info('公開網站文字尚未可讀',e.message)}
