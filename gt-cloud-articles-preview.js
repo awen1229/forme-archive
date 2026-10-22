@@ -54,6 +54,8 @@ const loadPublished=async()=>{
    const i=articles.findIndex(x=>x.slug===a.slug);
    if(i<0)articles.push(a);else articles[i]={...articles[i],...a};
   }
+  // Rebuild featured slide cards after published articles have arrived.
+  if(typeof gtResolvedSlides==='function')gtSlides=gtResolvedSlides();
   if(!location.hash.includes('/admin'))render();
  }catch(e){console.info('Published articles unavailable',e.message)}
 };
