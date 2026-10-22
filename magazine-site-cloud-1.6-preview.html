@@ -742,7 +742,7 @@ const products=[
 const $=s=>document.querySelector(s);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let saved=[];try{saved=JSON.parse(localStorage.getItem('forme_saved')||'[]');if(!Array.isArray(saved))saved=[]}catch{saved=[]}
 let filters={q:'',brand:'ALL',size:'ALL',available:false};
-const num=p=>'¥'+p.toLocaleString('en-US');const brandSlug=n=>(brands.find(b=>b.name===n)||{}).slug;
+const num=p=>'¥'+p.toLocaleString('en-US');const brandSlug=n=>(gtPublicBrands().find(b=>b.name===n)||{}).slug;
 const header=(k,title,desc='')=>`<div class="section-heading"><div><span class="kicker">${k}</span><h1>${title}</h1></div>${desc?`<p>${desc}</p>`:''}</div>`;
 // GOOD THINGS editorial taxonomy & icon system. All icons are SVG, not Unicode emoji.
 const gtArrow=()=>`<svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg>`;
@@ -822,7 +822,8 @@ const gtSiteSections=[
 const gtSiteDefaults=Object.fromEntries(gtSiteSections.flatMap(g=>g.fields.map(x=>[x[0],x[2]])));
 let gtSiteContent={};
 let gtSiteSection='home',gtSiteDraft={};
-const gtSitePlain=k=>Object.prototype.hasOwnProperty.call(gtSiteContent,k)?gtSiteContent[k]:gtSiteDefaults[k]||'';
+let gtPublishedSiteContent={};
+const gtSitePlain=k=>Object.prototype.hasOwnProperty.call(gtPublishedSiteContent,k)?gtPublishedSiteContent[k]:gtSiteDefaults[k]||'';
 const gtSiteHTML=k=>esc(gtSitePlain(k));
 const gtSiteLines=k=>gtSiteHTML(k).replace(/\r?\n/g,'<br>');
 function gtApplySiteLabels(){
@@ -870,19 +871,19 @@ function gtCoverArt(){return `<svg class="cover-art" viewBox="0 0 560 590" prese
 </svg>`}
 
 function viewSubjects(){return `<section class="section">${header('GOOD THINGS / CATALOGUE','Subjects','六個開放式主題，從服飾、人物到日常觀察；尚未收錄的分類會隨未來文章逐步充實。')}${gtSubjectCards()}</section>`}
-function viewSubject(slug){const subj=gtSubjects.find(s=>s.slug===slug);if(!subj)return notFound();const chosen=gtSortedArticles(articles.filter(a=>gtSubjectOf(a)===slug));return `<section class="section">${header('SUBJECT / '+subj.name,subj.name,subj.cn+'。'+subj.desc)}${gtTopicNav(slug)}<div class="product-list">${chosen.length?chosen.map((a,i)=>articleRow(a,i)).join(''):`<div class="gt-empty">這個分類目前還沒有正式收錄的文章。未來可以在 EDITOR 選擇「${subj.name}」後新增內容。<br><a class="link-arrow" href="#/journal" style="margin-top:22px">BROWSE OTHER STORIES ${gtArrow()}</a></div>`}</div></section>`}
+function viewSubject(slug){const subj=gtSubjects.find(s=>s.slug===slug);if(!subj)return notFound();const chosen=gtSortedArticles(gtPublicArticles().filter(a=>gtSubjectOf(a)===slug));return `<section class="section">${header('SUBJECT / '+subj.name,subj.name,subj.cn+'。'+subj.desc)}${gtTopicNav(slug)}<div class="product-list">${chosen.length?chosen.map((a,i)=>articleRow(a,i)).join(''):`<div class="gt-empty">這個分類目前還沒有正式收錄的文章。未來可以在 EDITOR 選擇「${subj.name}」後新增內容。<br><a class="link-arrow" href="#/journal" style="margin-top:22px">BROWSE OTHER STORIES ${gtArrow()}</a></div>`}</div></section>`}
 function viewFeatures(){return `<section class="section">${header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))}
 <div class="gt-issue-cover" role="img" aria-label="綠灰色調字體視覺"><span>Everyday<br>Wear.</span></div><div class="gt-feature-copy"><h2>${gtSiteHTML('features.issue')}</h2><p>${gtSiteLines('features.body')}</p></div>
-<div class="product-list">${articles.filter(a=>['comoli-everyday','auralee-materials','graphpaper-editorial'].includes(a.slug)).map((a,i)=>articleRow(a,i)).join('')}</div></section>`}
+<div class="product-list">${gtPublicArticles().filter(a=>['comoli-everyday','auralee-materials','graphpaper-editorial'].includes(a.slug)).map((a,i)=>articleRow(a,i)).join('')}</div></section>`}
 function viewIndex(){return `<section class="section">${header(gtSiteHTML('index.kicker'),gtSiteHTML('index.title'),gtSiteHTML('index.desc'))}
 <div class="gt-content-intro"><h2>${gtSiteLines('index.introTitle')}</h2><p>${gtSiteLines('index.introBody')}</p></div>
 <div class="gt-forme-side" style="background:#343b33;padding:22px 30px;margin-bottom:40px"><a href="#/brands"><span>01 / BRAND DIRECTORY</span>${gtArrow()}</a><a href="#/archive"><span>02 / INTERVIEWS & SEASON REFERENCES</span>${gtArrow()}</a><a href="#/stock"><span>03 / STOCK FINDER · DEMONSTRATION</span>${gtArrow()}</a><a href="#/saved"><span>04 / SAVED PIECES</span>${gtArrow()}</a></div>
-<div class="gt-section-top"><div><span class="kicker">${gtSiteHTML('index.directoryKicker')}</span><h2>${gtSiteHTML('index.directoryTitle')}</h2></div><a class="link-arrow" href="#/brands">${gtSiteHTML('index.directoryButton')} ${gtArrow()}</a></div><div class="brand-grid">${brands.map((b,i)=>`<a class="brand-card ${b.logo?'has-logo':''}" href="#/brand/${b.slug}"><span class="brand-no">${String(i+1).padStart(2,'0')} / JAPAN</span><span class="arrow">${gtArrow()}</span><div class="brand-identity">${gtBrandIdentity(b)}</div><p>${esc(b.founder)}</p></a>`).join('')}</div></section>`}
+<div class="gt-section-top"><div><span class="kicker">${gtSiteHTML('index.directoryKicker')}</span><h2>${gtSiteHTML('index.directoryTitle')}</h2></div><a class="link-arrow" href="#/brands">${gtSiteHTML('index.directoryButton')} ${gtArrow()}</a></div><div class="brand-grid">${gtPublicBrands().map((b,i)=>`<a class="brand-card ${b.logo?'has-logo':''}" href="#/brand/${b.slug}"><span class="brand-no">${String(i+1).padStart(2,'0')} / JAPAN</span><span class="arrow">${gtArrow()}</span><div class="brand-identity">${gtBrandIdentity(b)}</div><p>${esc(b.founder)}</p></a>`).join('')}</div></section>`}
 const gtLocalDate=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const gtPublicationDate=a=>String(a.publishedAt||a.publishedDate||a.createdAt||'').slice(0,10);
 const gtDateText=a=>{const raw=gtPublicationDate(a);return /^\d{4}-\d{2}-\d{2}$/.test(raw)?raw.replace(/-/g,'.'):'DATE NOT SET'};
 function gtSortedArticles(list=articles){return [...list].map((a,i)=>({a,i,t:Date.parse(gtPublicationDate(a)||'')||0})).sort((x,y)=>(y.t-x.t)||(x.i-y.i)).map(x=>x.a)}
-function gtHomepageLatest(){return gtSortedArticles().slice(0,3).map((a,i)=>articleRow(a,i)).join('')}
+function gtHomepageLatest(){return gtSortedArticles(gtPublicArticles()).slice(0,3).map((a,i)=>articleRow(a,i)).join('')}
 
 function viewHome(){return `<section class="gt-hero gt-editorial-home" aria-label="GOOD THINGS 首頁精選">
 <div class="gt-meta"><span>${gtSiteHTML('home.kicker')}</span><span>${gtSiteHTML('home.date')}</span></div>
@@ -909,7 +910,7 @@ function gtBrandInitial(b){
   return m?m[0].toUpperCase():'#';
 }
 function gtBrandSorted(){
-  return [...brands].sort((a,b)=>{
+  return gtPublicBrands().sort((a,b)=>{
     const la=gtBrandInitial(a),lb=gtBrandInitial(b);
     if(la!==lb)return la.localeCompare(lb,'en');
     return String(a.name||'').localeCompare(String(b.name||''),'en',{sensitivity:'base'});
@@ -960,9 +961,9 @@ document.addEventListener('click',e=>{
  // Keep the selected alphabet visible and readable when the list is long.
  if(window.matchMedia('(max-width:760px)').matches){document.querySelector('.gt-alpha-feedback')?.scrollIntoView({behavior:'smooth',block:'start'})}
 });
-function viewBrand(slug){const b=brands.find(x=>x.slug===slug);if(!b)return notFound();const related=gtSortedArticles(articles.filter(a=>a.brand===b.name));return `<section class="section brand-profile"><div class="brand-profile-breadcrumb"><a class="back" href="#/brands"><svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H3m0 0 6-6m-6 6 6 6"/></svg> ALL BRANDS</a><span class="kicker">BRAND PROFILE / JAPAN</span></div>${b.logo?`<div class="gt-detail-logo-frame" ${gtLogoVars(b)}><img class="brand-logo-detail" src="${esc(b.logo)}" alt="${esc(b.name)} 品牌標誌"></div>`:''}<h1 class="detail-title">${esc(b.name)}</h1><div class="two-cols"><div class="info-block"><h3>FOUNDER / CREATIVE DIRECTION</h3><p>${esc(b.founder)}</p><h3>ESTABLISHED</h3><p>${esc(b.founded)}</p>${b.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div><div class="info-block"><h3>THE IDEA</h3><p class="detail-copy">${esc(b.desc)}</p>${b.url?`<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" class="outline-btn">OFFICIAL WEBSITE <svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></a>`:''}</div></div><div class="section-line" style="padding-top:30px"><h2>Related Stories</h2>${related.map((a,i)=>articleRow(a,i)).join('')}</div><div style="margin-top:30px"><a class="dark-btn" href="#/stock?brand=${encodeURIComponent(b.name)}">尋找 ${esc(b.name)} 單品 <svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></a></div></section>`}
+function viewBrand(slug){const b=gtPublicBrands().find(x=>x.slug===slug);if(!b)return notFound();const related=gtSortedArticles(gtPublicArticles().filter(a=>a.brand===b.name));return `<section class="section brand-profile"><div class="brand-profile-breadcrumb"><a class="back" href="#/brands"><svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H3m0 0 6-6m-6 6 6 6"/></svg> ALL BRANDS</a><span class="kicker">BRAND PROFILE / JAPAN</span></div>${b.logo?`<div class="gt-detail-logo-frame" ${gtLogoVars(b)}><img class="brand-logo-detail" src="${esc(b.logo)}" alt="${esc(b.name)} 品牌標誌"></div>`:''}<h1 class="detail-title">${esc(b.name)}</h1><div class="two-cols"><div class="info-block"><h3>FOUNDER / CREATIVE DIRECTION</h3><p>${esc(b.founder)}</p><h3>ESTABLISHED</h3><p>${esc(b.founded)}</p>${b.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div><div class="info-block"><h3>THE IDEA</h3><p class="detail-copy">${esc(b.desc)}</p>${b.url?`<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" class="outline-btn">OFFICIAL WEBSITE <svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></a>`:''}</div></div><div class="section-line" style="padding-top:30px"><h2>Related Stories</h2>${related.map((a,i)=>articleRow(a,i)).join('')}</div><div style="margin-top:30px"><a class="dark-btn" href="#/stock?brand=${encodeURIComponent(b.name)}">尋找 ${esc(b.name)} 單品 <svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></a></div></section>`}
 function articleRow(a,i){const sub=gtSubjects.find(s=>s.slug===gtSubjectOf(a));return `<a class="article-row" href="#/article/${encodeURIComponent(a.slug)}"><div class="article-meta"><span class="meta-tag">${String(i+1).padStart(2,'0')} / ${esc(sub?.name||'CLOTHING')}</span><span class="meta-tag">${esc(a.brand||'GOOD THINGS')}</span><span class="meta-date">${gtDateText(a)}</span></div><div><h3>${esc(a.title)}</h3><p>${esc(a.excerpt)}</p></div>${gtArrow()}</a>`}
-function viewJournal(){return `<section class="section">${header(gtSiteHTML('stories.kicker'),gtSiteHTML('stories.title'),gtSiteHTML('stories.desc'))}${gtTopicNav()}<div class="product-list">${gtSortedArticles().map((a,i)=>articleRow(a,i)).join('')}</div><p class="muted" style="font-size:12px;margin-top:25px">部分現有文章為示範導讀，內容與引用來源仍待逐篇查核。</p></section>`}
+function viewJournal(){return `<section class="section">${header(gtSiteHTML('stories.kicker'),gtSiteHTML('stories.title'),gtSiteHTML('stories.desc'))}${gtTopicNav()}<div class="product-list">${gtSortedArticles(gtPublicArticles()).map((a,i)=>articleRow(a,i)).join('')}</div><p class="muted" style="font-size:12px;margin-top:25px">部分現有文章為示範導讀，內容與引用來源仍待逐篇查核。</p></section>`}
 function gtSourceDetails(a){
  if(!a.source && !a.sourceTitle && !a.publisher && !a.sourceAuthor && !a.sourceDate)return '';
  const rows=[['原文標題',a.sourceTitle],['媒體／發行方',a.publisher],['原作者',a.sourceAuthor],['原文日期',a.sourceDate],['整理日期',a.reviewedAt]]
@@ -970,7 +971,7 @@ function gtSourceDetails(a){
  const link=a.source?`<dt>來源連結</dt><dd><a href="${esc(a.source)}" target="_blank" rel="noopener noreferrer">READ ORIGINAL ARTICLE ${gtArrow()}</a></dd>`:'';
  return `<aside class="source-section"><h2>ORIGINAL SOURCE / 資料來源</h2><dl>${rows}${link}</dl></aside>`;
 }
-function viewArticle(slug){const a=articles.find(x=>x.slug===slug);if(!a)return notFound();const brandPath=brandSlug(a.brand);return `<section class="section"><div class="article-body"><a class="back" href="#/journal">${gtArrow()} BACK TO STORIES</a><div class="kicker">${esc((gtSubjects.find(s=>s.slug===gtSubjectOf(a))||{}).name||'CLOTHING')} / ${esc(a.brand||'GOOD THINGS')} / ${esc(a.category||'')}</div><div class="gt-article-publication">${gtPublicationDate(a)?'PUBLISHED / '+gtDateText(a):'EDITORIAL DEMONSTRATION / DATE NOT SET'}${a.updatedAt&&a.updatedAt.slice(0,10)!==gtPublicationDate(a)?' &nbsp; / &nbsp; UPDATED '+a.updatedAt.slice(0,10).replace(/-/g,'.'):''}</div><h1>${esc(a.title)}</h1><div class="excerpt">${esc(a.excerpt)}</div>${a.cover?`<img src="${esc(a.cover)}" alt="文章封面" class="editor-cover">`:`<div class="article-placeholder" aria-label="文章尚無封面圖片">GOOD THINGS, / EDITORIAL STUDY</div>`}${(a.body||[]).map(p=>`<p>${esc(p)}</p>`).join('')}${gtSourceDetails(a)}<div class="notice">編輯說明：既有文章含示範性導讀，正式引用與訪談內容仍需逐篇查核來源。請勿未經授權轉載原文。</div><div class="link-list">${a.source?`<a target="_blank" rel="noopener noreferrer" href="${esc(a.source)}">相關原始資料 ${gtArrow()}</a>`:''}${brandPath?`<a href="#/brand/${brandPath}">前往 ${esc(a.brand)} 品牌檔案 ${gtArrow()}</a>`:''}<a href="#/journal">MORE STORIES ${gtArrow()}</a></div></div></section>`}
+function viewArticle(slug){const a=gtPublicArticles().find(x=>x.slug===slug);if(!a)return notFound();const brandPath=brandSlug(a.brand);return `<section class="section"><div class="article-body"><a class="back" href="#/journal">${gtArrow()} BACK TO STORIES</a><div class="kicker">${esc((gtSubjects.find(s=>s.slug===gtSubjectOf(a))||{}).name||'CLOTHING')} / ${esc(a.brand||'GOOD THINGS')} / ${esc(a.category||'')}</div><div class="gt-article-publication">${gtPublicationDate(a)?'PUBLISHED / '+gtDateText(a):'EDITORIAL DEMONSTRATION / DATE NOT SET'}${a.updatedAt&&a.updatedAt.slice(0,10)!==gtPublicationDate(a)?' &nbsp; / &nbsp; UPDATED '+a.updatedAt.slice(0,10).replace(/-/g,'.'):''}</div><h1>${esc(a.title)}</h1><div class="excerpt">${esc(a.excerpt)}</div>${a.cover?`<img src="${esc(a.cover)}" alt="文章封面" class="editor-cover">`:`<div class="article-placeholder" aria-label="文章尚無封面圖片">GOOD THINGS, / EDITORIAL STUDY</div>`}${(a.body||[]).map(p=>`<p>${esc(p)}</p>`).join('')}${gtSourceDetails(a)}<div class="notice">編輯說明：既有文章含示範性導讀，正式引用與訪談內容仍需逐篇查核來源。請勿未經授權轉載原文。</div><div class="link-list">${a.source?`<a target="_blank" rel="noopener noreferrer" href="${esc(a.source)}">相關原始資料 ${gtArrow()}</a>`:''}${brandPath?`<a href="#/brand/${brandPath}">前往 ${esc(a.brand)} 品牌檔案 ${gtArrow()}</a>`:''}<a href="#/journal">MORE STORIES ${gtArrow()}</a></div></div></section>`}
 function matchProduct(p){const q=filters.q.trim().toLowerCase();return (!q||[p.brand,p.name,p.code,p.color,p.season].join(' ').toLowerCase().includes(q))&&(filters.brand==='ALL'||p.brand===filters.brand)&&(filters.size==='ALL'||p.shops.some(s=>s.sizes.includes(filters.size)))&&(!filters.available||p.shops.some(s=>s.status==='available'&&(filters.size==='ALL'||s.sizes.includes(filters.size))))}
 function productRow(p){const n=p.shops.filter(s=>s.status==='available').length;return `<div class="product-row"><a href="#/piece/${p.id}" class="product-thumb" aria-label="檢視 ${esc(p.name)}">${esc(p.brand)}</a><div><div class="meta-tag">${esc(p.brand)} / ${esc(p.season)}</div><a href="#/piece/${p.id}"><h3>${esc(p.name)}</h3></a><p>${esc(p.color)} · ${esc(p.code)}<br>${num(p.price)} · ${p.shops.length} 間示範店家</p><span class="stock-status ${n?'':'off'}">${n?n+' 間示範有貨':'示範售罄'}</span></div><div class="product-actions"><a href="#/piece/${p.id}" class="mini-btn">查看店家 <svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></a><button type="button" class="mini-btn save-btn ${saved.includes(p.id)?'saved':''}" data-save="${p.id}">${saved.includes(p.id)?'已收藏':'加入收藏'}</button></div></div>`}
 function viewStock(){const found=products.filter(matchProduct);return `<section class="section">${header('STOCKIST INDEX / 003','Stock Finder','搜尋不同品牌、顏色與尺寸。此頁為介面測試，所有庫存、價格和店名皆為虛構示範。')}<div class="notice"><strong>DEMO MODE / 示範資料</strong><br>正式版尚未串接任何日本選品店，請勿以本頁判斷真實庫存或價格。</div><div class="filters"><input id="search" type="search" placeholder="搜尋 COMOLI、M65、襯衫..." value="${esc(filters.q)}" aria-label="搜尋品牌與單品"><select id="brand-filter" aria-label="品牌篩選"><option value="ALL">所有品牌</option>${brands.map(b=>`<option ${filters.brand===b.name?'selected':''} value="${esc(b.name)}">${esc(b.name)}</option>`).join('')}</select><select id="size-filter" aria-label="尺寸篩選">${['ALL','0','1','2','3','4','5'].map(n=>`<option value="${n}" ${filters.size===n?'selected':''}>${n==='ALL'?'所有尺寸':'SIZE '+n}</option>`).join('')}</select></div><div class="filter-meta"><label class="checkbox"><input id="available-filter" type="checkbox" ${filters.available?'checked':''}>只看示範有貨</label><span id="results-count">${found.length} RESULTS</span></div><div class="product-list" id="product-results">${found.map(productRow).join('')||'<div class="empty">沒有找到符合條件的商品。</div>'}</div></section>`}
@@ -1049,9 +1050,12 @@ async function gtLoadCloudPublishedBrands(){
  try{
   const response=await fetch(url);if(!response.ok)throw Error('HTTP '+response.status);
   const payload=await response.json();if(!Array.isArray(payload.result))return;
+  gtPublishedBrandRecords.clear();
+  for(const [slug,original] of gtOriginalBrands)gtPublishedBrandRecords.set(slug,original);
   for(const d of payload.result){
    if(!d.name||!d.slug?.current)continue;
    const b={slug:d.slug.current,name:d.name,founder:d.founder||'',founded:d.foundedYear==null?'—':String(d.foundedYear),desc:d.summary||'',tags:Array.isArray(d.tags)?d.tags:[],url:d.website||null,logo:d.logoUrl||'',logoDisplay:{scale:d.logoScale??100,x:d.logoOffsetX??0,y:d.logoOffsetY??0}};
+   gtPublishedBrandRecords.set(b.slug,b);
    if(localBrands.some(x=>x.slug===b.slug))continue;
    const idx=brands.findIndex(x=>x.slug===b.slug);if(idx>=0)brands[idx]={...brands[idx],...b};else brands.push(b);
   }
@@ -1063,11 +1067,18 @@ async function gtLoadCloudPublishedBrands(){
 // Preserve original entries separately. Editors can override them without damaging defaults.
 const gtOriginalBrands=new Map(brands.map(b=>[b.slug,{...b,tags:[...(b.tags||[])]}]));
 const gtOriginalArticles=articles.map(a=>({...a,body:[...(a.body||[])]}));
+// Only built-in demonstrations and explicitly published Sanity documents appear in public views.
+// LocalStorage and Sanity drafts remain editor-only.
+const gtPublishedArticleRecords=new Map(gtOriginalArticles.map(a=>[a.slug,a]));
+const gtPublishedBrandRecords=new Map(gtOriginalBrands);
+const gtPublicArticles=()=>[...gtPublishedArticleRecords.values()];
+const gtPublicBrands=()=>[...gtPublishedBrandRecords.values()];
 const gtOriginalLibrary=library.map(x=>({...x}));
 const CMS_KEY='forme_archive_editor_v12';
 let editorKind='article',editingId='',editorCover='',editorLogo='',editorLogoNote='';
 let localReferenceEntries=[];
-let gtHomeConfig={slides:[]}; // Empty means the three editorial demonstration covers.
+let gtHomeConfig={slides:[]}; // Browser-local editing copy only.
+let gtPublishedHomeConfig={slides:[]}; // Public pages never use browser-local draft slides.
 let gtHomeDraft=[];
 try { const stored=JSON.parse(localStorage.getItem(CMS_KEY)||'null');if(stored&&stored.version===1){if(Array.isArray(stored.articles))stored.articles.forEach(x=>{if(x.slug&&!articles.some(a=>a.slug===x.slug))articles.push(x)});if(Array.isArray(stored.brands))stored.brands.forEach(x=>{if(!x.slug)return;const idx=brands.findIndex(b=>b.slug===x.slug);if(idx>=0)brands[idx]={...brands[idx],...x};else brands.push(x)});if(Array.isArray(stored.references))stored.references.forEach(x=>{library.push(x);localReferenceEntries.push(x)});if(stored.home&&Array.isArray(stored.home.slides))gtHomeConfig={slides:stored.home.slides};if(stored.siteContent&&typeof stored.siteContent==='object'&&!Array.isArray(stored.siteContent))gtSiteContent=Object.fromEntries(Object.entries(stored.siteContent).filter(([k,v])=>Object.hasOwn(gtSiteDefaults,k)&&typeof v==='string'))}}catch(err){console.warn('資料庫載入失敗',err)}
 const builtInArticleSlugs=new Set(articles.map(x=>x.slug));
@@ -1605,10 +1616,11 @@ const gtDemoSlides=[
 // The selected article opens normally; override cover and display headline are independent.
 function gtHomeWorkingCopy(){return (gtHomeConfig.slides.length?gtHomeConfig.slides:gtDemoSlides.map(x=>({slug:decodeURIComponent(x.href.split('/').pop()),title:'',excerpt:'',cover:''}))).map(x=>({...x}));}
 function gtResolvedSlides(){
- if(!gtHomeConfig.slides.length)return gtDemoSlides.map(x=>({...x,visualType:'illustration'}));
+ const publicSlides=gtPublishedHomeConfig.slides;
+ if(!publicSlides.length)return gtDemoSlides.map(x=>({...x,visualType:'illustration'}));
  const valid=[];
- for(const entry of gtHomeConfig.slides){
-   const a=articles.find(x=>x.slug===entry.slug);if(!a)continue;
+ for(const entry of publicSlides){
+   const a=gtPublicArticles().find(x=>x.slug===entry.slug);if(!a)continue;
    const base=gtDemoSlides.find(x=>x.href==='#/article/'+a.slug);
    const chosen=entry.cover||a.cover||'';
    const art=chosen?`<img class="gt-mag-uploaded-cover" src="${esc(chosen)}" alt="${esc(a.title)} 的精選封面">`:base?.art||`<div class="gt-mag-generic-art" aria-hidden="true"><span>GOOD<br>THINGS,</span><small>EDITORIAL / ${esc(a.brand||'JOURNAL')}</small></div>`;
