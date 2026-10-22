@@ -45,11 +45,17 @@
  }
  async function loadPublished(){
   try{
-   const query='*[_id=="gt-site-content"][0].fields';
+   const query='*[_id=="gt-site-content"][0]{fields,fieldsJson}';
    const u='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(query);
    const r=await fetch(u,{cache:'no-store'});if(!r.ok)return;
    const j=await r.json();if(!j.result||typeof j.result!=='object')return;
-   gtSiteContent=Object.fromEntries(Object.entries(j.result).filter(([key,val])=>Object.hasOwn(gtSiteDefaults,key)&&typeof val==='string'));
+   let fields=j.result.fields;
+   if(typeof j.result.fieldsJson==='string'){
+    try{fields=JSON.parse(j.result.fieldsJson)}
+    catch(e){console.info('已發布網站文字 JSON 格式無法解析');return}
+   }
+   if(!fields||typeof fields!=='object'||Array.isArray(fields))return;
+   gtSiteContent=Object.fromEntries(Object.entries(fields).filter(([key,val])=>Object.hasOwn(gtSiteDefaults,key)&&typeof val==='string'));
    if(editorKind!=='site')gtSiteDraft={...gtSiteContent};
    if(!location.hash.includes('/admin'))render();
   }catch(e){console.info('公開網站文字尚未可讀',e.message)}
