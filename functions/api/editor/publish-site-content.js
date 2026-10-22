@@ -18,7 +18,12 @@ export async function onRequestPost({request,env}){
   if(!r.ok)throw new AuthError(502,'無法讀取網站文字草稿')
   const draft=(await r.json()).result
   if(!draft||draft._rev!==data.revision)throw new AuthError(409,'草稿已更新，請重新讀取')
-  const publicDoc={_id:'gt-site-content',_type:'gtSiteContent',fields:draft.fields||{}}
+  const legacy= draft.fields&&typeof draft.fields==='object'&&!Array.isArray(draft.fields)?draft.fields:{}
+  const fieldsJson=typeof draft.fieldsJson==='string'?draft.fieldsJson:JSON.stringify(legacy)
+  let parsed
+  try{parsed=JSON.parse(fieldsJson)}catch{throw new AuthError(400,'網站文字草稿格式不正確，請重新儲存')}
+  if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new AuthError(400,'網站文字草稿格式不正確，請重新儲存')
+  const publicDoc={_id:'gt-site-content',_type:'gtSiteContent',fieldsJson}
   const save=await fetch(API+'/data/mutate/production',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({mutations:[{createOrReplace:publicDoc},{delete:{id:draft._id,ifRevisionID:draft._rev}}]})})
   if(!save.ok)throw new AuthError(save.status===409?409:502,'網站文字發布失敗 HTTP '+save.status)
   return Response.json({ok:true,published:true},{headers:{'Cache-Control':'no-store'}})
