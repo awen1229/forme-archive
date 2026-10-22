@@ -14,3 +14,5 @@ Pages Functions expect these **runtime** settings in the **Preview** environment
 After configuring environment settings, trigger a new preview deployment before verifying `/api/editor/session`. The brand cloud-save endpoint writes drafts, not published changes. The article and homepage editors are not yet synced to Sanity.
 
 Never add API tokens or other credentials to this repository or HTML files. Keep production `main` untouched until authentication and persistence tests pass.
+
+Preview-only redeployment requested after configuring Cloudflare Access runtime variables. No production source changes.
