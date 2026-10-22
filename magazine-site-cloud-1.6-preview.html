@@ -1393,17 +1393,38 @@ async function gtPrepareLogo(src){
  return {data:output,note,cropped};
 }
 async function gtCompressImage(file,kind){
- if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先安全轉換成 PNG）');
- if(file.size>6*1024*1024)throw Error('圖片超過 6MB，請先在手機或電腦上壓縮');
- const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('讀取圖片失敗'));reader.readAsDataURL(file)});
- if(kind==='logo')return gtPrepareLogo(data);
- const pic=await gtDecodeImage(data),maxW=1200,maxH=780;
- const scale=Math.min(1,maxW/pic.naturalWidth,maxH/pic.naturalHeight);
- const cnv=document.createElement('canvas');cnv.width=Math.max(1,Math.round(pic.naturalWidth*scale));cnv.height=Math.max(1,Math.round(pic.naturalHeight*scale));
- cnv.getContext('2d').drawImage(pic,0,0,cnv.width,cnv.height);
- const output=cnv.toDataURL('image/webp',.78);
- if(output.length>1050000)throw Error('壓縮後的圖片仍過大，請換一張較小的圖片');
- return {data:output,note:'已壓縮封面圖片'};
+ if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先轉換成 PNG）');
+ if(kind==='logo'){
+  // Preserve the established brand-logo processing rules.
+  if(file.size>6*1024*1024)throw Error('LOGO 超過 6MB，請改用較小的 PNG 或 WebP');
+  const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('讀取 LOGO 失敗'));reader.readAsDataURL(file)});
+  return gtPrepareLogo(data);
+ }
+ // Decode the local photo directly, without first creating a potentially huge base64 string.
+ if(file.size>40*1024*1024)throw Error('照片超過 40MB，請先從相機輸出較小的 JPG 或 WebP');
+ const url=URL.createObjectURL(file);
+ try{
+  const pic=await gtDecodeImage(url);
+  if(!pic.naturalWidth||!pic.naturalHeight)throw Error('無法取得圖片尺寸');
+  const base=Math.min(1,1600/pic.naturalWidth,1040/pic.naturalHeight);
+  const canvas=document.createElement('canvas');
+  const context=canvas.getContext('2d');
+  if(!context)throw Error('瀏覽器無法處理這張圖片');
+  // Keep an editorial-quality cover where possible; step down only for detailed/noisy files.
+  for(const factor of [1,.86,.72,.58]){
+   const ratio=base*factor;
+   canvas.width=Math.max(1,Math.round(pic.naturalWidth*ratio));
+   canvas.height=Math.max(1,Math.round(pic.naturalHeight*ratio));
+   context.drawImage(pic,0,0,canvas.width,canvas.height);
+   for(const quality of [.84,.75,.65,.55]){
+    const output=canvas.toDataURL('image/webp',quality);
+    if(output.startsWith('data:image/webp;base64,')&&output.length<1050000){
+     return {data:output,note:'已自動縮圖、壓縮為 WebP '+canvas.width+'×'+canvas.height};
+    }
+   }
+  }
+  throw Error('自動壓縮後仍超過限制，請改用較小的圖片');
+ }finally{URL.revokeObjectURL(url)}
 }
 document.addEventListener('change',async e=>{
  if(e.target.id==='f-cover'||e.target.id==='f-logo'){
