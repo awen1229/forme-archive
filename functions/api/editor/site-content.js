@@ -5,13 +5,26 @@ const HEADERS={'Cache-Control':'no-store'}
 async function state(token){
  const u=new URL(API+'/data/query/production')
  u.searchParams.set('perspective','raw')
- u.searchParams.set('query','*[_id in ["drafts.gt-site-content","gt-site-content"]]{_id,_rev,_updatedAt,fields}')
+ u.searchParams.set('query','*[_id in ["drafts.gt-site-content","gt-site-content"]]{_id,_rev,_updatedAt,fields,fieldsJson}')
  const r=await fetch(u.toString(),{headers:{Authorization:'Bearer '+token},cache:'no-store'})
  if(!r.ok)throw new AuthError(502,'Sanity 網站文字讀取失敗 HTTP '+r.status)
  const rows=(await r.json()).result||[]
  return {draft:rows.find(x=>x._id==='drafts.gt-site-content'),published:rows.find(x=>x._id==='gt-site-content')}
 }
-function serialize(doc){if(!doc)return null;return {revision:doc._rev||'',updatedAt:doc._updatedAt||'',fields:doc.fields||{}}}
+function decodedFields(doc){
+ if(!doc)return {}
+ if(typeof doc.fieldsJson==='string'){
+  try{
+   const parsed=JSON.parse(doc.fieldsJson)
+   if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))
+    return Object.fromEntries(Object.entries(parsed).filter(([key,value])=>KEYS.has(key)&&typeof value==='string'))
+  }catch{/* fall back to legacy shape */}
+ }
+ if(doc.fields&&typeof doc.fields==='object'&&!Array.isArray(doc.fields))
+  return Object.fromEntries(Object.entries(doc.fields).filter(([key,value])=>KEYS.has(key)&&typeof value==='string'))
+ return {}
+}
+function serialize(doc){if(!doc)return null;return {revision:doc._rev||'',updatedAt:doc._updatedAt||'',fields:decodedFields(doc)}}
 export async function onRequestGet({request,env}){
  try{
   await requireEditor(request,env)
@@ -42,11 +55,15 @@ export async function onRequestPost({request,env}){
   const revision=typeof data.revision==='string'?data.revision:''
   if(old&&old._rev!==revision)throw new AuthError(409,'雲端內容已被其他裝置更新，請重新讀取')
   const mutation={mutations:[
-   {createIfNotExists:{_id:'drafts.gt-site-content',_type:'gtSiteContent',fields:{}}},
-   {patch:{id:'drafts.gt-site-content',set:{fields},...(rows.draft?{ifRevisionID:rows.draft._rev}:{})}}
+   {createIfNotExists:{_id:'drafts.gt-site-content',_type:'gtSiteContent',fieldsJson:'{}'}},
+   {patch:{id:'drafts.gt-site-content',set:{fieldsJson:JSON.stringify(fields)},unset:['fields'],...(rows.draft?{ifRevisionID:rows.draft._rev}:{})}}
   ],returnDocuments:true}
   const r=await fetch(API+'/data/mutate/production',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify(mutation)})
-  if(!r.ok)throw new AuthError(r.status===409?409:502,'Sanity 網站文字儲存失敗 HTTP '+r.status)
+  if(!r.ok){
+   const details=(await r.text()).slice(0,800)
+   console.error('Sanity site content save failed',r.status,details)
+   throw new AuthError(r.status===409?409:502,'Sanity 網站文字儲存失敗 HTTP '+r.status)
+  }
   const result=await r.json()
   const saved=result.results?.find(x=>x.document?._id==='drafts.gt-site-content')?.document
   return Response.json({ok:true,draft:serialize(saved)||{revision:'',fields}},{headers:HEADERS})
