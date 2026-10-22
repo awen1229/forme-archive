@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOOD THINGS, / RELEASE LAB</title>
+<style>
+:root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f5f3ee;color:#262924;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Noto Sans TC",Arial,sans-serif}.wrap{max-width:900px;padding:45px 22px 80px;margin:auto}header{border-bottom:1px solid #bebeb5;padding-bottom:30px;margin-bottom:28px}.kicker{font:12px/1.5 Arial;letter-spacing:.18em}h1{font:normal clamp(35px,7vw,69px)/1.1 Georgia,serif;margin:12px 0}p{color:#5b6058}button{background:#31372f;color:#fff;padding:12px 17px;border:1px solid #31372f;font:inherit;cursor:pointer}button[disabled]{opacity:.38;cursor:not-allowed}.outline{background:transparent;color:#31372f}.card{border:1px solid #b9bdb5;background:#faf9f5;margin:13px 0;padding:20px}.row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}.state{font-size:13px;color:#555}.error{color:#9d372c;font-weight:600}code{background:#eae8e0;padding:3px 5px}a{color:inherit}.notice{border-left:3px solid #30392e;padding-left:15px}#status{margin:16px 0;font-weight:600}#items{margin:20px 0}strong{font-weight:650}
+</style></head><body><main class="wrap"><header><div class="kicker">GOOD THINGS, / EDITORIAL SYSTEM</div><h1>RELEASE LAB.</h1><p>安全發布測試區 / STAGING DATASET ONLY</p></header>
+<p class="notice">這裡只使用 Sanity 的 <code>staging</code> 資料集、固定測試資料和已登入管理員權限。<strong>不會讀取或修改 production。</strong>原本的正式發布 API 也已暫時鎖定。請不要在此操作真實文章。</p>
+<div class="buttons"><button id="refresh">檢查測試環境</button><a href="/api/editor/session" style="padding:12px">回 EDITORIAL STUDIO ↗</a></div>
+<div id="status" role="status">尚未檢查</div><div id="items"></div>
+<section class="card"><strong>清理測試資料</strong><p>四種測試均完成後，可以刪除固定測試資料，其他文件不受影響。</p><button class="outline" id="reset" disabled>清除 Release Lab 測試資料</button></section>
+</main><script>
+const api='/api/editor/release-lab',kinds=[['brand','BRANDS / 品牌'],['article','ARTICLES / 文章'],['home','HOMEPAGE / 首頁'],['site','SITE CONTENT / 網站文字']];
+let state=null,busy=false;
+const el=id=>document.getElementById(id);
+function textStatus(s,error=false){el('status').textContent=s;el('status').className=error?'error':''}
+function repaint(){
+ const block=el('items');block.replaceChildren();
+ el('reset').disabled=!state||busy;
+ for(const [kind,title] of kinds){
+  const item=state?.items?.find(x=>x.kind===kind)||{draft:false,published:false};
+  const card=document.createElement('section');card.className='card';
+  const head=document.createElement('div');head.className='row';
+  const name=document.createElement('strong');name.textContent=title;
+  const status=document.createElement('span');status.className='state';status.textContent=item.published?'已驗證 staging 發布':item.draft?'staging 草稿已建立':'尚無測試資料';
+  head.append(name,status);card.append(head);
+  const buttons=document.createElement('div');buttons.className='buttons';
+  const seed=document.createElement('button');seed.textContent='1. 建立測試草稿';seed.disabled=!state||busy||item.draft;seed.onclick=()=>act('seed',kind);
+  const pub=document.createElement('button');pub.textContent='2. 測試發布';pub.className='outline';pub.disabled=!state||busy||!item.draft||!item.revision;pub.onclick=()=>act('publish',kind,item.revision);
+  buttons.append(seed,pub);card.append(buttons);block.append(card);
+ }
+}
+async function request(payload){
+ const opts=payload?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}:{};
+ const response=await fetch(api,{...opts,credentials:'same-origin',cache:'no-store'});
+ const result=await response.json();
+ if(!response.ok||!result.ok)throw Error(result.error||'HTTP '+response.status);
+ return result;
+}
+async function refresh(){busy=true;repaint();textStatus('正在查詢 staging …');try{
+ state=await request();textStatus('已連接 staging；production 未變更。');
+}catch(e){state=null;textStatus('測試環境尚未就緒：'+e.message,true)}
+ finally{busy=false;repaint()}}
+async function act(action,kind,revision){
+ if(action==='publish'&&!confirm('只在 STAGING 發布 '+kind+' 測試資料，確定繼續？'))return;
+ if(action==='reset'&&!confirm('要清除 Release Lab 的 8 個固定測試文件識別碼嗎？'))return;
+ const confirmation=action==='publish'?'PUBLISH STAGING':action==='reset'?'DELETE STAGING':null;
+ busy=true;repaint();textStatus('正在執行 '+action+' …');
+ try{state=await request({action,kind,revision,confirmation});textStatus('成功：'+action+' / '+(kind||'全部')+'（僅 staging）')}
+ catch(e){textStatus('操作失敗：'+e.message,true)}
+ finally{busy=false;repaint()}}
+el('refresh').onclick=refresh;
+el('reset').onclick=()=>act('reset');
+refresh();
+</script></body></html>
