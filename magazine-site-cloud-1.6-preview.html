@@ -988,6 +988,52 @@ function renderResults(){const target=$('#product-results');if(!target)return;co
 // GOOD THINGS, v1.6: preserve the original webpage editor. Read public Sanity brands;
 // writing requires a separate authenticated, same-origin server. No secret in this HTML.
 const gtCloudEditorEnabled=location.hostname.endsWith('.pages.dev')&&location.protocol==='https:';
+// Authenticated cloud drafts are loaded only when the editor explicitly requests them.
+// Never insert unpublished drafts into the publicly readable THE INDEX list.
+let gtCloudBrandRows=[];
+let gtCloudBrandLoading=false;
+let gtCloudBrandError='';
+const gtCloudEscape=v=>esc(String(v??''));
+async function gtCloudFetchBrandRows(){
+ if(!gtCloudEditorEnabled)return;
+ gtCloudBrandLoading=true;gtCloudBrandError='';
+ gtRenderCloudBrands();
+ try{
+  const response=await fetch('/api/editor/brands',{credentials:'same-origin',cache:'no-store'});
+  const body=await response.json();
+  if(!response.ok||!body.ok||!Array.isArray(body.records))throw Error(body.error||'讀取失敗 HTTP '+response.status);
+  gtCloudBrandRows=body.records;
+ }catch(e){gtCloudBrandError=e.message||'無法讀取雲端資料'}
+ finally{gtCloudBrandLoading=false;gtRenderCloudBrands()}
+}
+function gtRenderCloudBrands(){
+ const el=document.getElementById('gt-cloud-brands');if(!el)return;
+ const records=gtCloudBrandRows;
+ const rows=records.map(row=>{
+  const isDraft=row.status==='draft';
+  const badge=isDraft?'未發布草稿':'已發布';
+  const edited=row.updatedAt?new Date(row.updatedAt).toLocaleString('zh-TW'):'';
+  const safeSlug=gtCloudEscape(row.slug);
+  return '<div class="editor-list-item" style="gap:12px;align-items:center;flex-wrap:wrap"><div style="min-width:180px;flex:1"><div class="editor-badge">'+badge+(row.hasPublished&&isDraft?' / 含已發布舊版':'')+'</div><strong>'+gtCloudEscape(row.name)+'</strong><div class="muted" style="font-size:11px;margin-top:5px">'+safeSlug+' / '+gtCloudEscape(edited)+'</div></div><div class="gt-record-buttons"><button type="button" data-cloud-edit="'+safeSlug+'">載入編輯</button>'+(isDraft?'<button type="button" data-cloud-publish="'+safeSlug+'" style="background:#283b2b;color:white">確認發布</button>':'')+'</div></div>';
+ }).join('');
+ el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0 4px">雲端品牌資料</h3><p class="muted" style="font-size:13px">草稿不會自動公開。只有按下「確認發布」並再次確認才會更新 Sanity 公開資料。</p><button type="button" id="gt-cloud-reload" style="margin:8px 0 14px">'+(gtCloudBrandLoading?'讀取中…':'重新讀取雲端')+'</button>'+(gtCloudBrandError?'<p role="alert" style="color:#a23a31">讀取失敗：'+gtCloudEscape(gtCloudBrandError)+'</p>':records.length?rows:'<p class="muted">'+(gtCloudBrandLoading?'正在讀取雲端…':'目前尚未載入資料，請點「重新讀取雲端」。')+'</p>');
+}
+async function gtCloudPublishBrand(row){
+ if(!row||row.status!=='draft'||!row.revision)return alert('請先重新讀取最新雲端草稿。');
+ if(/\\btest\\b|測試/i.test(row.name))return alert('測試品牌不允許發布。');
+ if(!confirm('即將公開發布「'+row.name+'」。這會取代該品牌在 Sanity 的公開版本，確定繼續？'))return;
+ const typed=prompt('最後確認：請輸入 PUBLISH 以公開發布 '+row.name);
+ if(typed!=='PUBLISH')return;
+ try{
+  const response=await fetch('/api/editor/publish-brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:row.slug,name:row.name,revision:row.revision,confirmation:'PUBLISH'})});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw Error(data.error||'發布失敗 HTTP '+response.status);
+  alert('已發布到 Sanity 公開資料。請再確認網站的品牌資料。');
+  await gtCloudFetchBrandRows();
+  gtLoadCloudPublishedBrands();
+ }catch(e){alert('發布失敗：'+e.message)}
+}
+
 function gtCloudEditorialNotice(){return gtCloudEditorEnabled
  ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS 可透過安全伺服器儲存 Sanity 草稿，請先登入。文章、首頁與網站文字目前仍為本機編輯。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
  : '<b>GOOD THINGS, 1.6 網站編輯預覽</b>：維持原本編輯介面。目前這個網址尚未連接安全寫入服務，儲存仍只在目前瀏覽器。請匯出 JSON 備份，不要把 Sanity Token 放進網頁。'}
@@ -1106,7 +1152,7 @@ function editorRecords(){
   return `<div class="editor-list-item"><div><div class="editor-badge">${esc(sub)}</div><strong>${esc(x.title||x.name)}</strong></div><div class="gt-record-buttons"><button data-edit="${esc(editableKey)}" type="button">編輯</button>${end}</div></div>`;
  }).join('')||'<div class="muted" style="padding:15px 0">尚未新增內容。</div>';
 }
-function viewAdmin(){if(editorKind==='home')return gtViewHomeEditor();if(editorKind==='site')return gtViewSiteEditor();return `<section class="section">${header('GOOD THINGS / OFFLINE STUDIO','EDITORIAL STUDIO / 1.6','內建品牌與新增品牌都能編輯，直接調整 LOGO 並預覽，文章仍可附上來源與品牌關聯。內容僅在本機。')}<div class="editor-notice">${gtCloudEditorialNotice()}</div>${editorTabs()}<div class="editor-grid ${editorKind==='brand'?'brand-edit':''}"><div class="editor-card"><h2 style="font:600 24px/1.25 Arial,'Microsoft JhengHei',sans-serif;margin-top:0">${editingId?'編輯資料':'新增資料'}</h2>${editorForm()}</div>${editorKind==='brand'?'':`<div class="editor-card editor-preview"><div class="kicker">LIVE PREVIEW</div>${editorPreview()}</div>`}</div><div class="editor-actions" style="margin:28px 0"><button type="button" id="export-cms">匯出 JSON 備份</button><button type="button" class="secondary" id="import-cms" style="color:#30352d;background:transparent">匯入 JSON 備份</button><input type="file" id="import-cms-file" accept=".json,application/json" hidden></div><h2 style="font:600 23px Arial,'Microsoft JhengHei',sans-serif">${editorKind==='brand'?'品牌列表 / 點擊編輯':'已建立內容'}</h2>${editorRecords()}</section>`}
+function viewAdmin(){if(editorKind==='home')return gtViewHomeEditor();if(editorKind==='site')return gtViewSiteEditor();return `<section class="section">${header('GOOD THINGS / OFFLINE STUDIO','EDITORIAL STUDIO / 1.6','內建品牌與新增品牌都能編輯，直接調整 LOGO 並預覽，文章仍可附上來源與品牌關聯。內容僅在本機。')}<div class="editor-notice">${gtCloudEditorialNotice()}</div>${editorTabs()}${editorKind==='brand'&&gtCloudEditorEnabled?'<div id="gt-cloud-brands" class="editor-card" style="margin:24px 0"></div>':''}<div class="editor-grid ${editorKind==='brand'?'brand-edit':''}"><div class="editor-card"><h2 style="font:600 24px/1.25 Arial,'Microsoft JhengHei',sans-serif;margin-top:0">${editingId?'編輯資料':'新增資料'}</h2>${editorForm()}</div>${editorKind==='brand'?'':`<div class="editor-card editor-preview"><div class="kicker">LIVE PREVIEW</div>${editorPreview()}</div>`}</div><div class="editor-actions" style="margin:28px 0"><button type="button" id="export-cms">匯出 JSON 備份</button><button type="button" class="secondary" id="import-cms" style="color:#30352d;background:transparent">匯入 JSON 備份</button><input type="file" id="import-cms-file" accept=".json,application/json" hidden></div><h2 style="font:600 23px Arial,'Microsoft JhengHei',sans-serif">${editorKind==='brand'?'品牌列表 / 點擊編輯':'已建立內容'}</h2>${editorRecords()}</section>`}
 function updatePreview(){
  if(!document.getElementById('editor-form'))return;
  const title=fval(editorKind==='brand'?'name':'title')||'文章標題';
@@ -1171,6 +1217,7 @@ async function saveEditor(){
  editingId='';editorCover='';editorLogo='';editorLogoNote='';
  try{sessionStorage.setItem('forme_v12_save_notice',(editorKind==='brand'&&gtCloudEditorEnabled?'已儲存 Sanity 雲端草稿，也保留本機工作副本。尚未公開發布。':'儲存成功！資料仍只在這台裝置。請回 EDITOR 匯出 JSON 備份，尚未同步到公開網站。'))}catch{}
  if(location.hash===target)render();else location.hash=target;
+ if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();
 }
 
 function downloadCms(){const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),articles:localArticles,brands:localBrands,references:localReferenceEntries,home:gtHomeConfig,siteContent:gtSiteContent},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='GOOD-THINGS-內容備份-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
@@ -1242,7 +1289,21 @@ document.addEventListener('click',async e=>{
   }
 });
 document.addEventListener('click',e=>{
- const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();return;}
+ if(e.target.closest('#gt-cloud-reload')){gtCloudFetchBrandRows();return}
+ const cloudEdit=e.target.closest('[data-cloud-edit]');
+ if(cloudEdit){
+  const row=gtCloudBrandRows.find(b=>b.slug===cloudEdit.dataset.cloudEdit);
+  if(!row)return;
+  editorKind='brand';editingId=row.slug;fillEditor(row);
+  document.getElementById('editor-form')?.scrollIntoView({behavior:'smooth',block:'start'});
+  return;
+ }
+ const cloudPublish=e.target.closest('[data-cloud-publish]');
+ if(cloudPublish){
+  const row=gtCloudBrandRows.find(b=>b.slug===cloudPublish.dataset.cloudPublish);
+  gtCloudPublishBrand(row);return;
+ }
+ const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
  if(e.target.closest('#editor-reset')){resetEditor();return;}
  if(e.target.closest('#export-cms')){downloadCms();return;}
  if(e.target.closest('#import-cms')){document.getElementById('import-cms-file').click();return;}
@@ -1684,8 +1745,9 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft'){e.preventDefault();gtMagGo(gtCarouselIndex-1)}
 });
 
-window.addEventListener('hashchange',render);render();
+window.addEventListener('hashchange',()=>{render();if(location.hash.includes('/admin')&&editorKind==='brand'&&gtCloudEditorEnabled)gtRenderCloudBrands()});render();
 gtLoadCloudPublishedBrands();
+
 
 </script>
 </body>
