@@ -1395,35 +1395,48 @@ async function gtPrepareLogo(src){
 async function gtCompressImage(file,kind){
  if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先轉換成 PNG）');
  if(kind==='logo'){
-  // Preserve the established brand-logo processing rules.
+  // Preserve the original logo trimming and transparency behavior.
   if(file.size>6*1024*1024)throw Error('LOGO 超過 6MB，請改用較小的 PNG 或 WebP');
   const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('讀取 LOGO 失敗'));reader.readAsDataURL(file)});
   return gtPrepareLogo(data);
  }
- // Decode the local photo directly, without first creating a potentially huge base64 string.
- if(file.size>40*1024*1024)throw Error('照片超過 40MB，請先從相機輸出較小的 JPG 或 WebP');
+ // Decode directly, then shrink and recompress locally. The raw photo is not sent to our server.
+ if(file.size>40*1024*1024)throw Error('原始照片超過 40MB，請先匯出較小的 JPG 或 WebP');
  const url=URL.createObjectURL(file);
  try{
   const pic=await gtDecodeImage(url);
   if(!pic.naturalWidth||!pic.naturalHeight)throw Error('無法取得圖片尺寸');
   const base=Math.min(1,1600/pic.naturalWidth,1040/pic.naturalHeight);
   const canvas=document.createElement('canvas');
-  const context=canvas.getContext('2d');
-  if(!context)throw Error('瀏覽器無法處理這張圖片');
-  // Keep an editorial-quality cover where possible; step down only for detailed/noisy files.
-  for(const factor of [1,.86,.72,.58]){
-   const ratio=base*factor;
-   canvas.width=Math.max(1,Math.round(pic.naturalWidth*ratio));
-   canvas.height=Math.max(1,Math.round(pic.naturalHeight*ratio));
-   context.drawImage(pic,0,0,canvas.width,canvas.height);
-   for(const quality of [.84,.75,.65,.55]){
-    const output=canvas.toDataURL('image/webp',quality);
-    if(output.startsWith('data:image/webp;base64,')&&output.length<1050000){
-     return {data:output,note:'已自動縮圖、壓縮為 WebP '+canvas.width+'×'+canvas.height};
+  // Safari and embedded iOS browsers sometimes return PNG when WebP encoding is requested.
+  // JPEG is supported broadly and works well for photographic editorial covers.
+  const formats=[
+   {mime:'image/webp',label:'WebP',qualities:[.84,.74,.62,.48]},
+   {mime:'image/jpeg',label:'JPEG',qualities:[.86,.76,.64,.5,.38]}
+  ];
+  for(const factor of [1,.86,.72,.58,.46,.35,.26]){
+   const scale=base*factor;
+   canvas.width=Math.max(1,Math.round(pic.naturalWidth*scale));
+   canvas.height=Math.max(1,Math.round(pic.naturalHeight*scale));
+   const ctx=canvas.getContext('2d');
+   if(!ctx)throw Error('這個瀏覽器無法壓縮圖片');
+   // JPEG does not support transparency; fill white before drawing a transparent PNG.
+   ctx.fillStyle='#ffffff';
+   ctx.fillRect(0,0,canvas.width,canvas.height);
+   ctx.drawImage(pic,0,0,canvas.width,canvas.height);
+   for(const fmt of formats){
+    for(const quality of fmt.qualities){
+     let output='';
+     try{output=canvas.toDataURL(fmt.mime,quality)}catch{}
+     if(output.startsWith('data:'+fmt.mime+';base64,')&&output.length<1000000){
+      return {data:output,note:'已自動壓縮為 '+fmt.label+' '+canvas.width+'×'+canvas.height};
+     }
+     // Unsupported formats can fall back to PNG; don't accept that uncompressed result.
+     if(output.startsWith('data:image/png;')&&fmt.mime==='image/webp')break;
     }
    }
   }
-  throw Error('自動壓縮後仍超過限制，請改用較小的圖片');
+  throw Error('這張照片無法在目前瀏覽器壓縮至上傳限制，請先匯出較小的 JPG');
  }finally{URL.revokeObjectURL(url)}
 }
 document.addEventListener('change',async e=>{
