@@ -107,7 +107,7 @@ export async function onRequestPost({request,env}){
   const patch={
    title,slug:{_type:'slug',current:slug},
    brand:trim(input.brand,160)||'GOOD THINGS',subject:trim(input.subject,80)||'clothing',
-   category:trim(input.category,120),publicationSection:['stories','features','both'].includes(input.publicationSection)?input.publicationSection:(base?.publicationSection||(base?'both':'stories')),subjects:[...new Set([trim(input.subject,80)||'clothing',...(Array.isArray(input.subjects)?input.subjects:[]).slice(0,8).map(x=>trim(x,80))].filter(x=>['clothing','people','places','objects','notes'].includes(x)))],publishedAt,
+   category:trim(input.category,120),publicationSection:['stories','features','both'].includes(input.publicationSection)?input.publicationSection:(base?.publicationSection||(base?'both':'stories')),subjects:[...new Set([trim(input.subject,80)||'clothing',...(Array.isArray(input.subjects)?input.subjects:[]).slice(0,8).map(x=>trim(x,80))].filter(x=>['clothing','style','people','places','objects','notes'].includes(x)))],publishedAt,
    createdAt:trim(input.createdAt,35)||base?.createdAt||new Date().toISOString(),
    updatedAt:new Date().toISOString(),excerpt,body,
    coverFit:input.coverFit==='contain'?'contain':'cover',
