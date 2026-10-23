@@ -3,7 +3,8 @@
 const preview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 const series=[['behind-the-brand','BEHIND THE BRAND','品牌故事與設計理念'],['good-pickups','GOOD PICKUPS','個人選品、穿著與使用觀察'],['seasonal-notes','SEASONAL NOTES','季度服裝與趨勢觀察']];
 let published=[],rows=[],active=null,error='',loading=false,coverData='',articleOrder=[];
-let coverPending=null,coverUploadError='',coverChoiceId=0,issueSaving=false;
+let coverPending=null,coverUploadError='',coverChoiceId=0,issueSaving=false,issueDirty=false;
+const issuing=new Set();
 const escText=v=>esc(String(v??''));
 const publicFeatures=async()=>{
  try{
@@ -93,26 +94,30 @@ const renderEditor=()=>{
 // The tab and editor route are owned by index.html to avoid runtime-only navigation.
 window.gtFeatureEditorView=renderEditor;
 const refresh=async()=>{loading=true;error='';render();try{rows=(await api('/api/editor/feature-issues')).records||[]}catch(e){error=e.message}finally{loading=false;render()}};
-const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;articleOrder=[...(active.articleSlugs||[])];coverData='';coverUploadError='';coverChoiceId++;render();renderOrder()}catch(e){alert('無法讀取專題：'+e.message)}};
+const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;issueDirty=false;articleOrder=[...(active.articleSlugs||[])];coverData='';coverUploadError='';coverChoiceId++;render();renderOrder()}catch(e){alert('無法讀取專題：'+e.message)}};
 const publish=async slug=>{
+ if(issuing.has(slug)||issueSaving||coverPending)return;
  const row=rows.find(r=>r.slug===slug);
  if(!row||row.status!=='draft'||!row.revision)return alert('請重新讀取專題草稿');
+ if(active?.slug===slug&&issueDirty)return alert('專題有尚未儲存的修改，請先儲存草稿再發布。');
  if(!confirm('要正式發布「'+row.title+'」嗎？'))return;
- try{await api('/api/editor/publish-feature',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,revision:row.revision,confirmation:'PUBLISH'})});await refresh();await publicFeatures();alert('專題已正式發布')}catch(e){alert('發布失敗：'+e.message)}
+ issuing.add(slug);
+ try{await api('/api/editor/publish-feature',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,revision:row.revision,confirmation:'PUBLISH'})});await refresh();await publicFeatures();alert('專題已正式發布')}catch(e){alert('發布失敗：'+e.message)}finally{issuing.delete(slug)}
 };
 document.addEventListener('click',e=>{
  const k=e.target.closest('[data-kind="features"]');
- if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render();refresh();return}
+ if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();issueDirty=false;articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render();refresh();return}
  const btn=e.target.closest('[data-issue-act]');if(!btn){const shift=e.target.closest('[data-order-shift]');if(shift){e.preventDefault();const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}return;}
  e.preventDefault();e.stopImmediatePropagation();
  if(btn.dataset.issueAct==='reload')refresh();
- if(btn.dataset.issueAct==='new'){active=initial();articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render()}
+ if(btn.dataset.issueAct==='new'){active=initial();issueDirty=false;articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render()}
  if(btn.dataset.issueAct==='open')open(btn.dataset.slug);
  if(btn.dataset.issueAct==='publish')publish(btn.dataset.slug);
  const shift=e.target.closest('[data-order-shift]');if(shift){const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}
 },true);
 document.addEventListener('change',async e=>{
- if(e.target.name==='clearCover'&&e.target.closest('#gt-issue-form')){
+ if(e.target.closest('#gt-issue-form'))issueDirty=true;
+  if(e.target.name==='clearCover'&&e.target.closest('#gt-issue-form')){
   const form=e.target.closest('#gt-issue-form');
   form.querySelectorAll('.gt-issue-preview-image').forEach(img=>{img.hidden=e.target.checked||!(coverData||active?.cover)});
   return;
@@ -152,6 +157,7 @@ document.addEventListener('change',async e=>{
 });
 document.addEventListener('input',e=>{
  const f=e.target.closest('#gt-issue-form');if(!f)return;
+ issueDirty=true;
  const data=Object.fromEntries(['coverFit','coverMobileFit','coverZoom','coverMobileZoom','coverX','coverY','coverMobileX','coverMobileY'].map(k=>[k,f.elements[k].value]));
  f.querySelectorAll('.gt-issue-crop-stage').forEach((stage,i)=>stage.setAttribute('style',gtCropStyle(data,i===1)));
  f.querySelectorAll('[data-crop-value]').forEach(out=>{out.textContent=f.elements[out.dataset.cropValue].value+'%'})
@@ -174,7 +180,7 @@ document.addEventListener('submit',async e=>{
   issueSaving=true;
   const save=f.querySelector('button[type="submit"]');if(save)save.disabled=true;
   await api('/api/editor/feature-issues',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
-  coverData='';coverUploadError='';await refresh();await open(input.slug);alert('專題已儲存為雲端草稿，尚未公開');
+  coverData='';coverUploadError='';await refresh();await open(input.slug);issueDirty=false;alert('專題已儲存為雲端草稿，尚未公開');
  }catch(err){alert('儲存未完成：'+err.message+'。表單內容仍保留在目前頁面。')}
  finally{issueSaving=false;const save=f.querySelector('button[type="submit"]');if(save)save.disabled=false}
 },true);
