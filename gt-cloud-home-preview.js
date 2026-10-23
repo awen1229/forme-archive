@@ -84,16 +84,24 @@ async function publish(){
  }catch(e){alert('首頁發布失敗：'+e.message)}
 }
 async function loadPublished(){
+ const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
+ const q='*[_id=="gt-homepage"][0]{slides}';
+ const url=isPreview?'/api/public/home':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q);
  try{
-  const q='*[_id=="gt-homepage"][0]{slides}';
-  const url='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q);
-  const resp=await fetch(url,{cache:'no-store'});if(!resp.ok)return;
-  const body=await resp.json(), slides=body.result?.slides;
-  if(!Array.isArray(slides)||!slides.length||previewDraft)return;
-  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||''}))};
-  gtSlides=gtResolvedSlides();
+  const resp=await fetch(url,{cache:'no-store',credentials:isPreview?'same-origin':'omit'});
+  if(!resp.ok)throw Error('HTTP '+resp.status);
+  const body=await resp.json();
+  if(isPreview&&!body.ok)throw Error('首頁公開資料服務異常');
+  const slides=isPreview?body.slides:body.result?.slides;
+  if(!Array.isArray(slides))throw Error('首頁資料格式不正確');
+  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||s.cover||''}))};
+  if(typeof gtPublicHomeLoadState!=='undefined')gtPublicHomeLoadState='ready';
+  if(!previewDraft){gtSlides=gtResolvedSlides();if(!location.hash.includes('/admin'))render()}
+ }catch(e){
+  if(typeof gtPublicHomeLoadState!=='undefined')gtPublicHomeLoadState='error';
+  console.warn('首頁精選讀取失敗',e.message);
   if(!location.hash.includes('/admin'))render();
- }catch(e){console.info('目前保留既有首頁精選',e?.message)}
+ }
 }
 if(isEditorPreview){
 const renderOld=render;
