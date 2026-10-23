@@ -74,7 +74,6 @@ async function saveDraft(){
 async function publish(){
  if(!draft?.revision)return alert('請先讀取最新的首頁雲端草稿');
  if(!confirm('即將正式發布這 '+draft.slides.length+' 篇首頁精選，確定嗎？'))return;
- if(prompt('請輸入 PUBLISH 確認公開首頁精選')!=='PUBLISH')return;
  try{
   await api('/api/editor/publish-home',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:draft.revision,confirmation:'PUBLISH'})});
   previewDraft=false;
