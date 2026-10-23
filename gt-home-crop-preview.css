@@ -26,3 +26,17 @@
 .gt-home-crop-actions output{display:inline;font-variant-numeric:tabular-nums;color:#436549}
 @media(max-width:700px){.gt-home-matched-crop{gap:12px}.gt-crop-device{padding:10px}.gt-home-crop-actions{gap:12px 9px}}
 @media(prefers-reduced-motion:reduce){.gt-home-crop-stage img{transition:none!important}}
+
+/* Published homepage slide: same independent focal point shown in crop editor. */
+@media(max-width:700px){
+ .gt-mag-photo img.gt-mag-uploaded-cover{
+  object-fit:var(--gt-mobile-fit,cover);
+  object-position:var(--gt-mobile-x,50%) var(--gt-mobile-y,50%);
+  transform:scale(var(--gt-mobile-zoom,1));
+  transform-origin:var(--gt-mobile-x,50%) var(--gt-mobile-y,50%);
+ }
+ .gt-mag-photo img.gt-mag-uploaded-cover[style*="--gt-mobile-fit:contain"]{
+  object-fit:contain;
+  transform:none;
+ }
+}
