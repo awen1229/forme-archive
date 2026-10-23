@@ -61,7 +61,7 @@ loadPublished();
 
 /* Opt-in directory module; loaded only on the actual editorial site, not the standalone design panel. */
 if(typeof viewIndex==='function' && typeof gtPublicBrands==='function'){
- const style=document.createElement('link');style.rel='stylesheet';style.href='./gt-index-featured.css';document.head.appendChild(style);
- const script=document.createElement('script');script.src='./gt-index-featured.js';document.body.appendChild(script);
+ const style=document.createElement('link');style.rel='stylesheet';style.href='./gt-index-featured.css?v=20261024-logo2';document.head.appendChild(style);
+ const script=document.createElement('script');script.src='./gt-index-featured.js?v=20261024-logo2';document.body.appendChild(script);
 }
 })();
