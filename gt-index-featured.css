@@ -2,15 +2,16 @@
 .gt-index-featured-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(18px,3vw,46px);border-bottom:1px solid var(--gt-line,#c7c9bd);margin-top:0}
 .gt-index-featured-item{min-width:0;min-height:180px;padding:20px 4px 22px;border-top:1px solid var(--gt-line,#c7c9bd);display:grid;grid-template-columns:minmax(0,1fr) 24px;grid-template-rows:auto 1fr auto;grid-template-areas:"no arrow" "identity arrow" "founder arrow";row-gap:10px;column-gap:12px;color:var(--gt-ink,#2a3029);text-decoration:none}
 .gt-index-featured-no{grid-area:no;display:block;font:500 10px/1.35 Arial,"Noto Sans TC",sans-serif;color:#7c8578;letter-spacing:.15em}
+/* Own layout independent of uploaded brand-logo sizing and original card CSS. */
 .gt-index-featured-identity{grid-area:identity;display:flex;align-items:center;justify-content:flex-start;min-width:0;max-width:100%;height:82px;overflow:hidden}
-.gt-index-featured-identity>.gt-brand-art{display:flex;align-items:center;width:100%;height:82px;max-width:100%;overflow:hidden}
-.gt-index-featured-identity .brand-logo-list{display:block;max-width:min(100%,315px);max-height:74px;width:auto;height:auto;object-fit:contain;object-position:left center;transform:translate(var(--logo-x,0px),var(--logo-y,0px)) scale(var(--logo-zoom,1));transform-origin:left center}
-.gt-index-featured-identity .brand-fallback-name{font:600 clamp(21px,2.8vw,36px)/1.1 Arial,"Helvetica Neue","Noto Sans TC",sans-serif;letter-spacing:-.035em;margin:0;overflow-wrap:anywhere}
+.gt-index-featured-logo-frame{display:flex;align-items:center;justify-content:flex-start;width:min(100%,245px);height:70px;max-width:100%;min-width:0;overflow:hidden}
+.gt-index-featured-logo{display:block;width:100%;height:100%;max-width:100%;max-height:100%;min-width:0;object-fit:contain;object-position:left center;transform:none!important;transform-origin:center;filter:none}
+.gt-index-featured-name{font:600 clamp(21px,2.8vw,36px)/1.1 Arial,"Helvetica Neue","Noto Sans TC",sans-serif;letter-spacing:-.035em;margin:0;overflow-wrap:anywhere}
 .gt-index-featured-founder{grid-area:founder;color:#727b70;font:400 12px/1.5 Arial,"Noto Sans TC",sans-serif;margin:0;overflow-wrap:anywhere}
 .gt-index-featured-arrow{grid-area:arrow;align-self:center;justify-self:end;width:18px;display:inline-flex;color:#4f5f50}
 .gt-index-featured-arrow .ui-icon{width:18px;height:18px;transition:transform .2s ease}
 .gt-index-featured-item:hover .gt-index-featured-arrow .ui-icon{transform:translateX(4px)}
-.gt-index-featured-item:hover .brand-fallback-name{color:#526952}
+.gt-index-featured-item:hover .gt-index-featured-name{color:#526952}
 .gt-index-featured-item:focus-visible{outline:2px solid #526952;outline-offset:-2px}
 .gt-index-featured-preview-notice{font:500 11px/1.7 Arial,sans-serif;letter-spacing:.08em;color:#7b806f;margin-top:15px}
 @media(max-width:760px){
@@ -18,10 +19,11 @@
  .gt-index-featured-item{display:grid;grid-template-columns:30px minmax(0,1fr) 22px;grid-template-areas:"no identity arrow" "no founder arrow";grid-template-rows:auto auto;align-items:center;column-gap:12px;row-gap:4px;min-height:75px;padding:15px 3px 16px}
  .gt-index-featured-no{align-self:center;font-size:11px;letter-spacing:.08em}
  .gt-index-featured-country{display:none}
- .gt-index-featured-identity{height:33px;min-height:0}
- .gt-index-featured-identity>.gt-brand-art{height:33px;max-height:33px}
- .gt-index-featured-identity .brand-logo-list{max-height:30px;max-width:100%}
- .gt-index-featured-identity .brand-fallback-name{font-size:clamp(18px,5.2vw,24px);letter-spacing:-.035em}
+ .gt-index-featured-identity{height:40px;min-height:40px}
+ .gt-index-featured-item{align-content:center;min-height:86px}
+ .gt-index-featured-logo-frame{width:min(100%,180px);height:38px;max-height:38px}
+ .gt-index-featured-logo{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:left center;transform:none!important}
+ .gt-index-featured-name{font-size:clamp(18px,5.2vw,24px);letter-spacing:-.035em}
  .gt-index-featured-founder{font-size:11px;line-height:1.38}
  .gt-index-featured-arrow .ui-icon{width:17px;height:17px}
  #app .gt-section-top:has(+.gt-index-featured-grid){display:flex;align-items:flex-start;gap:14px;padding-bottom:18px}
