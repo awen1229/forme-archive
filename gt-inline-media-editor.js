@@ -27,7 +27,8 @@
    const result=await resp.json();
    if(!resp.ok||!result.ok)throw Error(result.error||'上傳失敗 HTTP '+resp.status);
    const caption=(document.getElementById('gt-inline-caption')?.value||'').replace(/[\]\r\n|]/g,' ').slice(0,200).trim();
-   const token='[[image:'+result.url+(caption?'|'+caption:'')+']]';
+   const fit=document.getElementById('gt-inline-mobile-fit')?.value==='full'?'full':'crop';
+   const token='[[image:'+result.url+(caption?'|'+caption:'')+'|fit:'+fit+']]';
    const pos=Math.min(caret,area.value.length),before=area.value.slice(0,pos),after=area.value.slice(pos);
    const prefix=before.length&&!before.endsWith('\n\n')?(before.endsWith('\n')?'\n':'\n\n'):'';
    const suffix=after.length&&!after.startsWith('\n\n')?(after.startsWith('\n')?'\n':'\n\n'):'';
