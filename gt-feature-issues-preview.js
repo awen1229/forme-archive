@@ -3,6 +3,7 @@
 const preview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 const series=[['behind-the-brand','BEHIND THE BRAND','品牌故事與設計理念'],['good-pickups','GOOD PICKUPS','個人選品、穿著與使用觀察'],['seasonal-notes','SEASONAL NOTES','季度服裝與趨勢觀察']];
 let published=[],rows=[],active=null,error='',loading=false,coverData='',articleOrder=[];
+let coverPending=null,coverUploadError='',coverChoiceId=0,issueSaving=false;
 const escText=v=>esc(String(v??''));
 const publicFeatures=async()=>{
  try{
@@ -69,7 +70,7 @@ const renderEditor=()=>{
  '<label>網址代稱 *<input name="slug" required pattern="[a-z0-9-]{1,90}" '+(a.revision?'readonly':'')+' value="'+escText(a.slug)+'" placeholder="the-world-of-comoli"></label>'+
  '<label>專題系列<select name="series">'+series.map(s=>'<option value="'+s[0]+'" '+(a.series===s[0]?'selected':'')+'>'+s[1]+'</option>').join('')+'</select></label>'+
  '<label>專題介紹 *<textarea name="summary" rows="4" maxlength="3000" required>'+escText(a.summary)+'</textarea></label>'+
- '<label>封面圖片（JPG / PNG / WEBP）<input name="coverUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
+ '<label>封面圖片（JPG / PNG / WEBP，會自動壓縮）<input name="coverUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>'+ '<p id="gt-issue-cover-status" class="cms-hint" role="status">選擇圖片後會自動壓縮，再儲存雲端草稿。</p>'+
  '<img id="gt-issue-cover-preview" '+(a.cover?'src="'+escText(a.cover)+'"':'hidden')+' alt="封面預覽" style="width:min(100%,460px);aspect-ratio:3/2;object-fit:cover">'+
  '<label><input type="checkbox" name="clearCover"> 移除封面</label>'+
  '<label>封面顯示<select name="coverFit"><option value="cover" '+(a.coverFit!=='contain'?'selected':'')+'>裁切填滿</option><option value="contain" '+(a.coverFit==='contain'?'selected':'')+'>完整顯示</option></select></label>'+
@@ -82,7 +83,7 @@ const renderEditor=()=>{
 // The tab and editor route are owned by index.html to avoid runtime-only navigation.
 window.gtFeatureEditorView=renderEditor;
 const refresh=async()=>{loading=true;error='';render();try{rows=(await api('/api/editor/feature-issues')).records||[]}catch(e){error=e.message}finally{loading=false;render()}};
-const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;articleOrder=[...(active.articleSlugs||[])];coverData='';render();renderOrder()}catch(e){alert('無法讀取專題：'+e.message)}};
+const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;articleOrder=[...(active.articleSlugs||[])];coverData='';coverUploadError='';coverChoiceId++;render();renderOrder()}catch(e){alert('無法讀取專題：'+e.message)}};
 const publish=async slug=>{
  const row=rows.find(r=>r.slug===slug);
  if(!row||row.status!=='draft'||!row.revision)return alert('請重新讀取專題草稿');
@@ -92,11 +93,11 @@ const publish=async slug=>{
 };
 document.addEventListener('click',e=>{
  const k=e.target.closest('[data-kind="features"]');
- if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();articleOrder=[];coverData='';render();refresh();return}
+ if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render();refresh();return}
  const btn=e.target.closest('[data-issue-act]');if(!btn){const shift=e.target.closest('[data-order-shift]');if(shift){e.preventDefault();const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}return;}
  e.preventDefault();e.stopImmediatePropagation();
  if(btn.dataset.issueAct==='reload')refresh();
- if(btn.dataset.issueAct==='new'){active=initial();articleOrder=[];coverData='';render()}
+ if(btn.dataset.issueAct==='new'){active=initial();articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render()}
  if(btn.dataset.issueAct==='open')open(btn.dataset.slug);
  if(btn.dataset.issueAct==='publish')publish(btn.dataset.slug);
  const shift=e.target.closest('[data-order-shift]');if(shift){const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}
@@ -105,12 +106,35 @@ document.addEventListener('change',async e=>{
  if(e.target.name==='articleSlugs'&&e.target.closest('#gt-issue-form')){renderOrder();return}
  if(e.target.name!=='coverUpload'||!e.target.closest('#gt-issue-form'))return;
  const file=e.target.files?.[0];if(!file)return;
- try{
-  if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw Error('請上傳 JPG、PNG 或 WebP');
-  if(file.size>5_000_000)throw Error('圖片過大，請先壓縮到 5MB 以下');
-  coverData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('無法讀取圖片'));reader.readAsDataURL(file)});
-  const img=document.getElementById('gt-issue-cover-preview');img.src=coverData;img.hidden=false;
- }catch(err){alert(err.message)}
+ const choiceId=++coverChoiceId;
+ const form=e.target.closest('#gt-issue-form');
+ const status=form?.querySelector('#gt-issue-cover-status');
+ const save=form?.querySelector('button[type="submit"]');
+ coverUploadError='';
+ if(status)status.textContent='正在壓縮專題封面，圖片處理完成後才能儲存。';
+ if(save)save.disabled=true;
+ coverPending=(async()=>{
+  try{
+   if(typeof gtCompressImage!=='function')throw Error('圖片處理模組未載入，請重新開啟編輯頁');
+   // Same client-side compression already used for ARTICLE covers.
+   const processed=await gtCompressImage(file,'cover');
+   if(choiceId!==coverChoiceId)return;
+   if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(processed.data)||processed.data.length>1_100_000)
+    throw Error('壓縮圖片無效，請改用 JPG 或 WebP');
+   coverData=processed.data;
+   const img=form?.querySelector('#gt-issue-cover-preview');
+   if(img){img.src=coverData;img.hidden=false}
+   if(status)status.textContent='已完成 '+(processed.note||'圖片壓縮')+'，約 '+Math.round(coverData.length*.75/1024)+' KB。';
+  }catch(err){
+   if(choiceId!==coverChoiceId)return;
+   coverData='';
+   coverUploadError=err.message||'圖片處理失敗';
+   if(status)status.textContent='封面處理失敗：'+coverUploadError+'。請重新選取圖片，表單其他內容會保留。';
+  }finally{
+   if(choiceId===coverChoiceId){coverPending=null;if(save)save.disabled=false}
+  }
+ })();
+ await coverPending;
 });
 document.addEventListener('input',e=>{
  const f=e.target.closest('#gt-issue-form');if(!f)return;
@@ -120,16 +144,22 @@ document.addEventListener('input',e=>{
 document.addEventListener('submit',async e=>{
  if(e.target.id!=='gt-issue-form')return;
  e.preventDefault();e.stopImmediatePropagation();
+ if(issueSaving)return;
  const f=e.target,a=active||initial();
+ if(coverPending)await coverPending;
+ if(coverUploadError){alert('封面尚未處理完成：'+coverUploadError+'。請重新選取圖片。');return}
  const selected=name=>Array.from(f.querySelectorAll('input[name="'+name+'"]:checked'),x=>x.value);
  const input={slug:f.elements.slug.value,title:f.elements.title.value,series:f.elements.series.value,
  summary:f.elements.summary.value,articleSlugs:[...articleOrder.filter(v=>selected('articleSlugs').includes(v)),...selected('articleSlugs').filter(v=>!articleOrder.includes(v))],brandSlugs:selected('brandSlugs'),
  cover:f.elements.clearCover.checked?'':(coverData||a.cover||''),coverFit:f.elements.coverFit.value,
  coverX:Number(f.elements.coverX.value),coverY:Number(f.elements.coverY.value),revision:a.revision||''};
  try{
-  const d=await api('/api/editor/feature-issues',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
-  coverData='';await refresh();await open(input.slug);alert('專題已儲存為雲端草稿，尚未公開');
- }catch(err){alert('儲存未完成：'+err.message)}
+  issueSaving=true;
+  const save=f.querySelector('button[type="submit"]');if(save)save.disabled=true;
+  await api('/api/editor/feature-issues',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+  coverData='';coverUploadError='';await refresh();await open(input.slug);alert('專題已儲存為雲端草稿，尚未公開');
+ }catch(err){alert('儲存未完成：'+err.message+'。表單內容仍保留在目前頁面。')}
+ finally{issueSaving=false;const save=f.querySelector('button[type="submit"]');if(save)save.disabled=false}
 },true);
 const style=document.createElement('style');
 style.textContent=`
