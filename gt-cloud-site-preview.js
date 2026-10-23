@@ -1,6 +1,6 @@
 /* GOOD THINGS, cloud SITE CONTENT. Preview only. */
 (()=>{
- if(!location.hostname.endsWith('.pages.dev'))return;
+ const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
  let loaded=false,draft=null,published=null,error='',saving=false;
  const api=async(path,opt={})=>{const r=await fetch(path,{credentials:'same-origin',cache:'no-store',...opt});let j={};try{j=await r.json()}catch{}if(!r.ok||!j.ok)throw Error(j.error||'HTTP '+r.status);return j};
  const panel=()=>document.getElementById('gt-site-cloud');
@@ -61,6 +61,7 @@
    if(!location.hash.includes('/admin'))render();
   }catch(e){console.info('公開網站文字尚未可讀',e.message)}
  }
+if(isEditorPreview){
  const prev=render;
  render=function(...args){const result=prev(...args);inject();return result};
  document.addEventListener('click',e=>{
@@ -70,5 +71,6 @@
   const tab=e.target.closest('[data-kind]');if(tab?.dataset.kind==='site')setTimeout(read,0);
  },true);
  if(location.hash.includes('/admin')&&editorKind==='site'){render();read()}
+}
  loadPublished();
 })();
