@@ -46,7 +46,7 @@ const publicArticleNotice=()=>publicArticleStatus==='error'?'<div class="gt-empt
 window.gtPublishedArticleNotice=publicArticleNotice;
 const loadPublished=async()=>{
  const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
- const q='*[_type=="article"&&!(_id in path("drafts.**"))]{title,slug,brand,subject,category,publishedAt,createdAt,updatedAt,excerpt,body,source,sourceTitle,publisher,sourceAuthor,sourceDate,reviewedAt,"cover":cover.asset->url}';
+ const q='*[_type=="article"&&!(_id in path("drafts.**"))]{title,slug,brand,subject,category,publishedAt,createdAt,updatedAt,excerpt,body,source,sourceTitle,publisher,sourceAuthor,sourceDate,reviewedAt,coverFit,coverX,coverY,"cover":cover.asset->url}';
  const url=isPreview?'/api/public/articles':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q);
  try{
   publicArticleStatus='loading';
@@ -92,7 +92,7 @@ saveEditor=async function(...args){
   publishedAt:fval('publishedAt'),createdAt:local?.createdAt||new Date().toISOString(),
   excerpt:fval('excerpt'),body:fval('body').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean),
   source:fval('source'),sourceTitle:fval('sourceTitle'),publisher:fval('publisher'),
-  sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),cover:editorCover,revision:cloudRevision
+  sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverX:Number(fval('coverX')||50),coverY:Number(fval('coverY')||50),revision:cloudRevision
  };
  try{
   const saved=await api('/api/editor/article',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)});
