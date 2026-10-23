@@ -23,16 +23,28 @@ const gtCoverMarkup=(x,detail=false)=>'<div class="gt-issue-cover-frame'+(detail
 const issueRows=()=>published.map(x=>({...x,slug:x.slug?.current||x.slug})).filter(x=>x.title&&x.slug);
 viewFeatures=function(){
  const a=issueRows();
+ const navigation='<nav class="gt-feature-series-nav" aria-label="FEATURES 三大系列">'+
+  series.map(([key,title,desc],i)=>'<a class="gt-feature-series-nav-item" href="#/features" data-feature-series-jump="features-'+key+'">'+
+   '<span class="gt-feature-series-nav-num">0'+(i+1)+'</span><span class="gt-feature-series-nav-content"><strong>'+title+'</strong><small>'+escText(desc)+'</small></span><span class="gt-feature-series-nav-arrow" aria-hidden="true">↗</span></a>').join('')+
+ '</nav>';
  const group=series.map(([key,title,desc])=>{
   const items=a.filter(x=>x.series===key);
-  return '<section class="gt-issue-series"><div class="gt-issue-series-title"><span class="kicker">'+title+'</span><p>'+escText(desc)+'</p></div><div class="gt-issue-grid">'+
+  return '<section class="gt-issue-series" id="features-'+key+'"><div class="gt-issue-series-title"><span class="kicker">'+title+'</span><p>'+escText(desc)+'</p></div><div class="gt-issue-grid">'+
    (items.length?items.map(x=>'<a class="gt-issue-card" href="#/feature/'+encodeURIComponent(x.slug)+'">'+
     (x.cover?gtCoverMarkup(x):'<div class="gt-issue-placeholder">'+title+'</div>')+
     '<small>FEATURE / '+title+'</small><h3>'+escText(x.title)+'</h3><p>'+escText(x.summary)+'</p><span>READ ISSUE →</span></a>').join(''):'<p class="muted">此系列尚無已發布專題。</p>')+
    '</div></section>';
  }).join('');
- return '<section class="section">'+header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))+group+'</section>';
+ return '<section class="section">'+header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))+navigation+group+'</section>';
 };
+document.addEventListener('click',event=>{
+ const link=event.target.closest('a[data-feature-series-jump]');
+ if(!link)return;
+ const section=document.getElementById(link.dataset.featureSeriesJump);
+ if(!section)return;
+ event.preventDefault();
+ section.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+});
 const viewIssue=slug=>{
  const x=issueRows().find(i=>i.slug===slug);if(!x)return notFound();
  const related=(Array.isArray(x.articleSlugs)?x.articleSlugs:[]).map(s=>gtPublicArticles().find(a=>a.slug===s)).filter(Boolean);
@@ -186,7 +198,17 @@ document.addEventListener('submit',async e=>{
 },true);
 const style=document.createElement('style');
 style.textContent=`
-.gt-issue-series{margin:45px 0 65px}.gt-issue-series-title{border-bottom:1px solid #d6d6ce;padding-bottom:16px;margin-bottom:25px}.gt-issue-series-title p{font-size:13px;color:#74786f;margin:10px 0 0}
+.gt-feature-series-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:30px 0 43px}
+.gt-feature-series-nav-item{border:1px solid #cbd0c3;display:flex;gap:13px;align-items:flex-start;padding:22px 17px;min-width:0;min-height:112px;color:#29332b;text-decoration:none;background:#f4f3ed;transition:background .2s}
+.gt-feature-series-nav-item:hover,.gt-feature-series-nav-item:focus-visible{background:#e8ebe2;border-color:#849582}
+.gt-feature-series-nav-num{color:#788173;font:500 11px/1.8 Arial,sans-serif}
+.gt-feature-series-nav-content{display:grid;gap:10px;min-width:0;flex:1}
+.gt-feature-series-nav-content strong{font:600 clamp(12px,1.45vw,17px)/1.2 Arial,"Noto Sans TC",sans-serif;letter-spacing:.01em}
+.gt-feature-series-nav-content small{font-size:11px;color:#6a7369;line-height:1.6}
+.gt-feature-series-nav-arrow{font-size:16px;color:#526355}
+@media(max-width:750px){.gt-feature-series-nav{grid-template-columns:1fr;gap:0;margin:24px 0 32px}.gt-feature-series-nav-item{min-height:0;padding:15px 10px;border-left:0;border-right:0;border-bottom:0}.gt-feature-series-nav-item:last-child{border-bottom:1px solid #cbd0c3}.gt-feature-series-nav-content{gap:4px}.gt-feature-series-nav-content strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.gt-feature-series-nav-item{transition:none}}
+.gt-issue-series{scroll-margin-top:24px;margin:45px 0 65px}.gt-issue-series-title{border-bottom:1px solid #d6d6ce;padding-bottom:16px;margin-bottom:25px}.gt-issue-series-title p{font-size:13px;color:#74786f;margin:10px 0 0}
 .gt-issue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.gt-issue-card{display:block;text-decoration:none;color:inherit;min-width:0}.gt-issue-cover-frame{width:100%;aspect-ratio:3/2;overflow:hidden;background:#e4e4dc}.gt-issue-cover-frame img,.gt-issue-crop-stage img{display:block;width:100%;height:100%;object-fit:var(--gt-issue-fit,cover);object-position:var(--gt-issue-x,50%) var(--gt-issue-y,50%);transform:scale(var(--gt-issue-zoom,1));transform-origin:var(--gt-issue-x,50%) var(--gt-issue-y,50%)}.gt-issue-placeholder{width:100%;aspect-ratio:3/2;display:block;background:#e4e4dc}.gt-issue-placeholder{display:grid;place-items:center;letter-spacing:.18em;font-size:12px;color:#657064}
 .gt-issue-card small{display:block;margin-top:18px;font-size:10px;letter-spacing:.13em}.gt-issue-card h3{font-size:clamp(20px,3vw,30px);line-height:1.3;font-weight:500;margin:8px 0}.gt-issue-card p{font-size:13px;line-height:1.8;color:#6a7169}.gt-issue-card span{font-size:11px;letter-spacing:.08em}
 .gt-issue-detail h1{font-size:clamp(36px,6vw,72px);font-weight:500;line-height:1.1;max-width:900px}.gt-issue-intro{max-width:680px;line-height:1.9;color:#626d63}.gt-issue-hero{width:100%;height:auto;aspect-ratio:3/2;margin:28px 0 38px}.gt-issue-heading{font-weight:500;margin:50px 0 20px;font-size:19px}.gt-issue-brand-links{display:flex;gap:18px;flex-wrap:wrap}.gt-issue-brand-links a{text-decoration:none;border-bottom:1px solid #80867d;color:inherit;padding-bottom:5px}
