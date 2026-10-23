@@ -23,7 +23,7 @@ function editorialMarkup(){
  if(!items.length)return '<div class="gt-index-featured-grid">'+(gtPublishedOnlyPreview?gtPublicBrandEmptyCopy():'')+'</div>';
  return '<div class="gt-index-featured-grid" aria-label="THE INDEX 精選品牌">'+
  items.map((b,i)=>'<a class="gt-index-featured-item" href="#/brand/'+esc(b.slug)+'" aria-label="閱讀 '+esc(b.name)+' 品牌介紹">'+
- '<span class="gt-index-featured-no">'+String(i+1).padStart(2,'0')+' / JAPAN</span>'+
+ '<span class="gt-index-featured-no">'+String(i+1).padStart(2,'0')+'<span class="gt-index-featured-country"> / JAPAN</span></span>'+
  '<div class="gt-index-featured-identity">'+gtBrandIdentity(b)+'</div>'+
  '<p class="gt-index-featured-founder">'+esc(b.founder||'')+'</p>'+
  '<span class="gt-index-featured-arrow" aria-hidden="true">'+gtArrow()+'</span>'+
