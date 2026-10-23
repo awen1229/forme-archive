@@ -20,7 +20,7 @@ function normalizeSlides(raw){
    throw new AuthError(400,'首頁封面必須為上傳圖片或此 Sanity 專案圖片網址')
   }
   if(cover.length>1_400_000)throw new AuthError(413,'單張首頁封面壓縮後仍過大')
-  return {_key:'featured-'+slug,_type:'featuredSlide',slug,title,excerpt,coverUrl:cover}
+  return {_key:'featured-'+slug,_type:'featuredSlide',slug,title,excerpt,coverUrl:cover,coverFit:slide.coverFit==='contain'?'contain':'cover',coverX:Math.max(0,Math.min(100,Number(slide.coverX??50)||0)),coverY:Math.max(0,Math.min(100,Number(slide.coverY??50)||0))}
  })
 }
 async function fetchHomes(token){
@@ -36,7 +36,7 @@ async function fetchHomes(token){
 function serialize(doc){
  if(!doc)return null
  return {revision:doc._rev||'',updatedAt:doc._updatedAt||'',slides:(Array.isArray(doc.slides)?doc.slides:[]).map(s=>({
-  slug:s.slug||'',title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||''
+  slug:s.slug||'',title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||'',coverFit:s.coverFit||'cover',coverX:s.coverX??50,coverY:s.coverY??50
  }))}
 }
 async function imageAsset(data,token){
@@ -90,6 +90,6 @@ export async function onRequestPost({request,env}){
   if(!resp.ok)throw new AuthError(resp.status===409?409:502,resp.status===409?'草稿已在其他裝置更新':'Sanity 儲存失敗 HTTP '+resp.status)
   const result=await resp.json()
   const updated=result.results?.find(x=>x.document?._id==='drafts.'+HOME_ID)?.document
-  return Response.json({ok:true,draft:serialize(updated)||{revision:'',slides:slides.map(s=>({slug:s.slug,title:s.title,excerpt:s.excerpt,cover:s.coverUrl}))}},{headers})
+  return Response.json({ok:true,draft:serialize(updated)||{revision:'',slides:slides.map(s=>({slug:s.slug,title:s.title,excerpt:s.excerpt,cover:s.coverUrl,coverFit:s.coverFit,coverX:s.coverX,coverY:s.coverY}))}},{headers})
  }catch(e){if(!(e instanceof AuthError))console.error('Home save failed',e?.message);return errorResponse(e)}
 }
