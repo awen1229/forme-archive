@@ -83,3 +83,16 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 - Cloudflare Pages preview build reported success; JS source syntax was checked. Authenticated browser workflow, live draft storage and access-denial paths still require interactive checks.
 - No Sanity production content was mutated by GitHub authoring. Do not assume main was merged. Earlier v1.8 PRs #4/#5 were still open as of this handoff.
 - Next: editor owner should review the new page, try choices and full-site preview, test mobile, optionally save a draft, then approve release when satisfied. Do not publish actual design settings without explicit action.
+
+### THE INDEX / SELECTED BRANDS handoff · 2026-10-24
+
+- Operator reported that THE INDEX > The Directory displayed every published brand as a tall, repetitive full-size card, despite the VIEW ALL BRANDS link. Request: curate a handful of featured brands in the brand manager; do not duplicate the full A-Z directory.
+- On the protected preview branch, gt-index-featured.js and gt-index-featured.css now replace only the THE INDEX brand listing with a compact, accessible curated strip. Default is **three alphabetically sorted, published brands**. If a published selection exists, it controls the 1-4 selected brands and their order.
+- On phones, the curated items become compact rows with smaller brand artwork/name, founder and arrow. The full `/brands` A-Z directory remains untouched.
+- The existing brand management CLOUD/SANITY panel now includes a distinct THE INDEX / CURATION area: selected brands, up/down order, add/remove, preview, reload, draft save and explicit publish. Drafts cannot be shown publicly by regular public URLs.
+- New endpoints: GET/POST `/api/editor/index-featured-brands`, POST `/api/editor/publish-index-featured-brands`, GET `/api/public/index-featured-brands`.
+- No brand record is mutated by curation; the selection is stored in an independent Sanity document `gt-index-featured-brands` with draft `drafts.gt-index-featured-brands` and `_type=gtIndexFeaturedBrands`. Publish retains Cloudflare Access validation, the ENABLE_PRODUCTION_PUBLISH guard, same-origin check and draft revision check.
+- In local JS simulation with 100 published brands, unconfigured THE INDEX rendered 3 items; a four-item selection rendered exactly four in manually specified order; a two-item selection rendered exactly two. The full-list source markup was absent. All new JS modules passed syntax checks.
+- GitHub Cloudflare Pages preview deployment reported success for source commit `028e533af28150391b63042c7fdb9dd4a361b878`. Additional API query filtering changes were made afterward, so verify the latest preview deployment commit before final acceptance.
+- IMPORTANT: No live Sanity curation draft save, publish, browser screenshot, or authenticated end-to-end check was performed in this session. GitHub main was not merged. Do not claim the public website is updated yet.
+- Next: visit https://feature-secure-editor-cloud.forme-archive.pages.dev/#/admin and choose 品牌管理. Check THE INDEX / CURATION, reorder/pick 1-4 published brands, use 預覽精選, then test its small-screen The Directory, and only publish/merge after owner approval.
