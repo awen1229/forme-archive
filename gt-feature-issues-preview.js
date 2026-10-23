@@ -133,5 +133,15 @@ document.addEventListener('submit',async e=>{
   coverData='';await refresh();await open(input.slug);alert('專題已儲存為雲端草稿，尚未公開');
  }catch(err){alert('儲存未完成：'+err.message)}
 },true);
+const style=document.createElement('style');
+style.textContent=`
+.gt-issue-series{margin:45px 0 65px}.gt-issue-series-title{border-bottom:1px solid #d6d6ce;padding-bottom:16px;margin-bottom:25px}.gt-issue-series-title p{font-size:13px;color:#74786f;margin:10px 0 0}
+.gt-issue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.gt-issue-card{display:block;text-decoration:none;color:inherit;min-width:0}.gt-issue-card img,.gt-issue-placeholder{width:100%;aspect-ratio:3/2;display:block;background:#e4e4dc}.gt-issue-placeholder{display:grid;place-items:center;letter-spacing:.18em;font-size:12px;color:#657064}
+.gt-issue-card small{display:block;margin-top:18px;font-size:10px;letter-spacing:.13em}.gt-issue-card h3{font-size:clamp(20px,3vw,30px);line-height:1.3;font-weight:500;margin:8px 0}.gt-issue-card p{font-size:13px;line-height:1.8;color:#6a7169}.gt-issue-card span{font-size:11px;letter-spacing:.08em}
+.gt-issue-detail h1{font-size:clamp(36px,6vw,72px);font-weight:500;line-height:1.1;max-width:900px}.gt-issue-intro{max-width:680px;line-height:1.9;color:#626d63}.gt-issue-hero{width:100%;height:clamp(240px,48vw,600px);margin:28px 0 38px}.gt-issue-heading{font-weight:500;margin:50px 0 20px;font-size:19px}.gt-issue-brand-links{display:flex;gap:18px;flex-wrap:wrap}.gt-issue-brand-links a{text-decoration:none;border-bottom:1px solid #80867d;color:inherit;padding-bottom:5px}
+.gt-issue-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.gt-issue-choice label{display:flex;gap:8px;align-items:center;font-size:13px}.gt-issue-choice input{width:18px;height:18px;flex:0 0 18px}
+@media(max-width:700px){.gt-issue-grid,.gt-issue-choice{grid-template-columns:1fr}.gt-issue-series{margin:35px 0 50px}}
+`;
+document.head.append(style);
 publicFeatures();
 })();
