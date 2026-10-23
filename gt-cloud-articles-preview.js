@@ -1,6 +1,6 @@
 /* GOOD THINGS, cloud articles (preview only). No API secrets in the browser. */
 (()=>{
-if(!location.hostname.endsWith('.pages.dev'))return;
+const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 let cloudRows=[],cloudRevision='',cloudError='',cloudLoading=false;
 const api=async(path,opts={})=>{
  const r=await fetch(path,{credentials:'same-origin',cache:'no-store',...opts});
@@ -64,6 +64,7 @@ const loadPublished=async()=>{
   if(!location.hash.includes('/admin'))render();
  }catch(e){console.info('Published articles unavailable',e.message)}
 };
+if(isEditorPreview){
 const originalRender=render;
 render=function(...args){
  const result=originalRender(...args);
@@ -112,5 +113,6 @@ document.addEventListener('click',e=>{
  if(edit&&editorKind==='article')cloudRevision='';
 },true);
 if(location.hash.includes('/admin')){render();if(editorKind==='article')refresh()}
+}
 loadPublished();
 })();
