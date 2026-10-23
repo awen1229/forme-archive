@@ -41,28 +41,34 @@ const publish=async(slug)=>{
   alert('已在 Sanity 公開發布');await refresh();loadPublished();
  }catch(e){alert('文章發布失敗：'+e.message)}
 };
+let publicArticleStatus='loading';
+const publicArticleNotice=()=>publicArticleStatus==='error'?'<div class="gt-empty" role="alert">已發布文章載入失敗，請重新整理頁面。</div>':publicArticleStatus==='loading'?'<div class="gt-empty" role="status">正在載入已發布文章…</div>':gtEmptyPublishedCopy;
 const loadPublished=async()=>{
+ const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
  const q='*[_type=="article"&&!(_id in path("drafts.**"))]{title,slug,brand,subject,category,publishedAt,createdAt,updatedAt,excerpt,body,source,sourceTitle,publisher,sourceAuthor,sourceDate,reviewedAt,"cover":cover.asset->url}';
+ const url=isPreview?'/api/public/articles':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q);
  try{
-  const r=await fetch('https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q));
-  if(!r.ok)return;
-  const data=await r.json();
+  publicArticleStatus='loading';
+  const r=await fetch(url,{cache:'no-store',credentials:isPreview?'same-origin':'omit'});
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const data=await r.json(),records=isPreview?data.records:data.result;
+  if(isPreview&&!data.ok)throw Error('公開文章服務異常');
+  if(!Array.isArray(records))throw Error('文章回傳格式錯誤');
   gtSanityPublishedArticleSlugs.clear();
   gtPublishedArticleRecords.clear();
   for(const original of gtOriginalArticles)gtPublishedArticleRecords.set(original.slug,original);
-  for(const d of data.result||[]){
+  for(const d of records){
    if(!d?.title||!d.slug?.current)continue;
    const a={...d,slug:d.slug.current,body:Array.isArray(d.body)?d.body:[]};
-   gtPublishedArticleRecords.set(a.slug,a);
-   gtSanityPublishedArticleSlugs.add(a.slug);
+   gtPublishedArticleRecords.set(a.slug,a);gtSanityPublishedArticleSlugs.add(a.slug);
    if(localArticles.some(x=>x.slug===a.slug))continue;
    const i=articles.findIndex(x=>x.slug===a.slug);
    if(i<0)articles.push(a);else articles[i]={...articles[i],...a};
   }
-  // Rebuild featured slide cards after published articles have arrived.
+  publicArticleStatus='ready';
   if(typeof gtResolvedSlides==='function')gtSlides=gtResolvedSlides();
-  if(!location.hash.includes('/admin'))render();
- }catch(e){console.info('Published articles unavailable',e.message)}
+ }catch(e){publicArticleStatus='error';console.warn('Published articles unavailable',e.message)}
+ finally{if(!location.hash.includes('/admin'))render()}
 };
 if(isEditorPreview){
 const originalRender=render;
