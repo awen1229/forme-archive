@@ -37,7 +37,7 @@ export async function onRequestGet({request,env}){
   // The legacy 1.6 HTML still ships with built-in demonstration stories;
   // content audit cannot certify final copy or responsive/device behavior.
   issues.push({severity:'info',area:'SITE',message:'仍需人工檢查示範文章、手機版、公開存取，以及瀏覽器本機草稿與公開內容的隔離。'})
-  const slugs=new Set([...builtin])
+  const slugs=new Set()
   for(const a of articles){
    if(!a.slug?.current||!a.title||!a.excerpt||!Array.isArray(a.body)||!a.body.length)
     issues.push({severity:'error',area:'ARTICLES',message:'已發布文章的必要欄位缺失',id:a._id})
@@ -52,7 +52,7 @@ export async function onRequestGet({request,env}){
   }
   if(home?.slides){
    for(const slide of home.slides){
-    if(!slugs.has(slide.slug))issues.push({severity:'error',area:'HOMEPAGE',message:'首頁精選連到不存在或未發布文章',id:slide.slug})
+    if(!slugs.has(slide.slug))issues.push({severity:'blocker',area:'HOMEPAGE',message:'首頁精選連到未在 Sanity 正式發布的文章（示範文章不算正式發布）',id:slide.slug})
    }
   }
   if(site?.fieldsJson){
