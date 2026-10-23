@@ -70,3 +70,16 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 - **Publication is intentionally locked:** the editor's publication button is disabled, and the publishing endpoint additionally requires `ENABLE_DESIGN_SETTINGS_PUBLISH=true` AND the existing `ENABLE_PRODUCTION_PUBLISH=true`. Do not set the new flag or unlock the button until `gt-design-site.js`, `gt-design-site.css`, and their `index.html` references have been merged and deployed on public GitHub Pages, followed by authenticated/unauthenticated regression tests.
 - No brand, article, homepage, or other existing Sanity document was modified as part of the settings implementation.
 - Browser visual/Access testing must still be done by the authorized site owner. JS source syntax was checked; latest Cloudflare build status must be verified independently after the final README commit.
+
+### GOOD THINGS, v1.9 visual settings handoff · 2026-10-24
+
+- The site owner confirmed v1.8 brand-management search, A–Z filtering and sorting appeared in the protected preview. Not all security/publish/mobile tests have been completed.
+- v1.9 DESIGN SETTINGS deployed to protected preview: https://feature-secure-editor-cloud.forme-archive.pages.dev/design-settings.html
+- Options: heading font (original/sans/serif/mixed), article reading scale (compact/standard/large), background (original/white). Default appearance remains unchanged.
+- Editor files: design-settings.html, gt-design-settings.js, gt-design-site.js, gt-design-site.css.
+- Cloud API: authenticated draft read/save at /api/editor/design-settings; guarded publish at /api/editor/publish-design-settings; published-only read at /api/public/design-settings.
+- Publish requires current draft revision, authorized editor JWT and ENABLE_PRODUCTION_PUBLISH=true. No credentials are stored in source.
+- Preview changes are local until saved as a Sanity draft. The public site is not changed until deliberate publish. Preview URL overrides are accepted only on the designated protected editor host.
+- Cloudflare Pages preview build reported success; JS source syntax was checked. Authenticated browser workflow, live draft storage and access-denial paths still require interactive checks.
+- No Sanity production content was mutated by GitHub authoring. Do not assume main was merged. Earlier v1.8 PRs #4/#5 were still open as of this handoff.
+- Next: editor owner should review the new page, try choices and full-site preview, test mobile, optionally save a draft, then approve release when satisfied. Do not publish actual design settings without explicit action.
