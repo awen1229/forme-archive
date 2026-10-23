@@ -1169,7 +1169,7 @@ function editorForm(){
  if(editorKind==='article'){
   base=`<label>標題 *<input id="f-title" required placeholder="例如：一篇值得閱讀的 COMOLI 訪談"></label>
   <label>相關品牌<select id="f-brand"><option value="GOOD THINGS">不指定品牌 / GOOD THINGS</option>${brands.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join('')}</select></label>
-  <label>刊登位置<select id="f-publicationSection"><option value="stories">STORIES / 一般文章</option><option value="features">FEATURES / 專題文章</option><option value="both">STORIES + FEATURES / 兩邊都刊登</option></select></label>
+  <label>刊登位置<select id="f-publicationSection"><option value="stories">STORIES / 一般文章</option><option value="features">FEATURES / 專題文章</option><option value="both">STORIES + FEATURES / 兩邊都刊登</option></select></label><small class="cms-hint">FEATURES 是獨立專題列表，不同於首頁 FEATURED 輪播。後者請使用「首頁精選」管理。</small>
   <label>文章主題<select id="f-subject">${gtSubjects.map(s=>`<option value="${s.slug}">${s.name} / ${s.cn}</option>`).join('')}</select></label>
   <fieldset class="gt-extra-subjects"><legend>其他分類（可複選）</legend><div class="gt-extra-options">${gtSubjects.map(s=>`<label class="gt-extra-option"><input type="checkbox" name="gt-extra-subject" value="${s.slug}"><span>${s.name}</span></label>`).join('')}</div></fieldset>
   <label>發布日期（STORIES 最新排序依此為準）<input id="f-publishedAt" type="date" value="${gtLocalDate()}"></label>
