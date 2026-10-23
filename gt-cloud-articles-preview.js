@@ -43,6 +43,7 @@ const publish=async(slug)=>{
 };
 let publicArticleStatus='loading';
 const publicArticleNotice=()=>publicArticleStatus==='error'?'<div class="gt-empty" role="alert">已發布文章載入失敗，請重新整理頁面。</div>':publicArticleStatus==='loading'?'<div class="gt-empty" role="status">正在載入已發布文章…</div>':gtEmptyPublishedCopy;
+window.gtPublishedArticleNotice=publicArticleNotice;
 const loadPublished=async()=>{
  const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
  const q='*[_type=="article"&&!(_id in path("drafts.**"))]{title,slug,brand,subject,category,publishedAt,createdAt,updatedAt,excerpt,body,source,sourceTitle,publisher,sourceAuthor,sourceDate,reviewedAt,"cover":cover.asset->url}';
