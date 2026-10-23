@@ -29,6 +29,13 @@ This handoff is recorded so future ChatGPT sessions can continue from the **laun
 - On **2026-10-23**, GitHub source for the preview branch was inspected. The published-only flag and production publishing gate were present; the corresponding source changes were committed. **Cloudflare's actually served deployment and mobile browser behavior have not yet been verified from this session.**
 - **Do not merge to `main` or enable production publishing** based solely on static-code inspection or previously passing staging tests.
 
+### Preview publish-gate rollout · 2026-10-23
+
+- Operator reports adding `ENABLE_PRODUCTION_PUBLISH=true` to **Cloudflare Pages Preview** environment only. This setting has **not** been independently read back from Cloudflare.
+- This README-only commit intentionally triggers the GitHub-connected **Preview** redeployment so Pages Functions can load the updated environment configuration. Verify the resulting deployment succeeded and is on this branch before publishing.
+- The gate authorizes explicit writes to **Sanity production** from the protected editor. It does *not* turn drafts into published records automatically. Do not publish `GT CLOUD TEST` or other fixture content.
+- Before the first real publish, open the COMOLI cloud draft, review its actual content and slug, and publish **that single record only**. Leave GitHub `main` untouched.
+
 ### Remaining acceptance workflow
 
 1. Confirm Cloudflare Pages' active preview deployment is built from the latest `feature/secure-editor-cloud` commit and that Access protection works. Review actual mobile and desktop rendering.
