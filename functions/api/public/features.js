@@ -1,5 +1,5 @@
 import {queryPublished,publicQueryError,PUBLIC_HEADERS} from '../../_sanity-public.js'
-const QUERY='*[_type=="featureIssue" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(_createdAt asc)[0...200]{title,slug,series,summary,articleSlugs,brandSlugs,coverFit,coverX,coverY,"cover":cover.asset->url}'
+const QUERY='*[_type=="featureIssue" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(_createdAt asc)[0...200]{title,slug,series,summary,articleSlugs,brandSlugs,coverFit,coverMobileFit,coverZoom,coverMobileZoom,coverX,coverY,coverMobileX,coverMobileY,"cover":cover.asset->url}'
 export async function onRequestGet({env}){
  try{
   const result=await queryPublished(env,QUERY)
