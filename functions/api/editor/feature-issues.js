@@ -102,7 +102,10 @@ export async function onRequestPost({request,env}){
   if(!SLUG.test(slug)||!title||!summary||!SERIES.has(series))throw new AuthError(400,'請填寫有效的專題網址、名稱、系列及介紹')
   const articleSlugs=uniqueSlugs(input.articleSlugs,40)
   const brandSlugs=uniqueSlugs(input.brandSlugs,8)
-  const cover=str(input.cover,5_600_000)
+  // Never truncate a base64 image. Truncation turns a valid file into corrupt data.
+  if(input.cover!==undefined && typeof input.cover!=='string')throw new AuthError(400,'專題封面資料格式錯誤')
+  const cover=input.cover||''
+  if(cover.length>5_600_000)throw new AuthError(413,'專題封面過大，請重新選取圖片讓編輯器自動壓縮')
   const {draft,published}=await find(slug,env.SANITY_EDITOR_TOKEN)
   const revision=str(input.revision,180)
   if(draft&&revision!==draft._rev)throw new AuthError(409,'專題草稿已有更新，請重新載入')
