@@ -1,6 +1,7 @@
 /* GOOD THINGS, homepage cloud editor. Runs only on the protected Pages Preview. */
 (()=>{
-if(!location.hostname.endsWith('.pages.dev')||typeof gtHomeWorkingCopy!=='function')return;
+if(typeof gtHomeWorkingCopy!=='function')return;
+const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 let loaded=false,loading=false,draft=null,published=null,error='',previewDraft=false;
 const api=async(url,options={})=>{
  const resp=await fetch(url,{credentials:'same-origin',cache:'no-store',...options});
@@ -94,6 +95,7 @@ async function loadPublished(){
   if(!location.hash.includes('/admin'))render();
  }catch(e){console.info('目前保留既有首頁精選',e?.message)}
 }
+if(isEditorPreview){
 const renderOld=render;
 render=function(...args){const result=renderOld(...args);inject();return result};
 document.addEventListener('click',e=>{
@@ -115,5 +117,6 @@ document.addEventListener('click',e=>{
  }
 },true);
 if(location.hash.includes('/admin')&&editorKind==='home'){render();refresh()}
+}
 loadPublished();
 })();
