@@ -860,7 +860,7 @@ function viewFeatures(){
 function viewIndex(){return `<section class="section">${header(gtSiteHTML('index.kicker'),gtSiteHTML('index.title'),gtSiteHTML('index.desc'))}
 <div class="gt-content-intro"><h2>${gtSiteLines('index.introTitle')}</h2><p>${gtSiteLines('index.introBody')}</p></div>
 <div class="gt-forme-side" style="background:#343b33;padding:22px 30px;margin-bottom:40px"><a href="#/brands"><span>01 / BRAND DIRECTORY</span>${gtArrow()}</a><a href="#/journal"><span>02 / STORIES & INTERVIEWS</span>${gtArrow()}</a></div>
-<div class="gt-section-top"><div><span class="kicker">${gtSiteHTML('index.directoryKicker')}</span><h2>${gtSiteHTML('index.directoryTitle')}</h2></div><a class="link-arrow" href="#/brands">${gtSiteHTML('index.directoryButton')} ${gtArrow()}</a></div><div class="brand-grid">${gtPublicBrands().map((b,i)=>`<a class="brand-card ${b.logo?'has-logo':''}" href="#/brand/${b.slug}"><span class="brand-no">${String(i+1).padStart(2,'0')} / JAPAN</span><span class="arrow">${gtArrow()}</span><div class="brand-identity">${gtBrandIdentity(b)}</div><p>${esc(b.founder)}</p></a>`).join('')||(gtPublishedOnlyPreview?gtEmptyPublishedCopy:'')}</div></section>`}
+<div class="gt-section-top"><div><span class="kicker">${gtSiteHTML('index.directoryKicker')}</span><h2>${gtSiteHTML('index.directoryTitle')}</h2></div><a class="link-arrow" href="#/brands">${gtSiteHTML('index.directoryButton')} ${gtArrow()}</a></div><div class="brand-grid">${gtPublicBrands().map((b,i)=>`<a class="brand-card ${b.logo?'has-logo':''}" href="#/brand/${b.slug}"><span class="brand-no">${String(i+1).padStart(2,'0')} / JAPAN</span><span class="arrow">${gtArrow()}</span><div class="brand-identity">${gtBrandIdentity(b)}</div><p>${esc(b.founder)}</p></a>`).join('')||(gtPublishedOnlyPreview?gtPublicBrandEmptyCopy():'')}</div></section>`}
 const gtLocalDate=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const gtPublicationDate=a=>String(a.publishedAt||a.publishedDate||a.createdAt||'').slice(0,10);
 const gtDateText=a=>{const raw=gtPublicationDate(a);return /^\d{4}-\d{2}-\d{2}$/.test(raw)?raw.replace(/-/g,'.'):'DATE NOT SET'};
@@ -918,7 +918,7 @@ function viewBrands(){
 <span class="arrow"><svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></span>
 <div class="brand-identity">${gtBrandIdentity(b)}</div>
 <p>${esc(b.founder)}</p>
-<p>${b.tags.map(esc).join(' / ')}</p></a>`).join('')||(gtPublishedOnlyPreview?gtEmptyPublishedCopy:'')}</div>
+<p>${b.tags.map(esc).join(' / ')}</p></a>`).join('')||(gtPublishedOnlyPreview?gtPublicBrandEmptyCopy():'')}</div>
 </section>`;
 }
 function gtFilterBrands(letter){
@@ -1026,29 +1026,37 @@ async function gtSaveBrandCloud(record){
  if(!response.ok||!payload.ok)throw Error(payload.error||'尚未登入或無法寫入雲端（HTTP '+response.status+'）');
  return payload;
 }
+let gtPublicBrandLoadState='loading';
 async function gtLoadCloudPublishedBrands(){
  const query='*[_type == "brand" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}';
- const url='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(query);
+ const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
+ const url=isPreview?'/api/public/brands':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(query);
  try{
-  const response=await fetch(url);if(!response.ok)throw Error('HTTP '+response.status);
-  const payload=await response.json();if(!Array.isArray(payload.result))return;
+  gtPublicBrandLoadState='loading';
+  const response=await fetch(url,{cache:'no-store',credentials:isPreview?'same-origin':'omit'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const payload=await response.json(),records=isPreview?payload.records:payload.result;
+  if(isPreview&&!payload.ok)throw Error('品牌讀取服務尚未就緒');
+  if(!Array.isArray(records))throw Error('品牌清單資料格式不正確');
   gtSanityPublishedBrandSlugs.clear();
   gtPublishedBrandRecords.clear();
   for(const [slug,original] of gtOriginalBrands)gtPublishedBrandRecords.set(slug,original);
-  for(const d of payload.result){
-   if(!d.name||!d.slug?.current)continue;
+  for(const d of records){
+   if(!d?.name||!d.slug?.current)continue;
    const b={slug:d.slug.current,name:d.name,founder:d.founder||'',founded:d.foundedYear==null?'—':String(d.foundedYear),desc:d.summary||'',tags:Array.isArray(d.tags)?d.tags:[],url:d.website||null,logo:d.logoUrl||'',logoDisplay:{scale:d.logoScale??100,x:d.logoOffsetX??0,y:d.logoOffsetY??0}};
    gtPublishedBrandRecords.set(b.slug,b);
    gtSanityPublishedBrandSlugs.add(b.slug);
    if(localBrands.some(x=>x.slug===b.slug))continue;
    const idx=brands.findIndex(x=>x.slug===b.slug);if(idx>=0)brands[idx]={...brands[idx],...b};else brands.push(b);
   }
-  if(!location.hash.includes('/admin'))render();
- }catch(e){console.info('保留網站既有品牌資料；Sanity 公開讀取尚未完成：',e.message)}
+  gtPublicBrandLoadState='ready';
+ }catch(e){
+  gtPublicBrandLoadState='error';
+  console.warn('已發布品牌讀取失敗:',e?.message);
+ }finally{if(!location.hash.includes('/admin'))render();}
 }
 
-// Browser fallback storage remains available until authenticated write is deployed.
-// Preserve original entries separately. Editors can override them without damaging defaults.
+// PUBLICATION SAFETY: only explicit published Sanity records appear publicly.
 const gtOriginalBrands=new Map(brands.map(b=>[b.slug,{...b,tags:[...(b.tags||[])]}]));
 const gtOriginalArticles=articles.map(a=>({...a,body:[...(a.body||[])]}));
 // PUBLICATION SAFETY: this release preview always shows explicitly published
@@ -1061,6 +1069,7 @@ const gtPublishedBrandRecords=new Map(gtOriginalBrands);
 const gtPublicArticles=()=>[...gtPublishedArticleRecords].filter(([slug])=>!gtPublishedOnlyPreview||gtSanityPublishedArticleSlugs.has(slug)).map(([,a])=>a);
 const gtPublicBrands=()=>[...gtPublishedBrandRecords].filter(([slug])=>!gtPublishedOnlyPreview||gtSanityPublishedBrandSlugs.has(slug)).map(([,b])=>b);
 const gtEmptyPublishedCopy='<div class="gt-empty" role="status">尚無已發布內容。此頁僅顯示 Sanity 正式發布的文章與品牌。</div>';
+const gtPublicBrandEmptyCopy=()=>gtPublicBrandLoadState==='error'?'<div class="gt-empty" role="alert">已發布品牌載入失敗。請重新整理頁面，若持續發生請回報網站管理員。</div>':gtPublicBrandLoadState==='loading'?'<div class="gt-empty" role="status">正在載入已發布品牌…</div>':gtEmptyPublishedCopy;
 const gtOriginalLibrary=library.map(x=>({...x}));
 const CMS_KEY='forme_archive_editor_v12';
 let editorKind='article',editingId='',editorCover='',editorLogo='',editorLogoNote='';
