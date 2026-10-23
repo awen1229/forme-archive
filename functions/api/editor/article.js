@@ -49,7 +49,7 @@ export async function onRequestGet({request,env}){
   const body=Array.isArray(row.body)?row.body.filter(x=>typeof x==='string'):[]
   const record={
    slug,title:row.title||'',brand:row.brand||'GOOD THINGS',subject:row.subject||'clothing',
-   category:row.category||'EDITORIAL / 原創觀察',publishedAt:row.publishedAt||'',
+   category:row.category||'EDITORIAL / 原創觀察',subjects:Array.isArray(row.subjects)?row.subjects:[],publishedAt:row.publishedAt||'',
    createdAt:row.createdAt||'',updatedAt:row.updatedAt||'',excerpt:row.excerpt||'',
    body,source:row.source||'',sourceTitle:row.sourceTitle||'',
    publisher:row.publisher||'',sourceAuthor:row.sourceAuthor||'',sourceDate:row.sourceDate||'',
@@ -107,7 +107,7 @@ export async function onRequestPost({request,env}){
   const patch={
    title,slug:{_type:'slug',current:slug},
    brand:trim(input.brand,160)||'GOOD THINGS',subject:trim(input.subject,80)||'clothing',
-   category:trim(input.category,120),publishedAt,
+   category:trim(input.category,120),subjects:[...new Set([trim(input.subject,80)||'clothing',...(Array.isArray(input.subjects)?input.subjects:[]).slice(0,8).map(x=>trim(x,80))].filter(x=>['clothing','people','places','objects','notes'].includes(x)))],publishedAt,
    createdAt:trim(input.createdAt,35)||base?.createdAt||new Date().toISOString(),
    updatedAt:new Date().toISOString(),excerpt,body,
    coverFit:input.coverFit==='contain'?'contain':'cover',
