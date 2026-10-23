@@ -26,7 +26,7 @@ viewFeatures=function(){
   const items=a.filter(x=>x.series===key);
   return '<section class="gt-issue-series"><div class="gt-issue-series-title"><span class="kicker">'+title+'</span><p>'+escText(desc)+'</p></div><div class="gt-issue-grid">'+
    (items.length?items.map(x=>'<a class="gt-issue-card" href="#/feature/'+encodeURIComponent(x.slug)+'">'+
-    (x.cover?'<img loading="lazy" src="'+escText(x.cover)+'" alt="" style="object-fit:'+ (x.coverFit==='contain'?'contain':'cover')+';object-position:'+Number(x.coverX??50)+'% '+Number(x.coverY??50)+'%">':'<div class="gt-issue-placeholder">'+title+'</div>')+
+    (x.cover?gtCoverMarkup(x):'<div class="gt-issue-placeholder">'+title+'</div>')+
     '<small>FEATURE / '+title+'</small><h3>'+escText(x.title)+'</h3><p>'+escText(x.summary)+'</p><span>READ ISSUE →</span></a>').join(''):'<p class="muted">此系列尚無已發布專題。</p>')+
    '</div></section>';
  }).join('');
@@ -37,7 +37,7 @@ const viewIssue=slug=>{
  const related=(Array.isArray(x.articleSlugs)?x.articleSlugs:[]).map(s=>gtPublicArticles().find(a=>a.slug===s)).filter(Boolean);
  const brands=(Array.isArray(x.brandSlugs)?x.brandSlugs:[]).map(s=>gtPublicBrands().find(b=>b.slug===s)).filter(Boolean);
  return '<section class="section gt-issue-detail"><a class="back" href="#/features">← ALL FEATURES</a><p class="kicker">'+escText(series.find(s=>s[0]===x.series)?.[1]||'FEATURES')+'</p><h1>'+escText(x.title)+'</h1><p class="gt-issue-intro">'+escText(x.summary)+'</p>'+
- (x.cover?'<img class="gt-issue-hero" src="'+escText(x.cover)+'" alt="" style="object-fit:'+(x.coverFit==='contain'?'contain':'cover')+';object-position:'+Number(x.coverX??50)+'% '+Number(x.coverY??50)+'%">':'')+
+ (x.cover?gtCoverMarkup(x,true):'')+
  '<h2 class="gt-issue-heading">IN THIS ISSUE</h2><div class="product-list">'+(related.map((a,i)=>articleRow(a,i)).join('')||'<p>尚無可閱讀的文章。</p>')+'</div>'+
  (brands.length?'<h2 class="gt-issue-heading">RELATED BRANDS</h2><div class="gt-issue-brand-links">'+brands.map(b=>'<a href="#/brand/'+encodeURIComponent(b.slug)+'">'+escText(b.name)+' →</a>').join('')+'</div>':'')+'</section>';
 };
