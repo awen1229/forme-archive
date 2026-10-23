@@ -37,7 +37,6 @@
  async function publish(){
   if(!draft?.revision)return alert('請先重新讀取草稿');
   if(!confirm('要公開發布網站文字嗎？'))return;
-  if(prompt('請輸入 PUBLISH 以確認正式發布')!=='PUBLISH')return;
   try{
    await api('/api/editor/publish-site-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:draft.revision,confirmation:'PUBLISH'})});
    await read();await loadPublished();alert('已發布 Sanity 網站文字');
