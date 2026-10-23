@@ -1,8 +1,6 @@
 import {requireEditor,AuthError,errorResponse} from './brand.js'
 
 const API='https://8nqupq9u.api.sanity.io/v2025-02-19'
-const expected=['comoli-everyday','auralee-materials','graphpaper-editorial','maatee-fabric','ancellm-aging']
-const builtins=new Set(expected)
 const headers={'Cache-Control':'no-store'}
 async function query(text,parameters,token,perspective='raw'){
  const u=new URL(API+'/data/query/production')
@@ -34,10 +32,10 @@ export async function onRequestPost({request,env}){
   if(!Array.isArray(slides)||slides.length<1||slides.length>5)throw new AuthError(400,'首頁精選篇數不正確')
   const slugs=slides.map(s=>s?.slug)
   if(slugs.some(s=>typeof s!=='string'||!/^[a-z0-9-]{1,90}$/.test(s))||new Set(slugs).size!==slugs.length)throw new AuthError(400,'精選文章格式不正確')
-  // Only already public cloud articles, plus the 5 built-in site examples, can be featured.
+  // Only genuinely published Sanity articles may be featured on a released homepage.
   const publicRecords=await query('*[_type == "article" && slug.current in $slugs && !(_id in path("drafts.**"))]{ "slug":slug.current }',{slugs},t,'published')
   const publicSlugs=new Set((Array.isArray(publicRecords)?publicRecords:[]).map(x=>x?.slug).filter(Boolean))
-  const unpublished=slugs.filter(s=>!builtins.has(s)&&!publicSlugs.has(s))
+  const unpublished=slugs.filter(s=>!publicSlugs.has(s))
   if(unpublished.length)throw new AuthError(409,'首頁包含尚未發布的文章：'+unpublished.join('、'))
   const fields=Object.fromEntries(Object.entries(docs).filter(([k])=>!['_id','_rev','_createdAt','_updatedAt'].includes(k)))
   const r=await fetch(API+'/data/mutate/production',{
