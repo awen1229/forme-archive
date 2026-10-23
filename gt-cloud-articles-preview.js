@@ -2,6 +2,7 @@
 (()=>{
 const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 let cloudRows=[],cloudRevision='',cloudError='',cloudLoading=false;
+let searchText='',filterStatus='all',filterSubject='all',filterBrand='all',sortBy='recent';
 const gtArticleFilters={search:'',status:'all',subject:'all',brand:'all',category:'all',sort:'updated',page:1};
 const gtArticlePageSize=12;
 const gtText=v=>String(v??'');
@@ -48,24 +49,28 @@ const api=async(path,opts={})=>{
 const cloudPanel=()=>document.getElementById('gt-cloud-article-panel');
 const draw=()=>{
  const el=cloudPanel();if(!el)return;
- const subjects=[['all','所有主題'],...Object.entries(gtArticleSubjectNames).map(([v,n])=>[v,n])];
- const brands=[['all','所有品牌'],...gtDistinct('brand').map(v=>[v,v])];
- const categories=[['all','所有內容形式'],...gtDistinct('category').map(v=>[v,v])];
- el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">文章資料庫 / ARTICLE LIBRARY</h3>'+
- '<p class="muted">統一管理全部文章。主題、品牌與內容形式都沿用現有資料，不必重複建立資料夾；同一篇文章可以出現在多個主題。</p>'+
- '<div class="gt-article-toolbar"><label class="gt-article-query">搜尋標題、關鍵字、品牌或摘要<input type="search" data-gt-filter="search" placeholder="例如 COMOLI、小森、日常服" value="'+esc(gtArticleFilters.search)+'"></label>'+
- gtArticleSelect('status',[['all','全部狀態'],['draft','待發布草稿'],['published','已發布']],'發布狀態')+
- gtArticleSelect('subject',subjects,'STORIES 主題')+
- gtArticleSelect('brand',brands,'相關品牌')+
- gtArticleSelect('category',categories,'內容形式')+
- gtArticleSelect('sort',[['updated','最近修改'],['published','發布日期'],['title','標題 A–Z']],'排序方式')+'</div>'+
- '<div class="gt-article-toolbar-actions"><button type="button" data-gt-a="refresh">重新讀取雲端文章</button><button type="button" data-gt-a="clear-filters">清除篩選</button></div>'+
- '<p class="cms-hint"><strong>儲存修改只更新草稿，不會改變公開網站。</strong> 檢查無誤後，需再次「確認發布」。</p>'+
+ const brands=[...new Set(cloudRows.map(r=>r.brand).filter(Boolean))].sort();
+ const subjects=[['clothing','CLOTHING'],['style','STYLE'],['people','PEOPLE'],['places','PLACES'],['objects','OBJECTS'],['notes','NOTES']];
+ const options=(list,selected)=>list.map(([value,label])=>'<option value="'+esc(value)+'" '+(selected===value?'selected':'')+'>'+esc(label)+'</option>').join('');
+ let matched=cloudRows.filter(a=>(filterStatus==='all'||a.status===filterStatus)
+ &&(filterBrand==='all'||a.brand===filterBrand)
+ &&(filterSubject==='all'||[a.subject,...(a.subjects||[])].includes(filterSubject))
+ &&(!searchText||[a.title,a.brand,a.slug,a.excerpt,a.category].some(v=>String(v||'').toLocaleLowerCase().includes(searchText.toLocaleLowerCase()))));
+ matched=[...matched].sort((a,b)=>sortBy==='title'?String(a.title).localeCompare(String(b.title)):sortBy==='published'?String(b.publishedAt||'').localeCompare(String(a.publishedAt||'')):String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+ const totals=cloudRows.length,drafts=cloudRows.filter(a=>a.status==='draft').length;
+ el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">ARTICLE LIBRARY / 文章資料庫</h3><p class="muted">搜尋、分類和狀態篩選只影響後台顯示，不會修改文章，也不會影響公開網站。</p>'+
+ '<div class="gt-article-library-stats"><span>全部 '+totals+'</span><span>已發布 '+(totals-drafts)+'</span><span>草稿 '+drafts+'</span></div>'+
+ '<div class="gt-article-library-tools"><label>搜尋文章<input type="search" id="gt-article-search" placeholder="標題、品牌、關鍵字或網址" value="'+esc(searchText)+'"></label>'+
+ '<label>發布狀態<select id="gt-article-status">'+options([['all','全部'],['draft','雲端草稿'],['published','已發布']],filterStatus)+'</select></label>'+
+ '<label>文章主題<select id="gt-article-subject">'+options([['all','全部主題'],...subjects],filterSubject)+'</select></label>'+
+ '<label>品牌<select id="gt-article-brand">'+options([['all','全部品牌'],...brands.map(v=>[v,v])],filterBrand)+'</select></label>'+
+ '<label>排序<select id="gt-article-sort">'+options([['recent','最近更新'],['published','發布日期'],['title','文章標題 A–Z']],sortBy)+'</select></label></div>'+
+ '<div class="gt-article-library-footer"><span>顯示 '+matched.length+' / '+totals+' 篇</span><button type="button" data-gt-a="clearfilters">清除篩選</button><button type="button" data-gt-a="refresh">重新讀取雲端文章</button></div>'+
  (cloudError?'<p role="alert">'+esc(cloudError)+'</p>':'')+
- (cloudLoading?'<p class="muted" role="status">正在讀取…</p>':'')+
- '<div id="gt-cloud-article-results"></div>';
- gtArticleDrawList();
+ (cloudLoading?'<p class="muted">正在讀取…</p>':'')+
+ '<div class="gt-article-list">'+(matched.length?matched.map(a=>'<div class="editor-list-item gt-article-list-row"><div><div class="editor-badge">'+(a.status==='draft'?'雲端草稿':'已發布')+' / '+esc(a.brand||'GOOD THINGS')+'</div><strong>'+esc(a.title)+'</strong><div class="gt-article-row-meta">'+esc(a.category||'')+' · '+esc(a.publishedAt||'未設定日期')+'</div></div><div class="gt-record-buttons"><button type="button" data-gt-a="edit" data-slug="'+esc(a.slug)+'">載入編輯</button>'+(a.status==='draft'?'<button type="button" data-gt-a="publish" data-slug="'+esc(a.slug)+'">確認發布</button>':'')+'</div></div>').join(''):'<p class="muted">沒有符合條件的文章。可以調整篩選條件。</p>')+'</div>';
 };
+
 const refresh=async()=>{
  cloudLoading=true;cloudError='';draw();
  try{cloudRows=(await api('/api/editor/articles')).records||[]}
@@ -171,10 +176,28 @@ saveEditor=async function(...args){
  cloudRevision='';
  await refresh();
 };
+document.addEventListener('input',e=>{
+ if(e.target.id==='gt-article-search'){
+  const input=e.target;searchText=input.value;
+  const start=input.selectionStart,end=input.selectionEnd;
+  draw();const next=document.getElementById('gt-article-search');if(next){next.focus();try{next.setSelectionRange(start,end)}catch{}}
+ }
+});
+document.addEventListener('change',e=>{
+ const map={'gt-article-status':'status','gt-article-subject':'subject','gt-article-brand':'brand','gt-article-sort':'sort'};
+ if(!map[e.target.id])return;
+ const v=e.target.value;
+ if(map[e.target.id]==='status')filterStatus=v;
+ if(map[e.target.id]==='subject')filterSubject=v;
+ if(map[e.target.id]==='brand')filterBrand=v;
+ if(map[e.target.id]==='sort')sortBy=v;
+ draw();
+});
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-gt-a]');
  if(b){e.preventDefault();e.stopImmediatePropagation();
   if(b.dataset.gtA==='refresh')refresh();
+  if(b.dataset.gtA==='clearfilters'){searchText='';filterStatus='all';filterSubject='all';filterBrand='all';sortBy='recent';draw()}
   if(b.dataset.gtA==='clear-filters'){Object.assign(gtArticleFilters,{search:'',status:'all',subject:'all',brand:'all',category:'all',sort:'updated',page:1});draw()}
   if(b.dataset.gtA==='edit')load(b.dataset.slug);
   if(b.dataset.gtA==='publish')publish(b.dataset.slug);
