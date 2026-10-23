@@ -59,6 +59,7 @@ function preview(){
 }
 async function saveDraft(){
  if(saving||publishing)return;
+ if(gtHomeImagePending)return alert('首頁封面仍在處理，請完成後再儲存。');
  if(!loaded)return alert('請先讀取雲端首頁資料再儲存');
  const chosen=gtHomeDraft.map(v=>({slug:v.slug,title:String(v.title||'').trim(),excerpt:String(v.excerpt||'').trim(),cover:v.cover||'',coverFit:v.coverFit||'cover',coverX:v.coverX??50,coverY:v.coverY??50}));
  if(!chosen.length||chosen.length>5||chosen.some(v=>!articles.some(a=>a.slug===v.slug)))return alert('精選中有無效或尚未選擇的文章');
