@@ -77,14 +77,14 @@ const renderEditor=()=>{
  '<label><input type="checkbox" name="clearCover"> 移除封面</label>'+
  '<fieldset class="gt-issue-cover-controls"><legend>DESKTOP / 電腦版</legend>'+
  '<label>顯示方式<select name="coverFit"><option value="cover" '+((a.coverFit||'cover')!=='contain'?'selected':'')+'>裁切填滿</option><option value="contain" '+(a.coverFit==='contain'?'selected':'')+'>完整顯示</option></select></label>'+
- '<label>縮放 <output data-crop-value="coverZoom"></output><input name="coverZoom" type="range" min="100" max="250" step="5" value="'+Number(a.coverZoom??100)+'"></label>'+
- '<label>左右定位 <output data-crop-value="coverX"></output><input name="coverX" type="range" min="0" max="100" value="'+Number(a.coverX??a.coverX??50)+'"></label>'+
- '<label>上下定位 <output data-crop-value="coverY"></output><input name="coverY" type="range" min="0" max="100" value="'+Number(a.coverY??a.coverY??50)+'"></label></fieldset>'+
+ '<label>縮放 <output data-crop-value="coverZoom">'+Number(a.coverZoom??100)+'%</output><input name="coverZoom" type="range" min="100" max="250" step="5" value="'+Number(a.coverZoom??100)+'"></label>'+
+ '<label>左右定位 <output data-crop-value="coverX">'+Number(a.coverX??50)+'%</output><input name="coverX" type="range" min="0" max="100" value="'+Number(a.coverX??a.coverX??50)+'"></label>'+
+ '<label>上下定位 <output data-crop-value="coverY">'+Number(a.coverY??50)+'%</output><input name="coverY" type="range" min="0" max="100" value="'+Number(a.coverY??a.coverY??50)+'"></label></fieldset>'+
  '<fieldset class="gt-issue-cover-controls"><legend>MOBILE / 手機版</legend>'+
  '<label>顯示方式<select name="coverMobileFit"><option value="cover" '+((a.coverMobileFit||'cover')!=='contain'?'selected':'')+'>裁切填滿</option><option value="contain" '+(a.coverMobileFit==='contain'?'selected':'')+'>完整顯示</option></select></label>'+
- '<label>縮放 <output data-crop-value="coverMobileZoom"></output><input name="coverMobileZoom" type="range" min="100" max="200" step="5" value="'+Number(a.coverMobileZoom??100)+'"></label>'+
- '<label>左右定位 <output data-crop-value="coverMobileX"></output><input name="coverMobileX" type="range" min="0" max="100" value="'+Number(a.coverMobileX??a.coverX??50)+'"></label>'+
- '<label>上下定位 <output data-crop-value="coverMobileY"></output><input name="coverMobileY" type="range" min="0" max="100" value="'+Number(a.coverMobileY??a.coverY??50)+'"></label></fieldset>'+
+ '<label>縮放 <output data-crop-value="coverMobileZoom">'+Number(a.coverMobileZoom??100)+'%</output><input name="coverMobileZoom" type="range" min="100" max="200" step="5" value="'+Number(a.coverMobileZoom??100)+'"></label>'+
+ '<label>左右定位 <output data-crop-value="coverMobileX">'+Number(a.coverMobileX??a.coverX??50)+'%</output><input name="coverMobileX" type="range" min="0" max="100" value="'+Number(a.coverMobileX??a.coverX??50)+'"></label>'+
+ '<label>上下定位 <output data-crop-value="coverMobileY">'+Number(a.coverMobileY??a.coverY??50)+'%</output><input name="coverMobileY" type="range" min="0" max="100" value="'+Number(a.coverMobileY??a.coverY??50)+'"></label></fieldset>'+
  '<fieldset><legend>相關品牌</legend><div class="gt-issue-choice">'+choices(gtPublicBrands(),'brandSlugs',a.brandSlugs||[])+'</div></fieldset>'+
  '<fieldset><legend>專題文章（上下按鈕可排序）</legend><div class="gt-issue-choice">'+choices(publishedArticles,'articleSlugs',a.articleSlugs||[])+'</div><div id="gt-issue-order"></div></fieldset>'+
  '<div class="editor-actions"><button type="submit">儲存雲端草稿</button></div></form></section>';
@@ -112,6 +112,11 @@ document.addEventListener('click',e=>{
  const shift=e.target.closest('[data-order-shift]');if(shift){const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}
 },true);
 document.addEventListener('change',async e=>{
+ if(e.target.name==='clearCover'&&e.target.closest('#gt-issue-form')){
+  const form=e.target.closest('#gt-issue-form');
+  form.querySelectorAll('.gt-issue-preview-image').forEach(img=>{img.hidden=e.target.checked||!(coverData||active?.cover)});
+  return;
+ }
  if(e.target.name==='articleSlugs'&&e.target.closest('#gt-issue-form')){renderOrder();return}
  if(e.target.name!=='coverUpload'||!e.target.closest('#gt-issue-form'))return;
  const file=e.target.files?.[0];if(!file)return;
@@ -131,6 +136,7 @@ document.addEventListener('change',async e=>{
    if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(processed.data)||processed.data.length>1_100_000)
     throw Error('壓縮圖片無效，請改用 JPG 或 WebP');
    coverData=processed.data;
+   const removeCover=form?.querySelector('input[name="clearCover"]');if(removeCover)removeCover.checked=false;
    form?.querySelectorAll('.gt-issue-preview-image').forEach(img=>{img.src=coverData;img.hidden=false})
    if(status)status.textContent='已完成 '+(processed.note||'圖片壓縮')+'，約 '+Math.round(coverData.length*.75/1024)+' KB。';
   }catch(err){
