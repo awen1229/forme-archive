@@ -46,7 +46,7 @@ const publicArticleNotice=()=>publicArticleStatus==='error'?'<div class="gt-empt
 window.gtPublishedArticleNotice=publicArticleNotice;
 const loadPublished=async()=>{
  const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
- const q='*[_type=="article"&&!(_id in path("drafts.**"))]{title,slug,brand,subject,category,publishedAt,createdAt,updatedAt,subjects,excerpt,body,source,sourceTitle,publisher,sourceAuthor,sourceDate,reviewedAt,coverFit,coverMobileFit,coverMobileZoom,coverZoom,coverX,coverY,"cover":cover.asset->url}';
+ const q='*[_type=="article"&&!(_id in path("drafts.**"))]{title,slug,brand,subject,category,publicationSection,publishedAt,createdAt,updatedAt,subjects,excerpt,body,source,sourceTitle,publisher,sourceAuthor,sourceDate,reviewedAt,coverFit,coverMobileFit,coverMobileZoom,coverZoom,coverX,coverY,coverMobileX,coverMobileY,"cover":cover.asset->url}';
  const url=isPreview?'/api/public/articles':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q);
  try{
   publicArticleStatus='loading';
@@ -88,11 +88,11 @@ saveEditor=async function(...args){
  const local=localArticles.find(x=>x.slug===editingId);
  const slug=editingId||'entry-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
  const a={
-  slug,title:fval('title'),brand:fval('brand'),subject:fval('subject'),category:fval('category'),
+  slug,title:fval('title'),brand:fval('brand'),subject:fval('subject'),category:fval('category'),publicationSection:fval('publicationSection')||'stories',
   publishedAt:fval('publishedAt'),subjects:[...new Set([fval('subject'),...Array.from(document.querySelectorAll('input[name="gt-extra-subject"]:checked'),el=>el.value)])],createdAt:local?.createdAt||new Date().toISOString(),
   excerpt:fval('excerpt'),body:fval('body').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean),
   source:fval('source'),sourceTitle:fval('sourceTitle'),publisher:fval('publisher'),
-  sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverMobileFit:fval('coverMobileFit')||'cover',coverMobileZoom:Number(fval('coverMobileZoom')||100),coverZoom:Number(fval('coverZoom')||100),coverX:Number(fval('coverX')||50),coverY:Number(fval('coverY')||50),revision:cloudRevision
+  sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverMobileFit:fval('coverMobileFit')||'cover',coverMobileZoom:Number(fval('coverMobileZoom')||100),coverZoom:Number(fval('coverZoom')||100),coverX:Number(fval('coverX')??50),coverY:Number(fval('coverY')??50),coverMobileX:Number(fval('coverMobileX')??50),coverMobileY:Number(fval('coverMobileY')??50),revision:cloudRevision
  };
  try{
   const saved=await api('/api/editor/article',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)});
