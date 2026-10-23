@@ -54,3 +54,7 @@ This README describes **source/release readiness**, not a claim that production 
 ### 2026-10-23 Preview variable deployment check
 
 The site operator reports saving the Preview environment variable through Cloudflare Settings (not by editing the browser URL). This documentation-only change requests a fresh branch Preview deployment. The presence and exact value of the variable **must still be verified** using the protected read-only `/api/editor/publish-status` endpoint after deployment. No Sanity publication or GitHub `main` change is authorized by this note.
+
+### Preview variable re-save handoff · 2026-10-23
+
+Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text variable with value `true` in the Cloudflare Pages **Preview** settings dialog, following read-only diagnostics that previously returned `flagPresent=false`. This documentation-only commit requests a new Preview build so the setting can be loaded at runtime. This does not prove the value is active: verify the protected `/api/editor/publish-status` response reports `flagPresent=true` and `publishEnabled=true` before any publishing. Do not publish `GT CLOUD TEST`; confirm a genuine COMOLI draft exists first. The `main` branch must remain unchanged.
