@@ -1223,13 +1223,15 @@ function editorForm(){
   <label>內容形式<select id="f-category"><option>INTERVIEW NOTES / 專訪導讀</option><option>BRAND NEWS / 品牌新聞</option><option>COLLECTION / 季度整理</option><option>GARMENT NOTES / 單品研究</option><option>EDITORIAL / 原創觀察</option><option>主理人專訪</option><option>品牌理念</option><option>季度理念</option><option>風格研究</option><option>單品解析</option><option>DESIGN PHILOSOPHY</option></select></label>
   <label>中文導讀摘要 *<textarea id="f-excerpt" placeholder="建議用自己的話寫 50～120 字"></textarea></label>
   <label>正文 *（空白行分段）<textarea id="f-body" style="min-height:190px" placeholder="用自己的觀點整理重點，不直接大量翻譯原文。"></textarea></label>
+  <details class="gt-editor-fold gt-inline-media-fold" id="gt-inline-media-fold"><summary>正文圖片 / INLINE MEDIA <span>獨立圖片工具，不受封面設定影響</span></summary><div class="gt-editor-inline-image"><strong>在正文插入圖片</strong><input type="file" id="gt-inline-upload" accept="image/png,image/jpeg,image/webp"><input type="text" id="gt-inline-caption" placeholder="圖片說明（選填）"><label>正文圖片手機版顯示<select id="gt-inline-mobile-fit"><option value="crop">填滿裁切（預設）</option><option value="full">完整顯示（保留整張圖）</option></select></label><button type="button" id="gt-inline-insert">將圖片插入正文游標位置</button><small id="gt-inline-status">圖片會先上傳到 Sanity，文章本身仍需儲存與發布。</small></div></details>
   <details class="gt-editor-fold"><summary>來源與引用資訊 <span>訪談、資料整理、引用原文時使用</span></summary><div class="cms-hint">SOURCE CREDIT / 記錄原文出處，可降低誤認為原創採訪的風險；標示來源不代表取得轉載授權。</div>
   <label>日文原文標題<input id="f-sourceTitle" placeholder="原文文章標題（如適用）"></label>
   <label>媒體／出版方<input id="f-publisher" placeholder="例如：Silver Magazine"></label>
   <label>原作者<input id="f-sourceAuthor" placeholder="作者／編輯姓名（若已知）"></label>
   <label>原文刊登日期<input id="f-sourceDate" type="date"></label>
   <label>原文網址<input id="f-source" type="url" placeholder="https://..."></label></details>
-  <details class="gt-editor-fold"><summary>封面顯示微調 <span>桌面、手機的裁切、縮放與焦點設定</span></summary><div class="gt-cover-control"><strong>文章封面顯示</strong><small>電腦版與手機版分開設定，各自即時預覽。儲存草稿後需確認發布才會更新公開頁。</small>
+  <details class="gt-editor-fold gt-article-cover-fold" id="gt-article-cover-fold"><summary>封面圖片與裁切 <span>桌面、手機獨立預覽及設定</span></summary><label>封面圖片（可選，上傳後會壓縮）<input id="f-cover" type="file" accept="image/png,image/jpeg,image/webp"><small class="cms-file-status" id="cover-status">${editorCover?'已選擇封面，可儲存修改':''}</small></label>
+<div class="gt-cover-control"><strong>文章封面顯示</strong><small>電腦版與手機版分開設定，各自即時預覽。儲存草稿後需確認發布才會更新公開頁。</small>
  <div class="gt-desktop-crop"><strong>DESKTOP / 電腦版</strong>
  <div class="gt-crop-desktop-frame"><img id="gt-crop-desktop-image" alt="電腦版封面即時預覽" hidden><div id="gt-crop-desktop-empty">載入封面後即可即時調整</div></div>
  <label>顯示方式<select id="f-coverFit"><option value="cover">填滿裁切</option><option value="contain">完整顯示</option></select></label>
@@ -1242,7 +1244,7 @@ function editorForm(){
  <label>手機版縮放 <output id="gt-crop-zoom-value">100%</output><input id="f-coverMobileZoom" type="range" min="100" max="200" step="5" value="100"></label>
  <label>手機左右焦點 <output id="gt-crop-x-value">50%</output><input id="f-coverMobileX" type="range" min="0" max="100" value="50"></label>
  <label>手機上下焦點 <output id="gt-crop-y-value">50%</output><input id="f-coverMobileY" type="range" min="0" max="100" value="50"></label>
- <small>填滿裁切時先放大，再移動焦點會較容易觀察效果。</small></div></div></details><details class="gt-editor-fold"><summary>在正文插入圖片 <span>需要穿插照片時展開</span></summary><div class="gt-editor-inline-image"><strong>在正文插入圖片</strong><input type="file" id="gt-inline-upload" accept="image/png,image/jpeg,image/webp"><input type="text" id="gt-inline-caption" placeholder="圖片說明（選填）"><label>正文圖片手機版顯示<select id="gt-inline-mobile-fit"><option value="crop">填滿裁切（預設）</option><option value="full">完整顯示（保留整張圖）</option></select></label><button type="button" id="gt-inline-insert">將圖片插入正文游標位置</button><small id="gt-inline-status">圖片會先上傳到 Sanity，文章本身仍需儲存與發布。</small></div></details><label>封面圖片（可選，上傳後會壓縮）<input id="f-cover" type="file" accept="image/png,image/jpeg,image/webp"><small class="cms-file-status" id="cover-status">${editorCover?'已選擇封面，可儲存修改':''}</small></label>`;
+ <small>填滿裁切時先放大，再移動焦點會較容易觀察效果。</small></div></div></details>`;
  }else if(editorKind==='brand'){
   base=`<label>品牌名稱 *<input id="f-name" required placeholder="例如：everyone"></label>
   <label>設計師／主理人<input id="f-founder" placeholder="日文 / 英文姓名"></label>
