@@ -1,0 +1,33 @@
+/* GOOD THINGS, v1.8 / Brand cloud editor only. Public index untouched. */
+#gt-cloud-brands{max-width:100%;min-width:0}
+.gt-brand-v18-head{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin:12px 0 20px}
+.gt-brand-v18-head h3{font:600 22px/1.3 Arial,"Noto Sans TC",sans-serif;margin:0 0 5px}
+.gt-brand-v18-head p{font-size:12px;margin:0;max-width:530px}
+.gt-brand-v18-head>button{padding:10px 14px;background:transparent;border:1px solid #c0c7bb}
+.gt-brand-v18-toolbar{display:grid;grid-template-columns:minmax(190px,2fr) repeat(2,minmax(120px,1fr));gap:12px;margin-bottom:17px}
+.gt-brand-v18-toolbar label{display:grid;min-width:0;gap:6px;font-size:11px;color:#667066}
+.gt-brand-v18-toolbar input,.gt-brand-v18-toolbar select{width:100%;min-width:0;min-height:42px;padding:9px 11px;background:#faf9f5;color:#2b392f;border:1px solid #c0c8bd;font:13px/1.4 Arial,"Noto Sans TC",sans-serif}
+.gt-brand-v18-alpha{display:flex;gap:5px;padding:3px 0 14px;overflow-x:auto;scrollbar-width:thin}
+.gt-brand-v18-alpha button{flex:0 0 auto;min-width:32px;min-height:35px;border:1px solid #c3cabf;background:transparent;color:#526153;font-size:11px}
+.gt-brand-v18-alpha button[data-brand-v18-letter="ALL"]{min-width:48px}
+.gt-brand-v18-alpha button.on{background:#303e34;border-color:#303e34;color:#f9f9f6}
+.gt-brand-v18-alpha button:disabled{opacity:.24;cursor:default}
+.gt-brand-v18-count{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #c6cbc1;padding:2px 0 10px;color:#697269;font-size:12px}
+.gt-brand-v18-count button{border:0;background:none;color:#3f5a44;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+.gt-brand-v18-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0;padding:15px 0;border-bottom:1px solid #d4d8d0}
+.gt-brand-v18-copy{flex:1 1 165px;min-width:0}
+.gt-brand-v18-copy strong{display:block;margin:5px 0;font-size:16px}
+.gt-brand-v18-copy .muted{font-size:11px;overflow-wrap:anywhere}
+.gt-brand-v18-publish{background:#2b4131!important;color:white!important}
+.gt-brand-v18-pager{display:flex;align-items:center;justify-content:center;gap:16px;padding:15px 0 4px;font-size:12px}
+.gt-brand-v18-pager button{border:1px solid #c1c9bc;padding:8px 13px;background:transparent}
+.gt-brand-v18-pager button:disabled{opacity:.25;cursor:default}
+.gt-brand-v18-legacy{margin-top:27px}
+.gt-brand-v18-legacy>summary{font-size:14px;font-weight:600;cursor:pointer;padding:4px 0 9px}
+.gt-brand-v18-legacy>.cms-hint{margin:12px 0 0}
+@media(max-width:760px){
+ .gt-brand-v18-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .gt-brand-v18-search{grid-column:1/-1}
+ .gt-brand-v18-row .gt-record-buttons{width:100%;justify-content:flex-start}
+ .gt-brand-v18-head h3{font-size:19px}
+}
