@@ -80,20 +80,25 @@ const refresh=async()=>{
 const load=async(slug)=>{
  try{
   const j=await api('/api/editor/article?slug='+encodeURIComponent(slug));
-  editorKind='article';editingId=slug;cloudRevision=j.record.revision||'';
+  editorKind='article';editingId=slug;cloudRevision=j.record.revision||'';pendingArticleSlug='';articleDirty=false;
   fillEditor(j.record);
   document.getElementById('editor-form')?.scrollIntoView({behavior:'smooth',block:'start'});
  }catch(e){alert('無法載入雲端文章：'+e.message)}
 };
+const publishingArticles=new Set();
 const publish=async(slug)=>{
+ if(articleSaving||publishingArticles.has(slug))return;
  const a=cloudRows.find(x=>x.slug===slug);
  if(!a||a.status!=='draft'||!a.revision)return alert('請重新讀取雲端草稿');
  if(/\btest\b|測試/i.test(a.title))return alert('測試文章不可發布');
+ if(editorKind==='article'&&editingId===slug&&articleDirty)return alert('這篇文章還有未儲存修改，請先儲存雲端草稿再發布');
  if(!confirm('確定公開發布「'+a.title+'」？'))return;
+ publishingArticles.add(slug);
  try{
   await api('/api/editor/publish-article',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,revision:a.revision,confirmation:'PUBLISH'})});
-  alert('已在 Sanity 公開發布');await refresh();loadPublished();
- }catch(e){alert('文章發布失敗：'+e.message)}
+  if(editorKind==='article'&&editingId===slug)cloudRevision='';
+  await refresh();await loadPublished();alert('文章已正式發布。');
+ }catch(e){alert('文章發布失敗：'+e.message)}finally{publishingArticles.delete(slug)}
 };
 let publicArticleStatus='loading';
 const publicArticleNotice=()=>publicArticleStatus==='error'?'<div class="gt-empty" role="alert">已發布文章載入失敗，請重新整理頁面。</div>':publicArticleStatus==='loading'?'<div class="gt-empty" role="status">正在載入已發布文章…</div>':gtEmptyPublishedCopy;
@@ -150,11 +155,14 @@ render=function(...args){
  return result;
 };
 const originalSave=saveEditor;
+let articleSaving=false,articleDirty=false,pendingArticleSlug='';
+function noteArticle(msg,isError=false){let f=document.getElementById('editor-form');if(!f)return;let note=f.querySelector('#gt-article-cloud-save-status');if(!note){note=document.createElement('p');note.id='gt-article-cloud-save-status';note.setAttribute('role','status');note.className='cms-hint';(f.querySelector('.editor-actions')||f).appendChild(note)}note.textContent=msg;note.style.color=isError?'#a43d35':'#3f684a'}
 saveEditor=async function(...args){
  if(editorKind!=='article')return originalSave(...args);
+ if(articleSaving)return;
  if(!fval('title')||!fval('excerpt')||!fval('body'))return alert('請填寫標題、摘要與正文');
  const local=localArticles.find(x=>x.slug===editingId);
- const slug=editingId||'entry-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
+ const slug=editingId||pendingArticleSlug||(pendingArticleSlug='entry-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6));
  const a={
   slug,title:fval('title'),brand:fval('brand'),subject:fval('subject'),category:fval('category'),publicationSection:fval('publicationSection')||'stories',
   publishedAt:fval('publishedAt'),subjects:[...new Set([fval('subject'),...Array.from(document.querySelectorAll('input[name="gt-extra-subject"]:checked'),el=>el.value)])],createdAt:local?.createdAt||new Date().toISOString(),
@@ -162,18 +170,33 @@ saveEditor=async function(...args){
   writer:fval('writer'),editor:fval('editor'),source:fval('source'),sourceTitle:fval('sourceTitle'),publisher:fval('publisher'),
   sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverMobileFit:fval('coverMobileFit')||'cover',coverMobileZoom:Number(fval('coverMobileZoom')||100),coverZoom:Number(fval('coverZoom')||100),coverX:Number(fval('coverX')??50),coverY:Number(fval('coverY')??50),coverMobileX:Number(fval('coverMobileX')??50),coverMobileY:Number(fval('coverMobileY')??50),revision:cloudRevision
  };
+ const submit=document.querySelector('#editor-form button[type="submit"]');articleSaving=true;if(submit){submit.disabled=true;submit.textContent='儲存中…'}
+ noteArticle('正在儲存 Sanity 雲端草稿…');
  try{
   const saved=await api('/api/editor/article',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(a)});
   cloudRevision=saved.revision||'';
+  if(!cloudRevision)throw Error('伺服器沒有回傳修訂編號，請從雲端列表重新載入');
   if(saved.coverUrl)editorCover=saved.coverUrl;
- }catch(e){return alert('文章雲端儲存失敗：'+e.message+'\n沒有修改公開網站，也沒有宣告儲存成功。')}
- editingId=slug;
- await originalSave(...args);
- // The legacy interface can display a local-only message. Correct it after cloud success.
- const banner=document.querySelector('[role="status"]');
- if(banner&&banner.textContent.includes('資料仍只在這台裝置'))banner.textContent='已儲存 Sanity 文章雲端草稿，並保留本機副本，尚未公開。';
- cloudRevision='';
- await refresh();
+  editingId=slug;pendingArticleSlug='';articleDirty=false;
+  const backup={...a,cover:editorCover,updatedAt:new Date().toISOString()};
+  const existing=localArticles.findIndex(row=>row.slug===slug);
+  if(existing>=0)localArticles[existing]=backup;else localArticles.push(backup);
+  let backupOk=false;
+  try{
+   const payload=JSON.stringify({version:1,exportedAt:new Date().toISOString(),articles:localArticles,brands:localBrands,references:localReferenceEntries,home:gtHomeConfig,siteContent:gtSiteContent});
+   localStorage.setItem(CMS_KEY,payload);backupOk=localStorage.getItem(CMS_KEY)===payload;
+  }catch(error){console.warn('Local article backup unavailable:',error.message)}
+  const header=document.querySelector('.editor-grid .editor-card > h2');if(header)header.textContent='編輯既有文章';
+  noteArticle(backupOk?'雲端草稿儲存成功，並保留本機備份。尚未公開。':'雲端草稿儲存成功，尚未公開。本機備份空間不足。');
+  await refresh();
+ }catch(e){
+  articleDirty=true;
+  noteArticle('儲存未完成：'+e.message+'。目前表單內容仍保留。',true);
+ }finally{
+  articleSaving=false;
+  const b=document.querySelector('#editor-form button[type="submit"]');
+  if(b){b.disabled=false;b.textContent='儲存雲端草稿'}
+ }
 };
 document.addEventListener('input',e=>{
  if(e.target.id==='gt-article-search'){
@@ -208,10 +231,13 @@ document.addEventListener('click',e=>{
   gtArticleDrawList();cloudPanel()?.scrollIntoView({behavior:'smooth',block:'start'});
  }
  const t=e.target.closest('[data-kind]');
- if(t?.dataset.kind==='article'){cloudRevision='';setTimeout(refresh,0)}
+ if(t?.dataset.kind==='article'){cloudRevision='';pendingArticleSlug='';articleDirty=false;setTimeout(refresh,0)}
+ if(e.target.closest('#editor-reset')){cloudRevision='';pendingArticleSlug='';articleDirty=false}
  const edit=e.target.closest('[data-edit]');
- if(edit&&editorKind==='article')cloudRevision='';
+ if(edit&&editorKind==='article'){cloudRevision='';pendingArticleSlug='';articleDirty=false}
 },true);
+document.addEventListener('input',e=>{if(editorKind==='article'&&e.target.closest('#editor-form'))articleDirty=true},true);
+document.addEventListener('change',e=>{if(editorKind==='article'&&e.target.closest('#editor-form'))articleDirty=true},true);
 document.addEventListener('input',e=>{
  const fld=e.target.closest('[data-gt-filter="search"]');if(!fld)return;
  gtArticleFilters.search=fld.value;gtArticleFilters.page=1;
