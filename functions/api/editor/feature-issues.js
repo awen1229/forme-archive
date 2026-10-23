@@ -43,7 +43,12 @@ function serialize(doc,published=false){
   summary:doc.summary||'',articleSlugs:Array.isArray(doc.articleSlugs)?doc.articleSlugs:[],
   brandSlugs:Array.isArray(doc.brandSlugs)?doc.brandSlugs:[],
   cover:doc.coverUrl||'',coverFit:doc.coverFit==='contain'?'contain':'cover',
+  coverMobileFit:doc.coverMobileFit==='contain'?'contain':'cover',
+  coverZoom:Number.isFinite(doc.coverZoom)?doc.coverZoom:100,
+  coverMobileZoom:Number.isFinite(doc.coverMobileZoom)?doc.coverMobileZoom:100,
   coverX:Number.isFinite(doc.coverX)?doc.coverX:50,coverY:Number.isFinite(doc.coverY)?doc.coverY:50,
+  coverMobileX:Number.isFinite(doc.coverMobileX)?doc.coverMobileX:(Number.isFinite(doc.coverX)?doc.coverX:50),
+  coverMobileY:Number.isFinite(doc.coverMobileY)?doc.coverMobileY:(Number.isFinite(doc.coverY)?doc.coverY:50),
   status:doc._id.startsWith('drafts.')?'draft':'published',hasPublished:published,
   revision:doc._rev||'',updatedAt:doc._updatedAt||''
  }
@@ -115,8 +120,13 @@ export async function onRequestPost({request,env}){
   const draftId='drafts.'+id
   const patch={title,slug:{_type:'slug',current:slug},series,summary,articleSlugs,brandSlugs,
    coverFit:input.coverFit==='contain'?'contain':'cover',
+   coverMobileFit:input.coverMobileFit==='contain'?'contain':'cover',
+   coverZoom:Math.max(100,Math.min(250,Number(input.coverZoom??100)||100)),
+   coverMobileZoom:Math.max(100,Math.min(200,Number(input.coverMobileZoom??100)||100)),
    coverX:Math.max(0,Math.min(100,Number(input.coverX??50)||0)),
-   coverY:Math.max(0,Math.min(100,Number(input.coverY??50)||0))}
+   coverY:Math.max(0,Math.min(100,Number(input.coverY??50)||0)),
+   coverMobileX:Math.max(0,Math.min(100,Number(input.coverMobileX??input.coverX??50)||0)),
+   coverMobileY:Math.max(0,Math.min(100,Number(input.coverMobileY??input.coverY??50)||0))}
   const unset=[]
   if(cover.startsWith('data:'))patch.cover=await upload(cover,env.SANITY_EDITOR_TOKEN)
   else if(cover==='')unset.push('cover')
