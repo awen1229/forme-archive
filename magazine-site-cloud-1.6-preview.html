@@ -1069,10 +1069,10 @@ async function gtLoadCloudPublishedBrands(){
 // Preserve original entries separately. Editors can override them without damaging defaults.
 const gtOriginalBrands=new Map(brands.map(b=>[b.slug,{...b,tags:[...(b.tags||[])]}]));
 const gtOriginalArticles=articles.map(a=>({...a,body:[...(a.body||[])]}));
-// Only built-in demonstrations and explicitly published Sanity documents appear in public views.
-// LocalStorage and Sanity drafts remain editor-only.
-// ?published-only=1 is an Access-protected editorial release preview, not the public site.
-const gtPublishedOnlyPreview=location.hostname.endsWith('.pages.dev')&&new URLSearchParams(location.search).get('published-only')==='1';
+// PUBLICATION SAFETY: this release preview always shows explicitly published
+// Sanity content. Built-in demonstration articles and browser-local drafts remain
+// editor-only, never public. URL parameters cannot reveal demo material.
+const gtPublishedOnlyPreview=true;
 const gtSanityPublishedArticleSlugs=new Set(),gtSanityPublishedBrandSlugs=new Set();
 const gtPublishedArticleRecords=new Map(gtOriginalArticles.map(a=>[a.slug,a]));
 const gtPublishedBrandRecords=new Map(gtOriginalBrands);
