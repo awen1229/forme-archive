@@ -18,13 +18,24 @@ function featuredBrands(){
  if(configured){const selected=configured.map(slug=>bySlug.get(slug)).filter(Boolean);if(selected.length)return selected.slice(0,MAX_COUNT)}
  return all.slice(0,DEFAULT_COUNT);
 }
+// The large index cards use each brand's editable logo offset and zoom.
+// Their transforms must NOT leak into the compact editorial strip.
+// Keep the original uploaded image intact and fit it into a dedicated,
+// predictable viewport; never enlarge or displace it based on global rules.
+function featuredBrandIdentity(brand){
+ if(!brand.logo)return '<h3 class="gt-index-featured-name">'+esc(brand.name)+'</h3>';
+ return '<span class="gt-index-featured-logo-frame">'+
+  '<img class="gt-index-featured-logo" src="'+esc(brand.logo)+'" alt="'+esc(brand.name)+'" loading="lazy" decoding="async">'+
+  '</span>';
+}
+
 function editorialMarkup(){
  const items=featuredBrands();
  if(!items.length)return '<div class="gt-index-featured-grid">'+(gtPublishedOnlyPreview?gtPublicBrandEmptyCopy():'')+'</div>';
  return '<div class="gt-index-featured-grid" aria-label="THE INDEX 精選品牌">'+
  items.map((b,i)=>'<a class="gt-index-featured-item" href="#/brand/'+esc(b.slug)+'" aria-label="閱讀 '+esc(b.name)+' 品牌介紹">'+
  '<span class="gt-index-featured-no">'+String(i+1).padStart(2,'0')+'<span class="gt-index-featured-country"> / JAPAN</span></span>'+
- '<div class="gt-index-featured-identity">'+gtBrandIdentity(b)+'</div>'+
+ '<div class="gt-index-featured-identity">'+featuredBrandIdentity(b)+'</div>'+
  '<p class="gt-index-featured-founder">'+esc(b.founder||'')+'</p>'+
  '<span class="gt-index-featured-arrow" aria-hidden="true">'+gtArrow()+'</span>'+
  '</a>').join('')+'</div>'+
