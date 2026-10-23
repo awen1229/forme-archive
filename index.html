@@ -1324,7 +1324,7 @@ function updatePreview(){
  }
  const source=document.getElementById('p-source');if(source)source.textContent=[fval('publisher'),fval('sourceTitle'),fval('sourceDate')].filter(Boolean).join(' / ');
 }
-function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';gtBrandPendingSlug='';gtBrandDirty=false;render()}
+function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;render()}
 function fillEditor(x){
  const map=editorKind==='brand'?{name:x.name,founder:x.founder,founded:x.founded,desc:x.desc,tags:(x.tags||[]).join(', '),url:x.url}:
  editorKind==='article'?{title:x.title,brand:x.brand,writer:x.writer||'',editor:x.editor||'',subject:x.subject||'clothing',category:x.category,publishedAt:gtPublicationDate(x),excerpt:x.excerpt,body:(x.body||[]).join('\n\n'),source:x.source,sourceTitle:x.sourceTitle,publisher:x.publisher,sourceAuthor:x.sourceAuthor,sourceDate:x.sourceDate,coverFit:x.coverFit||'cover',coverMobileFit:x.coverMobileFit||'cover',coverMobileZoom:x.coverMobileZoom??100,coverZoom:x.coverZoom??100,coverX:x.coverX??50,coverY:x.coverY??50,coverMobileX:x.coverMobileX??x.coverX??50,coverMobileY:x.coverMobileY??x.coverY??50,publicationSection:x.publicationSection||'both'}:
@@ -1338,7 +1338,7 @@ function fillEditor(x){
  const submit=document.querySelector('#editor-form button[type="submit"]');
  if(submit)submit.textContent='儲存修改';
  if(editorKind==='brand'){
-  gtBrandPendingSlug='';gtBrandDirty=false;
+  gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;
   const d=gtLogoDisplay(x);
   for(const [k,v] of [['logoScale',d.scale],['logoX',d.x],['logoY',d.y]]){const inp=document.getElementById('f-'+k);if(inp)inp.value=v;}
  }
@@ -1352,6 +1352,7 @@ function gtBrandSaveNote(text,isError=false){
  note.textContent=text;note.style.color=isError?'#a43d35':'#386947';
 }
 async function saveEditor(){
+ if(gtCloudEditorEnabled&&editorKind==='brand'&&(gtCloudImagePending||gtCloudImageError)){gtBrandSaveNote(gtCloudImagePending?'圖片仍在處理，請完成後再儲存。':'圖片處理失敗，請重新選擇圖片。',true);return}
  const arr=editorKind==='article'?localArticles:editorKind==='brand'?localBrands:localReferenceEntries;
  let x;
  if(editorKind==='brand'){
@@ -1636,14 +1637,26 @@ async function gtCompressImage(file,kind){
   throw Error('這張照片無法在目前瀏覽器壓縮至上傳限制，請先匯出較小的 JPG');
  }finally{URL.revokeObjectURL(url)}
 }
+let gtCloudImagePending=0,gtCloudImageError='',gtCloudImageChoice={cover:0,logo:0};
 document.addEventListener('change',async e=>{
  if(e.target.id==='f-cover'||e.target.id==='f-logo'){
   const el=e.target,file=el.files?.[0];if(!file)return;
-  const kind=el.id==='f-logo'?'logo':'cover';const status=document.getElementById(kind+'-status');
-  if(status)status.textContent='正在處理圖片…';
-  try{const result=await gtCompressImage(file,kind);if(kind==='logo'){editorLogo=result.data;editorLogoNote=result.note;}else editorCover=result.data;
-   if(status)status.textContent='已載入 '+file.name+' · '+result.note+'（約 '+Math.round(result.data.length*.75/1024)+' KB）';updatePreview();}
-  catch(err){if(status)status.textContent=err.message;alert(err.message)}
+  const kind=el.id==='f-logo'?'logo':'cover',choice=++gtCloudImageChoice[kind];
+  const status=document.getElementById(kind+'-status');
+  gtCloudImagePending++;gtCloudImageError='';
+  if(status)status.textContent='正在處理圖片，完成前暫時無法儲存…';
+  try{
+   const result=await gtCompressImage(file,kind);
+   if(choice!==gtCloudImageChoice[kind])return;
+   if(kind==='logo'){editorLogo=result.data;editorLogoNote=result.note}else editorCover=result.data;
+   if(status)status.textContent='已載入 '+file.name+' · '+result.note+'（約 '+Math.round(result.data.length*.75/1024)+' KB）';
+   updatePreview();
+  }catch(err){
+   if(choice!==gtCloudImageChoice[kind])return;
+   gtCloudImageError=err.message||'圖片處理失敗';
+   if(status)status.textContent=gtCloudImageError;
+   alert(gtCloudImageError);
+  }finally{gtCloudImagePending=Math.max(0,gtCloudImagePending-1)}
  }
  if(e.target.id==='import-cms-file')importCms(e.target.files[0]);
 });
@@ -1734,11 +1747,14 @@ document.addEventListener('input',e=>{
   gtHomeDraft[i].title='';gtHomeDraft[i].excerpt='';gtHomeDraft[i].cover='';gtHomeDraft[i].coverFit='cover';gtHomeDraft[i].coverX=50;gtHomeDraft[i].coverY=50;render();
  }
 });
+let gtHomeImagePending=0;
 document.addEventListener('change',async e=>{
  const upload=e.target.closest('[data-home-cover]');if(!upload||!upload.files?.length)return;
  const i=Number(upload.dataset.homeCover);if(!gtHomeDraft[i])return;
+ gtHomeImagePending++;
  try{const processed=await gtCompressImage(upload.files[0],'cover');gtHomeDraft[i].cover=processed.data;render()}
- catch(err){alert('圖片處理失敗：'+err.message)}
+ catch(err){alert('圖片處理失敗：'+err.message+'。目前內容仍保留。')}
+ finally{gtHomeImagePending=Math.max(0,gtHomeImagePending-1)}
 });
 document.addEventListener('click',e=>{
  if(e.target.closest('#gt-home-add')){
