@@ -45,12 +45,21 @@ async function loadPublished(){
 function addEditorLink(){
  if(location.hostname!==SECURE||!location.hash.includes('/admin'))return;
  const tabs=document.querySelector('.editor-tabs');
- if(!tabs||tabs.querySelector('.gt-design-editor-link'))return;
+ if(!tabs)return;
+ if(!tabs.querySelector('.gt-design-editor-link')){
  const link=document.createElement('a');
  link.href='./design-settings.html';
  link.className='gt-design-editor-link';
  link.textContent='視覺設定 ↗';
  tabs.appendChild(link);
+ }
+ if(!tabs.querySelector('.gt-font-library-link')){
+  const fontLink=document.createElement('a');
+  fontLink.href='./font-library.html';
+  fontLink.className='gt-design-editor-link gt-font-library-link';
+  fontLink.textContent='字型庫 / FONTS';
+  tabs.appendChild(fontLink);
+ }
 }
 if(location.hostname===SECURE&&typeof render==='function'){
  const previousRender=render;
