@@ -1331,7 +1331,7 @@ function fillEditor(x){
  {title:x.title,brand:x.brand,category:x.type,excerpt:x.summary,season:x.season,publisher:x.publisher,date:x.date,source:x.url};
  for(const [k,v] of Object.entries(map)){const el=document.getElementById('f-'+k);if(el)el.value=v||''}
  if(editorKind==='article'){const selected=new Set(gtSubjectsOf(x));document.querySelectorAll('input[name="gt-extra-subject"]').forEach(el=>{el.checked=selected.has(el.value)&&el.value!==map.subject});}
- editorCover=x.cover||'';editorLogo=x.logo||'';editorLogoNote='';
+ editorCover=x.cover||'';editorLogo=x.logo||'';editorLogoNote='';gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;
  // Make it obvious whether an existing record is being edited.
  const h=document.querySelector('.editor-grid .editor-card > h2');
  if(h)h.textContent=editorKind==='brand'?'編輯品牌資料':'編輯既有內容';
@@ -1498,7 +1498,7 @@ document.addEventListener('click',e=>{
   const row=gtCloudBrandRows.find(b=>b.slug===cloudPublish.dataset.cloudPublish);
   gtCloudPublishBrand(row);return;
  }
- const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';gtBrandPendingSlug='';gtBrandDirty=false;if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
+ const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
  if(e.target.closest('#editor-reset')){resetEditor();return;}
  if(e.target.closest('#export-cms')){downloadCms();return;}
  if(e.target.closest('#import-cms')){document.getElementById('import-cms-file').click();return;}
@@ -1751,8 +1751,9 @@ let gtHomeImagePending=0;
 document.addEventListener('change',async e=>{
  const upload=e.target.closest('[data-home-cover]');if(!upload||!upload.files?.length)return;
  const i=Number(upload.dataset.homeCover);if(!gtHomeDraft[i])return;
+ const slide=gtHomeDraft[i],originalSlug=slide.slug;
  gtHomeImagePending++;
- try{const processed=await gtCompressImage(upload.files[0],'cover');gtHomeDraft[i].cover=processed.data;render()}
+ try{const processed=await gtCompressImage(upload.files[0],'cover');if(gtHomeDraft.includes(slide)&&slide.slug===originalSlug){slide.cover=processed.data;render()}}
  catch(err){alert('圖片處理失敗：'+err.message+'。目前內容仍保留。')}
  finally{gtHomeImagePending=Math.max(0,gtHomeImagePending-1)}
 });
@@ -2000,11 +2001,11 @@ gtLoadCloudPublishedBrands();
 
 
 </script>
-<script src="./gt-cloud-articles-preview.js" defer></script>
+<script src="./gt-cloud-articles-preview.js?v=20261024-editor2" defer></script>
 <script src="./gt-inline-media-editor.js" defer></script>
-<script src="./gt-cloud-home-preview.js" defer></script>
-<script src="./gt-cloud-site-preview.js" defer></script>
-<script src="./gt-feature-issues-preview.js" defer></script>
+<script src="./gt-cloud-home-preview.js?v=20261024-editor2" defer></script>
+<script src="./gt-cloud-site-preview.js?v=20261024-editor2" defer></script>
+<script src="./gt-feature-issues-preview.js?v=20261024-editor2" defer></script>
 <script src="./gt-article-studio-organizer.js" defer></script>
 <script src="./gt-brand-studio-v1-8.js" defer></script>
 <script src="./gt-design-site.js" defer></script>
