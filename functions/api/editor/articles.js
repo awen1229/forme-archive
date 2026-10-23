@@ -4,7 +4,7 @@ export async function onRequestGet({request,env}){
  try{
   await requireEditor(request,env)
   if(!env.SANITY_EDITOR_TOKEN)throw new AuthError(503,'Sanity 編輯 Token 尚未設定')
-  const q='*[_type == "article" && !(_id in path("versions.**"))] | order(_updatedAt desc)[0...150]{_id,_rev,_updatedAt,title,slug,category,brand,excerpt,publishedAt}'
+  const q='*[_type == "article" && !(_id in path("versions.**"))] | order(_updatedAt desc)[0...1000]{_id,_rev,_updatedAt,title,slug,category,brand,subject,subjects,publicationSection,excerpt,publishedAt}'
   const u=new URL(API+'/data/query/production')
   u.searchParams.set('perspective','raw');u.searchParams.set('query',q)
   const response=await fetch(u.toString(),{headers:{Authorization:'Bearer '+env.SANITY_EDITOR_TOKEN},cache:'no-store'})
@@ -21,7 +21,7 @@ export async function onRequestGet({request,env}){
    if(!draft)row.hasPublished=true
    if(draft||row.status!=='draft'){
     Object.assign(row,{slug,title:doc.title,brand:doc.brand||'',category:doc.category||'',
-      excerpt:doc.excerpt||'',publishedAt:doc.publishedAt||'',updatedAt:doc._updatedAt||'',
+      excerpt:doc.excerpt||'',subject:doc.subject||'clothing',subjects:Array.isArray(doc.subjects)?doc.subjects:[],publicationSection:doc.publicationSection||'stories',publishedAt:doc.publishedAt||'',updatedAt:doc._updatedAt||'',
       revision:doc._rev||'',status:draft?'draft':'published'})
    }
    rows.set(slug,row)
