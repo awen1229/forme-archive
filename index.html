@@ -1122,8 +1122,6 @@ async function gtCloudPublishBrand(row){
  if(!row||row.status!=='draft'||!row.revision)return alert('請先重新讀取最新雲端草稿。');
  if(/\btest\b|測試/i.test(row.name))return alert('測試品牌不允許發布。');
  if(!confirm('即將公開發布「'+row.name+'」。這會取代該品牌在 Sanity 的公開版本，確定繼續？'))return;
- const typed=prompt('最後確認：請輸入 PUBLISH 以公開發布 '+row.name);
- if(typed!=='PUBLISH')return;
  try{
   const response=await fetch('/api/editor/publish-brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:row.slug,name:row.name,revision:row.revision,confirmation:'PUBLISH'})});
   const data=await response.json();
@@ -1135,7 +1133,7 @@ async function gtCloudPublishBrand(row){
 }
 
 function gtCloudEditorialNotice(){return gtCloudEditorEnabled
- ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS、ARTICLES、HOMEPAGE、SITE CONTENT 均可儲存 Sanity 雲端草稿。正式發布功能目前仍鎖定，請先完成上線檢查。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
+ ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS、ARTICLES、HOMEPAGE、SITE CONTENT 可儲存 Sanity 雲端草稿。確認發布後才會更新公開網站。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
  : '<b>GOOD THINGS, 1.6 網站編輯預覽</b>：維持原本編輯介面。目前這個網址尚未連接安全寫入服務，儲存仍只在目前瀏覽器。請匯出 JSON 備份，不要把 Sanity Token 放進網頁。'}
 async function gtSaveBrandCloud(record){
  const response=await fetch('/api/editor/brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});
@@ -1947,5 +1945,6 @@ gtLoadCloudPublishedBrands();
 <script src="./gt-cloud-site-preview.js" defer></script>
 <script src="./gt-feature-issues-preview.js" defer></script>
 <script src="./gt-article-studio-organizer.js" defer></script>
+<script src="./gt-brand-studio-v1-8.js" defer></script>
 </body>
 </html>
