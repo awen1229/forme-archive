@@ -133,7 +133,7 @@ const clampInline=(value,min,max,fallback)=>{const n=Number(value);return Number
    area.focus();area.setSelectionRange(caret,caret);
    area.dispatchEvent(new Event('input',{bubbles:true}));
    output.textContent='圖片已插入正文。請按儲存修改，再確認發布。';
-   selected=null;const picker=document.getElementById('gt-inline-upload');if(picker)picker.value='';
+   selected=null;const picker=document.getElementById('gt-inline-upload');if(picker)picker.value='';displaySelected();
   }catch(err){output.textContent='插入失敗：'+err.message;alert(output.textContent)}
   finally{busy=false;if(e.target.isConnected)e.target.disabled=false}
  },true);
