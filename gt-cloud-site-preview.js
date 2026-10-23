@@ -44,22 +44,24 @@
   }catch(e){alert('發布失敗：'+e.message)}
  }
  async function loadPublished(){
+  const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
+  const q='*[_id=="gt-site-content"][0]{fieldsJson}';
+  const url=isPreview?'/api/public/site-content':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q);
   try{
-   const query='*[_id=="gt-site-content"][0]{fields,fieldsJson}';
-   const u='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(query);
-   const r=await fetch(u,{cache:'no-store'});if(!r.ok)return;
-   const j=await r.json();if(!j.result||typeof j.result!=='object')return;
-   let fields=j.result.fields;
-   if(typeof j.result.fieldsJson==='string'){
-    try{fields=JSON.parse(j.result.fieldsJson)}
-    catch(e){console.info('已發布網站文字 JSON 格式無法解析');return}
-   }
-   if(!fields||typeof fields!=='object'||Array.isArray(fields))return;
+   const r=await fetch(url,{cache:'no-store',credentials:isPreview?'same-origin':'omit'});
+   if(!r.ok)throw Error('HTTP '+r.status);
+   const j=await r.json();
+   if(isPreview&&!j.ok)throw Error('網站文字服務異常');
+   const fieldsJson=isPreview?j.fieldsJson:j.result?.fieldsJson;
+   if(fieldsJson==null)return;
+   if(typeof fieldsJson!=='string')throw Error('已發布文字資料格式不正確');
+   const fields=JSON.parse(fieldsJson);
+   if(!fields||typeof fields!=='object'||Array.isArray(fields))throw Error('已發布文字格式無效');
    gtPublishedSiteContent=Object.fromEntries(Object.entries(fields).filter(([key,val])=>Object.hasOwn(gtSiteDefaults,key)&&typeof val==='string'));
    gtSiteContent={...gtPublishedSiteContent};
    if(editorKind!=='site')gtSiteDraft={...gtSiteContent};
    if(!location.hash.includes('/admin'))render();
-  }catch(e){console.info('公開網站文字尚未可讀',e.message)}
+  }catch(e){console.warn('網站文字已發布資料讀取失敗',e.message)}
  }
 if(isEditorPreview){
  const prev=render;
