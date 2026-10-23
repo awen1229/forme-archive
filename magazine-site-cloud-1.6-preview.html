@@ -1282,7 +1282,7 @@ function fillEditor(x){
  const map=editorKind==='brand'?{name:x.name,founder:x.founder,founded:x.founded,desc:x.desc,tags:(x.tags||[]).join(', '),url:x.url}:
  editorKind==='article'?{title:x.title,brand:x.brand,subject:x.subject||'clothing',category:x.category,publishedAt:gtPublicationDate(x),excerpt:x.excerpt,body:(x.body||[]).join('\n\n'),source:x.source,sourceTitle:x.sourceTitle,publisher:x.publisher,sourceAuthor:x.sourceAuthor,sourceDate:x.sourceDate,coverFit:x.coverFit||'cover',coverMobileFit:x.coverMobileFit||'cover',coverMobileZoom:x.coverMobileZoom??100,coverZoom:x.coverZoom??100,coverX:x.coverX??50,coverY:x.coverY??50,coverMobileX:x.coverMobileX??x.coverX??50,coverMobileY:x.coverMobileY??x.coverY??50,publicationSection:x.publicationSection||'both'}:
  {title:x.title,brand:x.brand,category:x.type,excerpt:x.summary,season:x.season,publisher:x.publisher,date:x.date,source:x.url};
- for(const [k,v] of Object.entries(map)){const el=document.getElementById('f-'+k);if(el)el.value=v||''}
+ for(const [k,v] of Object.entries(map)){const el=document.getElementById('f-'+k);if(el)el.value=v??''}
  if(editorKind==='article'){const selected=new Set(gtSubjectsOf(x));document.querySelectorAll('input[name="gt-extra-subject"]').forEach(el=>{el.checked=selected.has(el.value)&&el.value!==map.subject});}
  editorCover=x.cover||'';editorLogo=x.logo||'';editorLogoNote='';
  // Make it obvious whether an existing record is being edited.
