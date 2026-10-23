@@ -160,6 +160,7 @@ function noteArticle(msg,isError=false){let f=document.getElementById('editor-fo
 saveEditor=async function(...args){
  if(editorKind!=='article')return originalSave(...args);
  if(articleSaving)return;
+ if(gtCloudImagePending||gtCloudImageError){noteArticle(gtCloudImagePending?'圖片仍在處理，請完成後再儲存。':'圖片處理失敗，請重新選擇圖片。',true);return}
  if(!fval('title')||!fval('excerpt')||!fval('body'))return alert('請填寫標題、摘要與正文');
  const local=localArticles.find(x=>x.slug===editingId);
  const slug=editingId||pendingArticleSlug||(pendingArticleSlug='entry-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6));
