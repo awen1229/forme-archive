@@ -3,7 +3,7 @@
  const preview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
  if(!preview)return;
 
- let photoUrl='',dragCrop=null;
+ let photoUrl='',dragCrop=null,focusX=50,focusY=50;
  let selected=null,busy=false,caret=0;
  function enhanceInline(){
   if(editorKind!=='article'||!location.hash.includes('/admin'))return;
@@ -11,7 +11,7 @@
   if(!zone||zone.querySelector('#gt-inline-shape'))return;
   const group=document.createElement('div');group.id='gt-inline-shape';group.className='gt-inline-shape';
   group.innerHTML='<strong>顯示範圍 / FREE CROP</strong>'+
-   '<small>圖片可自行調整寬度與長寬比例。拖曳右下角改變長寬，不會把照片拉變形。</small>'+
+   '<small>拖曳圖片移動裁切焦點；拖曳右下角自由調整寬度與高度，原圖不會變形。</small>'+
    '<div class="gt-inline-shape-canvas"><div id="gt-inline-shape-stage" class="gt-inline-shape-stage" style="width:100%;aspect-ratio:1.5">'+
    '<div id="gt-inline-shape-empty">選擇圖片後會在這裡預覽裁切。</div>'+
    '<img id="gt-inline-shape-img" alt="正文圖片裁切預覽" hidden>'+
@@ -31,6 +31,7 @@
   const width=Number(document.getElementById('gt-inline-width')?.value)||100;
   const ratio=Number(document.getElementById('gt-inline-ratio')?.value)||150;
   box.style.width=width+'%';box.style.aspectRatio=(ratio/100).toFixed(3);
+  const img=box.querySelector('#gt-inline-shape-img');if(img)img.style.objectPosition=focusX+'% '+focusY+'%';
   const w=document.getElementById('gt-inline-width-out'),ra=document.getElementById('gt-inline-ratio-out');
   if(w)w.textContent=width+'%';if(ra)ra.textContent=(ratio/100).toFixed(2)+':1';
  }
@@ -48,21 +49,28 @@
   if(e.target.id==='gt-inline-width'||e.target.id==='gt-inline-ratio')applyShape();
  });
  document.addEventListener('pointerdown',e=>{
+  const stage=e.target.closest?.('#gt-inline-shape-stage');
+  if(!stage||!selected)return;
+  const parent=stage.parentElement;if(!parent)return;
   const handle=e.target.closest?.('#gt-inline-shape-handle');
-  if(!handle)return;
-  const stage=document.getElementById('gt-inline-shape-stage'),parent=stage?.parentElement;
-  if(!stage||!parent)return;
-  dragCrop={id:e.pointerId,startX:e.clientX,startY:e.clientY,startWidth:stage.offsetWidth,startHeight:stage.offsetHeight,parentWidth:parent.clientWidth};
-  handle.setPointerCapture(e.pointerId);e.preventDefault();
+  dragCrop={id:e.pointerId,mode:handle?'shape':'pan',startX:e.clientX,startY:e.clientY,
+   startWidth:stage.offsetWidth,startHeight:stage.offsetHeight,parentWidth:parent.clientWidth,
+   focusX,focusY};
+  stage.setPointerCapture(e.pointerId);e.preventDefault();
  });
  document.addEventListener('pointermove',e=>{
   if(!dragCrop||e.pointerId!==dragCrop.id)return;
-  const d=dragCrop,px= Math.max(d.parentWidth*.4,Math.min(d.parentWidth,d.startWidth+(e.clientX-d.startX)));
-  const h=Math.max(55,d.startHeight+(e.clientY-d.startY));
-  const width=Math.round(px/d.parentWidth*100);
-  const ratio=Math.round(Math.max(.5,Math.min(2.5,px/h))*100);
-  const w=document.getElementById('gt-inline-width'),ra=document.getElementById('gt-inline-ratio');
-  if(w)w.value=String(width);if(ra)ra.value=String(ratio);
+  const d=dragCrop,dx=e.clientX-d.startX,dy=e.clientY-d.startY;
+  if(d.mode==='shape'){
+   const px=Math.max(d.parentWidth*.4,Math.min(d.parentWidth,d.startWidth+dx));
+   const h=Math.max(55,d.startHeight+dy);
+   const width=Math.round(px/d.parentWidth*100),ratio=Math.round(Math.max(.5,Math.min(2.5,px/h))*100);
+   const w=document.getElementById('gt-inline-width'),ra=document.getElementById('gt-inline-ratio');
+   if(w)w.value=String(width);if(ra)ra.value=String(ratio);
+  }else{
+   focusX=clampInline(d.focusX-dx/Math.max(1,d.startWidth)*100,0,100,50);
+   focusY=clampInline(d.focusY-dy/Math.max(1,d.startHeight)*100,0,100,50);
+  }
   applyShape();e.preventDefault();
  });
  const release=e=>{if(!dragCrop||e.pointerId!==dragCrop.id)return;dragCrop=null};
@@ -74,7 +82,7 @@
  .gt-inline-shape strong{font-size:12px;letter-spacing:.06em}
  .gt-inline-shape small{font-size:11px;line-height:1.7;color:#5c6f5e}
  .gt-inline-shape-canvas{width:100%;min-width:0;background:#e5e5dc;padding:12px;overflow:hidden}
- .gt-inline-shape-stage{position:relative;max-width:100%;min-height:65px;background:#cdd3c8;overflow:visible;outline:1px solid #768473}
+ .gt-inline-shape-stage{position:relative;max-width:100%;min-height:65px;background:#cdd3c8;overflow:visible;outline:1px solid #768473;touch-action:none;cursor:grab}
  .gt-inline-shape-stage>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:100%;display:block}
  .gt-inline-shape-stage>img[hidden]{display:none}
  .gt-inline-shape-stage>div{display:grid;place-items:center;height:100%;padding:12px;font-size:12px;color:#667364}
@@ -116,7 +124,7 @@ const clampInline=(value,min,max,fallback)=>{const n=Number(value);return Number
    const caption=(document.getElementById('gt-inline-caption')?.value||'').replace(/[\]\r\n|]/g,' ').slice(0,200).trim();
    const fit=document.getElementById('gt-inline-mobile-fit')?.value==='full'?'full':'crop';
    const width=clampInline(document.getElementById('gt-inline-width')?.value,40,100,100),ratio=clampInline(document.getElementById('gt-inline-ratio')?.value,50,250,150);
-   const token='[[image:'+result.url+'|'+caption+'|fit:'+fit+'|width:'+width+'|ratio:'+ratio+']]';
+   const token='[[image:'+result.url+'|'+caption+'|fit:'+fit+'|width:'+width+'|ratio:'+ratio+'|x:'+focusX+'|y:'+focusY+']]';
    const pos=Math.min(caret,area.value.length),before=area.value.slice(0,pos),after=area.value.slice(pos);
    const prefix=before.length&&!before.endsWith('\n\n')?(before.endsWith('\n')?'\n':'\n\n'):'';
    const suffix=after.length&&!after.startsWith('\n\n')?(after.startsWith('\n')?'\n':'\n\n'):'';
