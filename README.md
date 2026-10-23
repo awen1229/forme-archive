@@ -108,3 +108,14 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 - Syntax checks passed for index.html inline JS, modified client JS and existing API modules. **Authenticated real-browser end-to-end save/upload/publish and security tests were not executed**, so do not claim all workflows have been user verified.
 - Deploy URL for owner to test: https://feature-secure-editor-cloud.forme-archive.pages.dev/#/admin . Source is not merged to main, no Sanity production document was changed by this GitHub patch.
 - Test checklist: create a brand with logo, save as draft, stay on editor, adjust and save again; open cloud draft and publish once; repeat for ARTICLE with cover and continue edit; verify HOME, SITE CONTENT and FEATURES save failures preserve fields; verify publish shows only one confirmation and never asks for manual PUBLISH typing. Avoid publishing test documents to actual production dataset.
+
+### GOOD THINGS, v1.11 editorial media and FEATURES navigation · 2026-10-24
+
+- Four requests: separate inline images from cover crop accordion; match HOME crop preview to actual display ratio; make FEATURES 3 series explicit; permit Word-like independently adjustable picture proportions.
+- ARTICLE: independent collapsible inline-media and cover panels, with inline image control adjacent to body. The cover remains a separate fold and desktop no longer forces it open.
+- HOME: mini previews model photo viewport geometry at 485px desktop (56% of 90vw) and 315px mobile (90vw full width); image can be panned and proportionally zoomed via drag, with independently saved desktop and mobile fit, zoom, x/y settings. Home carousel frame itself is fixed-aspect.
+- Inline ARTICLE photos: new independent width/height-aspect preview with drag handle and sliders. Optional strict numeric tokens width=40..100 and ratio=50..250, preserving old image tokens and no source image deformation.
+- FEATURES: three clear in-page navigation items BEHIND THE BRAND / GOOD PICKUPS / SEASONAL NOTES linked to their sections, without extra primary navigation branches.
+- Code parsing, safe numeric bounds and both legacy/new inline-image rendering were statically checked, along with homepage crop metadata round-tripping across Sanity functions.
+- Owner needs to inspect actual mobile/desktop layouts and authenticated draft save, reload and publish. No Sanity data was intentionally mutated by source authoring. Changes remain on protected preview branch; public main remains untouched.
+- Preview: https://feature-secure-editor-cloud.forme-archive.pages.dev/ . Next: verify independent folds, actual image drag/resize, HOME crop persistence, FEATURE three group navigation, then decide whether to merge.
