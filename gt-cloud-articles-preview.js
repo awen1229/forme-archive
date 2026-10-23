@@ -47,12 +47,14 @@ const loadPublished=async()=>{
   const r=await fetch('https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(q));
   if(!r.ok)return;
   const data=await r.json();
+  gtSanityPublishedArticleSlugs.clear();
   gtPublishedArticleRecords.clear();
   for(const original of gtOriginalArticles)gtPublishedArticleRecords.set(original.slug,original);
   for(const d of data.result||[]){
    if(!d?.title||!d.slug?.current)continue;
    const a={...d,slug:d.slug.current,body:Array.isArray(d.body)?d.body:[]};
    gtPublishedArticleRecords.set(a.slug,a);
+   gtSanityPublishedArticleSlugs.add(a.slug);
    if(localArticles.some(x=>x.slug===a.slug))continue;
    const i=articles.findIndex(x=>x.slug===a.slug);
    if(i<0)articles.push(a);else articles[i]={...articles[i],...a};
