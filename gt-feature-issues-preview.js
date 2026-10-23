@@ -25,14 +25,14 @@ viewFeatures=function(){
  const a=issueRows();
  const navigation='<nav class="gt-feature-series-nav" aria-label="FEATURES 三大系列">'+
   series.map(([key,title,desc],i)=>'<a class="gt-feature-series-nav-item" href="#/features" data-feature-series-jump="features-'+key+'">'+
-   '<span class="gt-feature-series-nav-num">0'+(i+1)+'</span><span class="gt-feature-series-nav-content"><strong>'+title+'</strong><small>'+escText(desc)+'</small></span><span class="gt-feature-series-nav-arrow" aria-hidden="true">↗</span></a>').join('')+
+   '<span class="gt-feature-series-nav-num">0'+(i+1)+'</span><span class="gt-feature-series-nav-content"><strong>'+title+'</strong><small>'+escText(desc)+'</small></span><span class="gt-feature-series-nav-arrow" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16L16 4M7 4h9v9"/></svg></span></a>').join('')+
  '</nav>';
  const group=series.map(([key,title,desc])=>{
   const items=a.filter(x=>x.series===key);
   return '<section class="gt-issue-series" id="features-'+key+'"><div class="gt-issue-series-title"><span class="kicker">'+title+'</span><p>'+escText(desc)+'</p></div><div class="gt-issue-grid">'+
    (items.length?items.map(x=>'<a class="gt-issue-card" href="#/feature/'+encodeURIComponent(x.slug)+'">'+
     (x.cover?gtCoverMarkup(x):'<div class="gt-issue-placeholder">'+title+'</div>')+
-    '<small>FEATURE / '+title+'</small><h3>'+escText(x.title)+'</h3><p>'+escText(x.summary)+'</p><span>READ ISSUE →</span></a>').join(''):'<p class="muted">此系列尚無已發布專題。</p>')+
+    '<small>FEATURE / '+title+'</small><h3>'+escText(x.title)+'</h3><p>'+escText(x.summary)+'</p><span class="gt-feature-issue-read">READ ISSUE '+gtArrow()+'</span></a>').join(''):'<p class="muted">此系列尚無已發布專題。</p>')+
    '</div></section>';
  }).join('');
  return '<section class="section">'+header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))+navigation+group+'</section>';
@@ -205,7 +205,10 @@ style.textContent=`
 .gt-feature-series-nav-content{display:grid;gap:10px;min-width:0;flex:1}
 .gt-feature-series-nav-content strong{font:600 clamp(12px,1.45vw,17px)/1.2 Arial,"Noto Sans TC",sans-serif;letter-spacing:.01em}
 .gt-feature-series-nav-content small{font-size:11px;color:#6a7369;line-height:1.6}
-.gt-feature-series-nav-arrow{font-size:16px;color:#526355}
+.gt-feature-series-nav-arrow{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;color:#526355;flex:0 0 19px}
+.gt-feature-series-nav-arrow svg{display:block;width:17px;height:17px}
+.gt-feature-issue-read{display:inline-flex;align-items:center;gap:7px}
+.gt-feature-issue-read svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:750px){.gt-feature-series-nav{grid-template-columns:1fr;gap:0;margin:24px 0 32px}.gt-feature-series-nav-item{min-height:0;padding:15px 10px;border-left:0;border-right:0;border-bottom:0}.gt-feature-series-nav-item:last-child{border-bottom:1px solid #cbd0c3}.gt-feature-series-nav-content{gap:4px}.gt-feature-series-nav-content strong{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.gt-feature-series-nav-item{transition:none}}
 .gt-issue-series{scroll-margin-top:24px;margin:45px 0 65px}.gt-issue-series-title{border-bottom:1px solid #d6d6ce;padding-bottom:16px;margin-bottom:25px}.gt-issue-series-title p{font-size:13px;color:#74786f;margin:10px 0 0}
