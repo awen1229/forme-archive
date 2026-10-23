@@ -2,7 +2,7 @@
 (()=>{
 const preview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 const series=[['behind-the-brand','BEHIND THE BRAND','品牌故事與設計理念'],['good-pickups','GOOD PICKUPS','個人選品、穿著與使用觀察'],['seasonal-notes','SEASONAL NOTES','季度服裝與趨勢觀察']];
-let published=[],rows=[],active=null,error='',loading=false,coverData='';
+let published=[],rows=[],active=null,error='',loading=false,coverData='',articleOrder=[];
 const escText=v=>esc(String(v??''));
 const publicFeatures=async()=>{
  try{
@@ -56,6 +56,7 @@ const api=async(url,options={})=>{
 };
 const initial=()=>({slug:'',title:'',series:series[0][0],summary:'',articleSlugs:[],brandSlugs:[],cover:'',coverFit:'cover',coverX:50,coverY:50,revision:'',status:'new'});
 // Editor template is assembled separately to make the checkbox expression unambiguous.
+const renderOrder=()=>{const zone=document.getElementById('gt-issue-order');if(!zone)return;const chosen=[...document.querySelectorAll('#gt-issue-form input[name="articleSlugs"]:checked')].map(el=>el.value);articleOrder=[...articleOrder.filter(s=>chosen.includes(s)),...chosen.filter(s=>!articleOrder.includes(s))];zone.innerHTML=articleOrder.map((slug,i)=>{const a=gtPublicArticles().find(v=>v.slug===slug);return '<div class="editor-list-item"><span>'+(i+1)+'. '+escText(a?.title||slug)+'</span><div class="gt-record-buttons"><button type="button" data-order-shift="'+i+',-1" '+(i===0?'disabled':'')+'>↑</button><button type="button" data-order-shift="'+i+',1" '+(i===articleOrder.length-1?'disabled':'')+'>↓</button></div></div>'}).join('')};
 const renderEditor=()=>{
  const a=active||initial();
  const choices=(items,name,selected)=>items.map(x=>'<label><input type="checkbox" name="'+name+'" value="'+escText(x.slug)+'" '+(selected.includes(x.slug)?'checked':'')+'> '+escText(x.title||x.name)+'</label>').join('');
@@ -83,7 +84,7 @@ viewAdmin=function(){return editorKind==='features'?renderEditor():baseAdmin()};
 const baseTabs=editorTabs;
 editorTabs=function(){return baseTabs().replace('</div>','<button class="'+(editorKind==='features'?'on':'')+'" data-kind="features">FEATURES 專題</button></div>')};
 const refresh=async()=>{loading=true;error='';render();try{rows=(await api('/api/editor/feature-issues')).records||[]}catch(e){error=e.message}finally{loading=false;render()}};
-const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;coverData='';render()}catch(e){alert('無法讀取專題：'+e.message)}};
+const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;articleOrder=[...(active.articleSlugs||[])];coverData='';render();renderOrder()}catch(e){alert('無法讀取專題：'+e.message)}};
 const publish=async slug=>{
  const row=rows.find(r=>r.slug===slug);
  if(!row||row.status!=='draft'||!row.revision)return alert('請重新讀取專題草稿');
@@ -93,15 +94,17 @@ const publish=async slug=>{
 };
 document.addEventListener('click',e=>{
  const k=e.target.closest('[data-kind="features"]');
- if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();render();refresh();return}
- const btn=e.target.closest('[data-issue-act]');if(!btn)return;
+ if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();articleOrder=[];render();refresh();return}
+ const btn=e.target.closest('[data-issue-act]');if(!btn){const shift=e.target.closest('[data-order-shift]');if(shift){e.preventDefault();const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}return;}
  e.preventDefault();e.stopImmediatePropagation();
  if(btn.dataset.issueAct==='reload')refresh();
- if(btn.dataset.issueAct==='new'){active=initial();coverData='';render()}
+ if(btn.dataset.issueAct==='new'){active=initial();articleOrder=[];coverData='';render()}
  if(btn.dataset.issueAct==='open')open(btn.dataset.slug);
  if(btn.dataset.issueAct==='publish')publish(btn.dataset.slug);
+ const shift=e.target.closest('[data-order-shift]');if(shift){const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}
 },true);
 document.addEventListener('change',async e=>{
+ if(e.target.name==='articleSlugs'&&e.target.closest('#gt-issue-form')){renderOrder();return}
  if(e.target.name!=='coverUpload'||!e.target.closest('#gt-issue-form'))return;
  const file=e.target.files?.[0];if(!file)return;
  try{
@@ -122,7 +125,7 @@ document.addEventListener('submit',async e=>{
  const f=e.target,a=active||initial();
  const selected=name=>Array.from(f.querySelectorAll('input[name="'+name+'"]:checked'),x=>x.value);
  const input={slug:f.elements.slug.value,title:f.elements.title.value,series:f.elements.series.value,
- summary:f.elements.summary.value,articleSlugs:selected('articleSlugs'),brandSlugs:selected('brandSlugs'),
+ summary:f.elements.summary.value,articleSlugs:[...articleOrder.filter(v=>selected('articleSlugs').includes(v)),...selected('articleSlugs').filter(v=>!articleOrder.includes(v))],brandSlugs:selected('brandSlugs'),
  cover:f.elements.clearCover.checked?'':(coverData||a.cover||''),coverFit:f.elements.coverFit.value,
  coverX:Number(f.elements.coverX.value),coverY:Number(f.elements.coverY.value),revision:a.revision||''};
  try{
