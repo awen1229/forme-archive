@@ -20,7 +20,7 @@ const gtArticleMatches=()=>{
   if(gtArticleFilters.subject!=='all'&&!subjects.has(gtArticleFilters.subject))return false;
   if(gtArticleFilters.brand!=='all'&&a.brand!==gtArticleFilters.brand)return false;
   if(gtArticleFilters.category!=='all'&&a.category!==gtArticleFilters.category)return false;
-  return !q||[a.title,a.brand,a.slug,a.category,a.excerpt,...subjects].some(v=>gtText(v).toLocaleLowerCase().includes(q));
+  return !q||[a.title,a.brand,a.writer,a.editor,a.slug,a.category,a.excerpt,...subjects].some(v=>gtText(v).toLocaleLowerCase().includes(q));
  }).sort((a,b)=>{
   if(gtArticleFilters.sort==='title')return gtText(a.title).localeCompare(gtText(b.title),'zh-Hant');
   if(gtArticleFilters.sort==='published')return gtText(b.publishedAt).localeCompare(gtText(a.publishedAt))||gtText(b.updatedAt).localeCompare(gtText(a.updatedAt));
@@ -55,7 +55,7 @@ const draw=()=>{
  let matched=cloudRows.filter(a=>(filterStatus==='all'||a.status===filterStatus)
  &&(filterBrand==='all'||a.brand===filterBrand)
  &&(filterSubject==='all'||[a.subject,...(a.subjects||[])].includes(filterSubject))
- &&(!searchText||[a.title,a.brand,a.slug,a.excerpt,a.category].some(v=>String(v||'').toLocaleLowerCase().includes(searchText.toLocaleLowerCase()))));
+ &&(!searchText||[a.title,a.brand,a.writer,a.editor,a.slug,a.excerpt,a.category].some(v=>String(v||'').toLocaleLowerCase().includes(searchText.toLocaleLowerCase()))));
  matched=[...matched].sort((a,b)=>sortBy==='title'?String(a.title).localeCompare(String(b.title)):sortBy==='published'?String(b.publishedAt||'').localeCompare(String(a.publishedAt||'')):String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
  const totals=cloudRows.length,drafts=cloudRows.filter(a=>a.status==='draft').length;
  el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">ARTICLE LIBRARY / 文章資料庫</h3><p class="muted">搜尋、分類和狀態篩選只影響後台顯示，不會修改文章，也不會影響公開網站。</p>'+
@@ -68,7 +68,7 @@ const draw=()=>{
  '<div class="gt-article-library-footer"><span>顯示 '+matched.length+' / '+totals+' 篇</span><button type="button" data-gt-a="clearfilters">清除篩選</button><button type="button" data-gt-a="refresh">重新讀取雲端文章</button></div>'+
  (cloudError?'<p role="alert">'+esc(cloudError)+'</p>':'')+
  (cloudLoading?'<p class="muted">正在讀取…</p>':'')+
- '<div class="gt-article-list">'+(matched.length?matched.map(a=>'<div class="editor-list-item gt-article-list-row"><div><div class="editor-badge">'+(a.status==='draft'?'雲端草稿':'已發布')+' / '+esc(a.brand||'GOOD THINGS')+'</div><strong>'+esc(a.title)+'</strong><div class="gt-article-row-meta">'+esc(a.category||'')+' · '+esc(a.publishedAt||'未設定日期')+'</div></div><div class="gt-record-buttons"><button type="button" data-gt-a="edit" data-slug="'+esc(a.slug)+'">載入編輯</button>'+(a.status==='draft'?'<button type="button" data-gt-a="publish" data-slug="'+esc(a.slug)+'">確認發布</button>':'')+'</div></div>').join(''):'<p class="muted">沒有符合條件的文章。可以調整篩選條件。</p>')+'</div>';
+ '<div class="gt-article-list">'+(matched.length?matched.map(a=>'<div class="editor-list-item gt-article-list-row"><div><div class="editor-badge">'+(a.status==='draft'?'雲端草稿':'已發布')+' / '+esc(a.brand||'GOOD THINGS')+'</div><strong>'+esc(a.title)+'</strong><div class="gt-article-row-meta">'+esc([a.category,a.writer?'撰文 '+a.writer:'',a.editor?'編輯 '+a.editor:'',a.publishedAt||'未設定日期'].filter(Boolean).join(' · '))+'</div></div><div class="gt-record-buttons"><button type="button" data-gt-a="edit" data-slug="'+esc(a.slug)+'">載入編輯</button>'+(a.status==='draft'?'<button type="button" data-gt-a="publish" data-slug="'+esc(a.slug)+'">確認發布</button>':'')+'</div></div>').join(''):'<p class="muted">沒有符合條件的文章。可以調整篩選條件。</p>')+'</div>';
 };
 
 const refresh=async()=>{
