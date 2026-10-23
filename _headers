@@ -1,0 +1,10 @@
+# GOOD THINGS, HTML and editor scripts: always revalidate in browser.
+# Prevent stale admin tabs after Cloudflare branch deployments.
+/
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/gt-feature-issues-preview.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
