@@ -4,6 +4,7 @@
  if(!preview)return;
 
  let photoUrl='',dragCrop=null;
+ let selected=null,busy=false,caret=0;
  function enhanceInline(){
   if(editorKind!=='article'||!location.hash.includes('/admin'))return;
   const zone=document.getElementById('gt-inline-media-fold')?.querySelector('.gt-editor-inline-image');
@@ -89,7 +90,6 @@
  enhanceInline();
 
 const clampInline=(value,min,max,fallback)=>{const n=Number(value);return Number.isFinite(n)?Math.min(max,Math.max(min,Math.round(n))):fallback};
- let selected=null,busy=false,caret=0;
  document.addEventListener('click',e=>{
   const area=e.target.closest('#f-body');if(area)caret=area.selectionStart||0;
  },true);
