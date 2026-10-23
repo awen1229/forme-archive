@@ -738,6 +738,8 @@ body.gt-drawer-open{overflow:hidden}
  #gt-index-brand-grid>.brand-card .arrow{display:flex;position:static;float:none;grid-column:3;grid-row:1;align-items:center;justify-content:flex-end;min-width:0;margin:0;color:#3c463b}
  #gt-index-brand-grid>.brand-card:focus-visible{outline:2px solid #637968;outline-offset:-2px}
 }
+/* Whole-image mode must not silently use a previously saved crop zoom. */
+.gt-mag-photo img.gt-mag-uploaded-cover[style*="--gt-fit:contain"]{object-fit:contain;transform:none}
 /* Featured editor mobile and desktop photo must respect the same focal point. */
 @media(max-width:700px){
  .gt-mag-photo img.gt-mag-uploaded-cover{
