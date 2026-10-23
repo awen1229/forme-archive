@@ -10,7 +10,7 @@ const api=async(url,options={})=>{
  return body;
 };
 const panel=()=>document.getElementById('gt-home-cloud-panel');
-const sanitise=d=>Array.isArray(d?.slides)?d.slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.cover||'',coverFit:s.coverFit||'cover',coverX:s.coverX??50,coverY:s.coverY??50})):[];
+const sanitise=d=>Array.isArray(d?.slides)?d.slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.cover||'',coverFit:s.coverFit||'cover',coverMobileFit:s.coverMobileFit||'cover',coverZoom:s.coverZoom??100,coverMobileZoom:s.coverMobileZoom??100,coverX:s.coverX??50,coverY:s.coverY??50,coverMobileX:s.coverMobileX??s.coverX??50,coverMobileY:s.coverMobileY??s.coverY??50})):[];
 function inject(){
  if(!location.hash.includes('/admin')||editorKind!=='home')return;
  const tabs=document.querySelector('.editor-tabs');
@@ -61,7 +61,7 @@ async function saveDraft(){
  if(saving||publishing)return;
  if(gtHomeImagePending)return alert('首頁封面仍在處理，請完成後再儲存。');
  if(!loaded)return alert('請先讀取雲端首頁資料再儲存');
- const chosen=gtHomeDraft.map(v=>({slug:v.slug,title:String(v.title||'').trim(),excerpt:String(v.excerpt||'').trim(),cover:v.cover||'',coverFit:v.coverFit||'cover',coverX:v.coverX??50,coverY:v.coverY??50}));
+ const chosen=gtHomeDraft.map(v=>({slug:v.slug,title:String(v.title||'').trim(),excerpt:String(v.excerpt||'').trim(),cover:v.cover||'',coverFit:v.coverFit||'cover',coverMobileFit:v.coverMobileFit||'cover',coverZoom:v.coverZoom??100,coverMobileZoom:v.coverMobileZoom??100,coverX:v.coverX??50,coverY:v.coverY??50,coverMobileX:v.coverMobileX??v.coverX??50,coverMobileY:v.coverMobileY??v.coverY??50}));
  if(!chosen.length||chosen.length>5||chosen.some(v=>!articles.some(a=>a.slug===v.slug)))return alert('精選中有無效或尚未選擇的文章');
  if(new Set(chosen.map(v=>v.slug)).size!==chosen.length)return alert('精選文章不可重複');
  const revision=draft?.revision||published?.revision||'';
@@ -101,7 +101,7 @@ async function loadPublished(){
   if(isPreview&&!body.ok)throw Error('首頁公開資料服務異常');
   const slides=isPreview?body.slides:body.result?.slides;
   if(!Array.isArray(slides))throw Error('首頁資料格式不正確');
-  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||s.cover||'',coverFit:s.coverFit||'cover',coverX:s.coverX??50,coverY:s.coverY??50}))};
+  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||s.cover||'',coverFit:s.coverFit||'cover',coverMobileFit:s.coverMobileFit||'cover',coverZoom:s.coverZoom??100,coverMobileZoom:s.coverMobileZoom??100,coverX:s.coverX??50,coverY:s.coverY??50,coverMobileX:s.coverMobileX??s.coverX??50,coverMobileY:s.coverMobileY??s.coverY??50}))};
   if(typeof gtPublicHomeLoadState!=='undefined')gtPublicHomeLoadState='ready';
   if(!previewDraft){gtSlides=gtResolvedSlides();if(!location.hash.includes('/admin'))render()}
  }catch(e){
