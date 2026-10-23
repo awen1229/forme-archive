@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>DESIGN SETTINGS / GOOD THINGS,</title>
+<link rel="stylesheet" href="./gt-design-site.css">
+</head>
+<body style="margin:0;background:#f3f1eb;color:#273029">
+<main class="gt-design-settings">
+<header><div><div class="eyebrow">GOOD THINGS, / EDITORIAL STUDIO</div><strong style="font-size:20px;letter-spacing:-.04em">DESIGN SETTINGS</strong></div><a class="action-link" href="./#/admin">← 返回編輯後台</a></header>
+<h1>網站視覺設定</h1>
+<p class="muted">先預覽，再儲存雲端草稿。只有手動確認發布後，公開網站才會採用新的設定。</p>
+<div class="layout">
+<section class="panel" aria-label="視覺選項">
+ <fieldset><legend>01 / 標題字體</legend>
+  <label><input type="radio" name="headingFont" value="original" checked> Original / 保留目前設計</label>
+  <label><input type="radio" name="headingFont" value="sans"> Sans Serif / 現代無襯線</label>
+  <label><input type="radio" name="headingFont" value="serif"> Serif / 襯線雜誌風格</label>
+  <label><input type="radio" name="headingFont" value="mixed"> Mixed / 首頁襯線、文章無襯線</label>
+ </fieldset>
+ <fieldset><legend>02 / 文章閱讀字級</legend>
+  <label><input type="radio" name="textScale" value="compact"> Compact / 精簡</label>
+  <label><input type="radio" name="textScale" value="standard" checked> Standard / 原始大小</label>
+  <label><input type="radio" name="textScale" value="large"> Large / 較大字級</label>
+ </fieldset>
+ <fieldset><legend>03 / 網站底色</legend>
+  <label><input type="radio" name="paper" value="original" checked> Warm Paper / 原始紙色</label>
+  <label><input type="radio" name="paper" value="white"> Clean White / 白色</label>
+ </fieldset>
+ <div class="actions">
+  <button id="gt-design-load" type="button">重新讀取雲端</button>
+  <button id="gt-design-draft-load" type="button" hidden>載入草稿</button>
+  <button id="gt-design-published-load" type="button" hidden>載入已發布</button>
+ </div>
+ <div class="actions">
+  <button class="primary" id="gt-design-save" type="button">儲存雲端草稿</button>
+  <button id="gt-design-publish" type="button" disabled>確認發布</button>
+ </div>
+ <p id="gt-design-status" class="message" role="status" aria-live="polite">尚未載入資料。</p>
+</section>
+<section aria-label="預覽區">
+ <div class="eyebrow" style="margin-bottom:12px">LIVE PREVIEW / EDITORIAL PAGE</div>
+ <div class="gt-design-demo"><span class="eyebrow">FEATURES / BEHIND THE BRAND</span><h2>Beyond the Familiar.</h2><p>我們想記錄的不只是衣服本身，也包括設計者的想法，以及那些值得反覆閱讀的日常風景。</p><div class="line"></div><span class="eyebrow">GOOD THINGS, / AN EDITORIAL ARCHIVE</span></div>
+ <div class="actions"><a id="gt-design-open-preview" class="action-link" target="_blank" rel="noopener" href="./#/">在完整網站預覽 ↗</a></div>
+ <p class="footnote">試看與草稿不會公開。為保持網站一致性，第一版僅調整三組全站樣式；LOGO 和品牌目錄原有排版不會被改動。</p>
+</section>
+</div>
+</main>
+<script src="./gt-design-site.js" defer></script>
+<script src="./gt-design-settings.js" defer></script>
+</body>
+</html>
