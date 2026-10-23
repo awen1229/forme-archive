@@ -58,3 +58,15 @@ The site operator reports saving the Preview environment variable through Cloudf
 ### Preview variable re-save handoff · 2026-10-23
 
 Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text variable with value `true` in the Cloudflare Pages **Preview** settings dialog, following read-only diagnostics that previously returned `flagPresent=false`. This documentation-only commit requests a new Preview build so the setting can be loaded at runtime. This does not prove the value is active: verify the protected `/api/editor/publish-status` response reports `flagPresent=true` and `publishEnabled=true` before any publishing. Do not publish `GT CLOUD TEST`; confirm a genuine COMOLI draft exists first. The `main` branch must remain unchanged.
+
+
+## GOOD THINGS, visual settings handoff · 2026-10-24
+
+- **Protected editor preview only:** `https://feature-secure-editor-cloud.forme-archive.pages.dev/design-settings.html`.
+- The admin navigation includes a "視覺設定" link. Initial presets: editorial title font (original/sans/serif/mixed), article reading size (compact/standard/large), site paper (warm original/white).
+- Editing options updates an in-page sample; the full-site preview uses a query parameter only honored on the protected editor hostname. This parameter does not save/publish anything.
+- `/api/editor/design-settings` reads/writes `drafts.gt-design-settings` in Sanity production under Cloudflare Access identity and same-origin controls. Draft save never changes the published document.
+- `/api/public/design-settings` reads published records only, and `gt-design-site.js` on the future public site will apply validated published presets. Existing defaults remain unchanged without a published design document.
+- **Publication is intentionally locked:** the editor's publication button is disabled, and the publishing endpoint additionally requires `ENABLE_DESIGN_SETTINGS_PUBLISH=true` AND the existing `ENABLE_PRODUCTION_PUBLISH=true`. Do not set the new flag or unlock the button until `gt-design-site.js`, `gt-design-site.css`, and their `index.html` references have been merged and deployed on public GitHub Pages, followed by authenticated/unauthenticated regression tests.
+- No brand, article, homepage, or other existing Sanity document was modified as part of the settings implementation.
+- Browser visual/Access testing must still be done by the authorized site owner. JS source syntax was checked; latest Cloudflare build status must be verified independently after the final README commit.
