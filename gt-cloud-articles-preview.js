@@ -2,6 +2,43 @@
 (()=>{
 const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 let cloudRows=[],cloudRevision='',cloudError='',cloudLoading=false;
+const gtArticleFilters={search:'',status:'all',subject:'all',brand:'all',category:'all',sort:'updated',page:1};
+const gtArticlePageSize=12;
+const gtText=v=>String(v??'');
+const gtDistinct=(name)=>[...new Set(cloudRows.map(x=>gtText(x[name]).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+const gtArticleSubjectNames={clothing:'CLOTHING',style:'STYLE',people:'PEOPLE',places:'PLACES',objects:'OBJECTS',notes:'NOTES'};
+const gtArticleSelect=(name,items,label)=>{
+ const opts=items.map(([v,t])=>'<option value="'+esc(v)+'" '+(gtArticleFilters[name]===v?'selected':'')+'>'+esc(t)+'</option>').join('');
+ return '<label>'+esc(label)+'<select data-gt-filter="'+name+'">'+opts+'</select></label>';
+};
+const gtArticleMatches=()=>{
+ const q=gtArticleFilters.search.trim().toLocaleLowerCase();
+ return cloudRows.filter(a=>{
+  const subjects=new Set([gtText(a.subject),...(Array.isArray(a.subjects)?a.subjects:[])]);
+  if(gtArticleFilters.status!=='all'&&a.status!==gtArticleFilters.status)return false;
+  if(gtArticleFilters.subject!=='all'&&!subjects.has(gtArticleFilters.subject))return false;
+  if(gtArticleFilters.brand!=='all'&&a.brand!==gtArticleFilters.brand)return false;
+  if(gtArticleFilters.category!=='all'&&a.category!==gtArticleFilters.category)return false;
+  return !q||[a.title,a.brand,a.slug,a.category,a.excerpt,...subjects].some(v=>gtText(v).toLocaleLowerCase().includes(q));
+ }).sort((a,b)=>{
+  if(gtArticleFilters.sort==='title')return gtText(a.title).localeCompare(gtText(b.title),'zh-Hant');
+  if(gtArticleFilters.sort==='published')return gtText(b.publishedAt).localeCompare(gtText(a.publishedAt))||gtText(b.updatedAt).localeCompare(gtText(a.updatedAt));
+  return gtText(b.updatedAt).localeCompare(gtText(a.updatedAt));
+ });
+};
+const gtArticleDrawList=()=>{
+ const zone=document.getElementById('gt-cloud-article-results');if(!zone)return;
+ const found=gtArticleMatches();
+ const totalPages=Math.max(1,Math.ceil(found.length/gtArticlePageSize));
+ gtArticleFilters.page=Math.max(1,Math.min(totalPages,gtArticleFilters.page));
+ const start=(gtArticleFilters.page-1)*gtArticlePageSize;
+ const pages=found.slice(start,start+gtArticlePageSize);
+ const count=cloudRows.length;
+ zone.innerHTML='<div class="gt-article-count" role="status">符合 '+found.length+' 篇 ／ 雲端共 '+count+' 篇（已發布 '+cloudRows.filter(a=>a.hasPublished).length+'，待發布草稿 '+cloudRows.filter(a=>a.status==='draft').length+'）</div>'+
+ (pages.map(a=>'<div class="editor-list-item gt-article-catalog-row"><div><div class="editor-badge">'+(a.status==='draft'?'雲端草稿':'已發布')+'</div><strong>'+esc(a.title)+'</strong><small>'+esc([a.brand,gtArticleSubjectNames[a.subject]||a.subject,a.category,a.publishedAt].filter(Boolean).join(' / '))+'</small></div><div class="gt-record-buttons"><button type="button" data-gt-a="edit" data-slug="'+esc(a.slug)+'">載入編輯</button>'+(a.status==='draft'?'<button type="button" data-gt-a="publish" data-slug="'+esc(a.slug)+'">確認發布</button>':'')+'</div></div>').join('')||'<p class="muted">沒有符合條件的文章，可以調整搜尋或篩選。</p>')+
+ '<div class="gt-article-pagination"><button type="button" data-gt-page="previous" '+(gtArticleFilters.page<=1?'disabled':'')+'>上一頁</button><span>第 '+gtArticleFilters.page+' / '+totalPages+' 頁</span><button type="button" data-gt-page="next" '+(gtArticleFilters.page>=totalPages?'disabled':'')+'>下一頁</button></div>';
+};
+
 const api=async(path,opts={})=>{
  const r=await fetch(path,{credentials:'same-origin',cache:'no-store',...opts});
  let data={};try{data=await r.json()}catch{}
@@ -11,10 +48,23 @@ const api=async(path,opts={})=>{
 const cloudPanel=()=>document.getElementById('gt-cloud-article-panel');
 const draw=()=>{
  const el=cloudPanel();if(!el)return;
- el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">雲端文章與專訪</h3><p class="muted"><strong>儲存修改只更新草稿，不會改變公開網站。</strong> 檢查無誤後，需按下該文章的「確認發布」，前台才會讀到新的分類與封面裁切設定。</p><button type="button" data-gt-a="refresh">重新讀取雲端文章</button>'+
+ const subjects=[['all','所有主題'],...Object.entries(gtArticleSubjectNames).map(([v,n])=>[v,n])];
+ const brands=[['all','所有品牌'],...gtDistinct('brand').map(v=>[v,v])];
+ const categories=[['all','所有內容形式'],...gtDistinct('category').map(v=>[v,v])];
+ el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">文章資料庫 / ARTICLE LIBRARY</h3>'+
+ '<p class="muted">統一管理全部文章。主題、品牌與內容形式都沿用現有資料，不必重複建立資料夾；同一篇文章可以出現在多個主題。</p>'+
+ '<div class="gt-article-toolbar"><label class="gt-article-query">搜尋標題、關鍵字、品牌或摘要<input type="search" data-gt-filter="search" placeholder="例如 COMOLI、小森、日常服" value="'+esc(gtArticleFilters.search)+'"></label>'+
+ gtArticleSelect('status',[['all','全部狀態'],['draft','待發布草稿'],['published','已發布']],'發布狀態')+
+ gtArticleSelect('subject',subjects,'STORIES 主題')+
+ gtArticleSelect('brand',brands,'相關品牌')+
+ gtArticleSelect('category',categories,'內容形式')+
+ gtArticleSelect('sort',[['updated','最近修改'],['published','發布日期'],['title','標題 A–Z']],'排序方式')+'</div>'+
+ '<div class="gt-article-toolbar-actions"><button type="button" data-gt-a="refresh">重新讀取雲端文章</button><button type="button" data-gt-a="clear-filters">清除篩選</button></div>'+
+ '<p class="cms-hint"><strong>儲存修改只更新草稿，不會改變公開網站。</strong> 檢查無誤後，需再次「確認發布」。</p>'+
  (cloudError?'<p role="alert">'+esc(cloudError)+'</p>':'')+
- (cloudLoading?'<p class="muted">正在讀取…</p>':'')+
- cloudRows.map(a=>'<div class="editor-list-item"><div><div class="editor-badge">'+(a.status==='draft'?'雲端草稿':'已發布')+'</div><strong>'+esc(a.title)+'</strong></div><div class="gt-record-buttons"><button type="button" data-gt-a="edit" data-slug="'+esc(a.slug)+'">載入編輯</button>'+(a.status==='draft'?'<button type="button" data-gt-a="publish" data-slug="'+esc(a.slug)+'">確認發布</button>':'')+'</div></div>').join('');
+ (cloudLoading?'<p class="muted" role="status">正在讀取…</p>':'')+
+ '<div id="gt-cloud-article-results"></div>';
+ gtArticleDrawList();
 };
 const refresh=async()=>{
  cloudLoading=true;cloudError='';draw();
@@ -72,6 +122,20 @@ const loadPublished=async()=>{
  finally{if(!location.hash.includes('/admin'))render()}
 };
 if(isEditorPreview){
+const gtCatalogStyle=document.createElement('style');
+gtCatalogStyle.textContent=`
+.gt-article-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0 14px}
+.gt-article-toolbar label{font-size:12px;color:#565b53;display:grid;gap:7px;min-width:0}
+.gt-article-toolbar input,.gt-article-toolbar select{width:100%;min-width:0;background:#fff;border:1px solid #c6c9bd;border-radius:0;padding:11px 12px;color:#282e27}
+.gt-article-toolbar .gt-article-query{grid-column:span 3}
+.gt-article-toolbar-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.gt-article-count{font-size:12px;color:#5f685d;border-bottom:1px solid #c7ccc2;padding:12px 0}
+.gt-article-catalog-row>div:first-child{min-width:0;flex:1}.gt-article-catalog-row strong{display:block;margin-top:7px;overflow-wrap:anywhere}.gt-article-catalog-row small{display:block;color:#686f65;font-size:11px;line-height:1.7;margin-top:6px}
+.gt-article-pagination{display:flex;align-items:center;justify-content:center;gap:15px;margin-top:20px;font-size:12px}
+.gt-article-pagination button:disabled{opacity:.4;cursor:default}
+@media(max-width:700px){.gt-article-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.gt-article-toolbar .gt-article-query{grid-column:span 2}.gt-article-catalog-row{align-items:flex-start}.gt-article-catalog-row .gt-record-buttons{flex-wrap:wrap}.gt-article-toolbar select{font-size:14px}}
+`;
+document.head.append(gtCatalogStyle);
 const originalRender=render;
 render=function(...args){
  const result=originalRender(...args);
@@ -111,14 +175,33 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('[data-gt-a]');
  if(b){e.preventDefault();e.stopImmediatePropagation();
   if(b.dataset.gtA==='refresh')refresh();
+  if(b.dataset.gtA==='clear-filters'){Object.assign(gtArticleFilters,{search:'',status:'all',subject:'all',brand:'all',category:'all',sort:'updated',page:1});draw()}
   if(b.dataset.gtA==='edit')load(b.dataset.slug);
   if(b.dataset.gtA==='publish')publish(b.dataset.slug);
+ }
+ const page=e.target.closest('[data-gt-page]');
+ if(page){
+  e.preventDefault();e.stopImmediatePropagation();
+  gtArticleFilters.page+=page.dataset.gtPage==='next'?1:-1;
+  gtArticleDrawList();cloudPanel()?.scrollIntoView({behavior:'smooth',block:'start'});
  }
  const t=e.target.closest('[data-kind]');
  if(t?.dataset.kind==='article'){cloudRevision='';setTimeout(refresh,0)}
  const edit=e.target.closest('[data-edit]');
  if(edit&&editorKind==='article')cloudRevision='';
 },true);
+document.addEventListener('input',e=>{
+ const fld=e.target.closest('[data-gt-filter="search"]');if(!fld)return;
+ gtArticleFilters.search=fld.value;gtArticleFilters.page=1;
+ gtArticleDrawList();
+});
+document.addEventListener('change',e=>{
+ const fld=e.target.closest('[data-gt-filter]');if(!fld||fld.dataset.gtFilter==='search')return;
+ const key=fld.dataset.gtFilter;
+ if(!Object.hasOwn(gtArticleFilters,key))return;
+ gtArticleFilters[key]=fld.value;gtArticleFilters.page=1;
+ gtArticleDrawList();
+});
 if(location.hash.includes('/admin')){render();if(editorKind==='article')refresh()}
 }
 loadPublished();
