@@ -49,12 +49,12 @@ export async function onRequestGet({request,env}){
   const body=Array.isArray(row.body)?row.body.filter(x=>typeof x==='string'):[]
   const record={
    slug,title:row.title||'',brand:row.brand||'GOOD THINGS',subject:row.subject||'clothing',
-   category:row.category||'EDITORIAL / 原創觀察',subjects:Array.isArray(row.subjects)?row.subjects:[],publishedAt:row.publishedAt||'',
+   category:row.category||'EDITORIAL / 原創觀察',publicationSection:['stories','features','both'].includes(row.publicationSection)?row.publicationSection:'both',subjects:Array.isArray(row.subjects)?row.subjects:[],publishedAt:row.publishedAt||'',
    createdAt:row.createdAt||'',updatedAt:row.updatedAt||'',excerpt:row.excerpt||'',
    body,source:row.source||'',sourceTitle:row.sourceTitle||'',
    publisher:row.publisher||'',sourceAuthor:row.sourceAuthor||'',sourceDate:row.sourceDate||'',
    reviewedAt:row.reviewedAt||'',cover:row.cover?.asset?.url||row.coverUrl||'',
-   coverFit:row.coverFit||'cover',coverMobileFit:row.coverMobileFit==='contain'?'contain':'cover',coverMobileZoom:Number.isFinite(row.coverMobileZoom)?row.coverMobileZoom:100,coverZoom:Number.isFinite(row.coverZoom)?row.coverZoom:100,coverX:Number.isFinite(row.coverX)?row.coverX:50,coverY:Number.isFinite(row.coverY)?row.coverY:50,
+   coverFit:row.coverFit||'cover',coverMobileFit:row.coverMobileFit==='contain'?'contain':'cover',coverMobileZoom:Number.isFinite(row.coverMobileZoom)?row.coverMobileZoom:100,coverZoom:Number.isFinite(row.coverZoom)?row.coverZoom:100,coverX:Number.isFinite(row.coverX)?row.coverX:50,coverY:Number.isFinite(row.coverY)?row.coverY:50,coverMobileX:Number.isFinite(row.coverMobileX)?row.coverMobileX:(Number.isFinite(row.coverX)?row.coverX:50),coverMobileY:Number.isFinite(row.coverMobileY)?row.coverMobileY:(Number.isFinite(row.coverY)?row.coverY:50),
    revision:row._rev||'',status:draft?'draft':'published',hasPublished:!!published
   }
   // A ref can be projected with a lookup even if the raw object only stores the asset reference.
@@ -107,7 +107,7 @@ export async function onRequestPost({request,env}){
   const patch={
    title,slug:{_type:'slug',current:slug},
    brand:trim(input.brand,160)||'GOOD THINGS',subject:trim(input.subject,80)||'clothing',
-   category:trim(input.category,120),subjects:[...new Set([trim(input.subject,80)||'clothing',...(Array.isArray(input.subjects)?input.subjects:[]).slice(0,8).map(x=>trim(x,80))].filter(x=>['clothing','people','places','objects','notes'].includes(x)))],publishedAt,
+   category:trim(input.category,120),publicationSection:['stories','features','both'].includes(input.publicationSection)?input.publicationSection:(base?.publicationSection||(base?'both':'stories')),subjects:[...new Set([trim(input.subject,80)||'clothing',...(Array.isArray(input.subjects)?input.subjects:[]).slice(0,8).map(x=>trim(x,80))].filter(x=>['clothing','people','places','objects','notes'].includes(x)))],publishedAt,
    createdAt:trim(input.createdAt,35)||base?.createdAt||new Date().toISOString(),
    updatedAt:new Date().toISOString(),excerpt,body,
    coverFit:input.coverFit==='contain'?'contain':'cover',
@@ -115,6 +115,7 @@ export async function onRequestPost({request,env}){
    coverMobileZoom:Math.max(100,Math.min(200,Number(input.coverMobileZoom??100)||100)),coverZoom:Math.max(100,Math.min(250,Number(input.coverZoom??100)||100)),
    coverX:Math.max(0,Math.min(100,Number(input.coverX??50)||0)),
    coverY:Math.max(0,Math.min(100,Number(input.coverY??50)||0)),
+   coverMobileX:Math.max(0,Math.min(100,Number(input.coverMobileX??input.coverX??50)||0)),coverMobileY:Math.max(0,Math.min(100,Number(input.coverMobileY??input.coverY??50)||0)),
    source,sourceTitle:trim(input.sourceTitle,500),publisher:trim(input.publisher,200),
    sourceAuthor:trim(input.sourceAuthor,200),sourceDate,
    reviewedAt:trim(input.reviewedAt,10)
