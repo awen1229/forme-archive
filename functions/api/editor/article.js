@@ -54,6 +54,7 @@ export async function onRequestGet({request,env}){
    body,source:row.source||'',sourceTitle:row.sourceTitle||'',
    publisher:row.publisher||'',sourceAuthor:row.sourceAuthor||'',sourceDate:row.sourceDate||'',
    reviewedAt:row.reviewedAt||'',cover:row.cover?.asset?.url||row.coverUrl||'',
+   coverFit:row.coverFit||'cover',coverX:Number.isFinite(row.coverX)?row.coverX:50,coverY:Number.isFinite(row.coverY)?row.coverY:50,
    revision:row._rev||'',status:draft?'draft':'published',hasPublished:!!published
   }
   // A ref can be projected with a lookup even if the raw object only stores the asset reference.
@@ -109,6 +110,9 @@ export async function onRequestPost({request,env}){
    category:trim(input.category,120),publishedAt,
    createdAt:trim(input.createdAt,35)||base?.createdAt||new Date().toISOString(),
    updatedAt:new Date().toISOString(),excerpt,body,
+   coverFit:input.coverFit==='contain'?'contain':'cover',
+   coverX:Math.max(0,Math.min(100,Number(input.coverX??50)||0)),
+   coverY:Math.max(0,Math.min(100,Number(input.coverY??50)||0)),
    source,sourceTitle:trim(input.sourceTitle,500),publisher:trim(input.publisher,200),
    sourceAuthor:trim(input.sourceAuthor,200),sourceDate,
    reviewedAt:trim(input.reviewedAt,10)
