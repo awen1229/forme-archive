@@ -9,8 +9,8 @@ const readHome=()=>location.hash.includes('/admin')&&editorKind==='home'&&Array.
 const ratioFor=device=>{
  // Public CSS: carousel 485px desktop, image 1.12/2.0 of 90vw.
  // At ≤700px: image stretches over the full 90vw content width, height 315px.
- const width=device==='desktop'?Math.max(700,window.innerWidth):Math.min(430,Math.max(320,window.innerWidth>700?390:window.innerWidth));
- return device==='desktop'?clamp(width*.9*.56/485,.65,2.9):clamp(width*.9/315,.8,1.5);
+ const width=device==='desktop'?Math.min(1560,Math.max(761,window.innerWidth)):Math.min(700,Math.max(320,window.innerWidth>700?390:window.innerWidth));
+ return device==='desktop'?clamp(width*.9*.56/485,.65,2.9):clamp(width*.9/(width<=370?292:315),.8,2.1);
 };
 const currentValue=(slide,key,d)=>fallback(slide[key],d);
 function build(device,index,slide,cover){
