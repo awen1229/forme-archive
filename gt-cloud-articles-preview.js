@@ -11,7 +11,7 @@ const api=async(path,opts={})=>{
 const cloudPanel=()=>document.getElementById('gt-cloud-article-panel');
 const draw=()=>{
  const el=cloudPanel();if(!el)return;
- el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">雲端文章與專訪</h3><p class="muted">儲存會建立未發布草稿，公開前須再次確認。</p><button type="button" data-gt-a="refresh">重新讀取雲端文章</button>'+
+ el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">雲端文章與專訪</h3><p class="muted"><strong>儲存修改只更新草稿，不會改變公開網站。</strong> 檢查無誤後，需按下該文章的「確認發布」，前台才會讀到新的分類與封面裁切設定。</p><button type="button" data-gt-a="refresh">重新讀取雲端文章</button>'+
  (cloudError?'<p role="alert">'+esc(cloudError)+'</p>':'')+
  (cloudLoading?'<p class="muted">正在讀取…</p>':'')+
  cloudRows.map(a=>'<div class="editor-list-item"><div><div class="editor-badge">'+(a.status==='draft'?'雲端草稿':'已發布')+'</div><strong>'+esc(a.title)+'</strong></div><div class="gt-record-buttons"><button type="button" data-gt-a="edit" data-slug="'+esc(a.slug)+'">載入編輯</button>'+(a.status==='draft'?'<button type="button" data-gt-a="publish" data-slug="'+esc(a.slug)+'">確認發布</button>':'')+'</div></div>').join('');
