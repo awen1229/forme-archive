@@ -90,7 +90,6 @@ const publish=async(slug)=>{
  if(!a||a.status!=='draft'||!a.revision)return alert('請重新讀取雲端草稿');
  if(/\btest\b|測試/i.test(a.title))return alert('測試文章不可發布');
  if(!confirm('確定公開發布「'+a.title+'」？'))return;
- if(prompt('請輸入 PUBLISH 以確認公開')!=='PUBLISH')return;
  try{
   await api('/api/editor/publish-article',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,revision:a.revision,confirmation:'PUBLISH'})});
   alert('已在 Sanity 公開發布');await refresh();loadPublished();
