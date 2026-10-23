@@ -850,9 +850,13 @@ function gtCoverArt(){return `<svg class="cover-art" viewBox="0 0 560 590" prese
 
 function viewSubjects(){return `<section class="section">${header('GOOD THINGS / CATALOGUE','Subjects','六個開放式主題，從服飾、人物到日常觀察；尚未收錄的分類會隨未來文章逐步充實。')}${gtSubjectCards()}</section>`}
 function viewSubject(slug){const subj=gtSubjects.find(s=>s.slug===slug);if(!subj)return notFound();const chosen=gtSortedArticles(gtPublicArticles().filter(a=>gtSubjectOf(a)===slug));return `<section class="section">${header('SUBJECT / '+subj.name,subj.name,subj.cn+'。'+subj.desc)}${gtTopicNav(slug)}<div class="product-list">${chosen.length?chosen.map((a,i)=>articleRow(a,i)).join(''):`<div class="gt-empty">這個分類目前還沒有正式收錄的文章。未來可以在 EDITOR 選擇「${subj.name}」後新增內容。<br><a class="link-arrow" href="#/journal" style="margin-top:22px">BROWSE OTHER STORIES ${gtArrow()}</a></div>`}</div></section>`}
-function viewFeatures(){return `<section class="section">${header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))}
+function viewFeatures(){
+ const published=gtSortedArticles(gtPublicArticles()).slice(0,3);
+ if(gtPublishedOnlyPreview)return `<section class="section">${header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))}<div class="product-list">${published.map((a,i)=>articleRow(a,i)).join('')||gtEmptyPublishedCopy}</div></section>`;
+ return `<section class="section">${header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))}
 <div class="gt-issue-cover" role="img" aria-label="綠灰色調字體視覺"><span>Everyday<br>Wear.</span></div><div class="gt-feature-copy"><h2>${gtSiteHTML('features.issue')}</h2><p>${gtSiteLines('features.body')}</p></div>
-<div class="product-list">${(gtPublishedOnlyPreview?gtSortedArticles(gtPublicArticles()).slice(0,3):gtPublicArticles().filter(a=>['comoli-everyday','auralee-materials','graphpaper-editorial'].includes(a.slug))).map((a,i)=>articleRow(a,i)).join('')||(gtPublishedOnlyPreview?gtEmptyPublishedCopy:'')}</div></section>`}
+<div class="product-list">${published.filter(a=>['comoli-everyday','auralee-materials','graphpaper-editorial'].includes(a.slug)).map((a,i)=>articleRow(a,i)).join('')}</div></section>`
+}
 function viewIndex(){return `<section class="section">${header(gtSiteHTML('index.kicker'),gtSiteHTML('index.title'),gtSiteHTML('index.desc'))}
 <div class="gt-content-intro"><h2>${gtSiteLines('index.introTitle')}</h2><p>${gtSiteLines('index.introBody')}</p></div>
 <div class="gt-forme-side" style="background:#343b33;padding:22px 30px;margin-bottom:40px"><a href="#/brands"><span>01 / BRAND DIRECTORY</span>${gtArrow()}</a><a href="#/journal"><span>02 / STORIES & INTERVIEWS</span>${gtArrow()}</a></div>
