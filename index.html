@@ -1119,10 +1119,14 @@ function gtRenderCloudBrands(){
  }).join('');
  el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0 4px">雲端品牌資料</h3><p class="muted" style="font-size:13px">草稿不會自動公開。只有按下「確認發布」並再次確認才會更新 Sanity 公開資料。</p><button type="button" id="gt-cloud-reload" style="margin:8px 0 14px">'+(gtCloudBrandLoading?'讀取中…':'重新讀取雲端')+'</button>'+(gtCloudBrandError?'<p role="alert" style="color:#a23a31">讀取失敗：'+gtCloudEscape(gtCloudBrandError)+'</p>':records.length?rows:'<p class="muted">'+(gtCloudBrandLoading?'正在讀取雲端…':'目前尚未載入資料，請點「重新讀取雲端」。')+'</p>');
 }
+const gtBrandPublishing=new Set();
 async function gtCloudPublishBrand(row){
+ if(gtBrandPublishing.has(row?.slug)||gtBrandSaving)return;
  if(!row||row.status!=='draft'||!row.revision)return alert('請先重新讀取最新雲端草稿。');
+ if(editorKind==='brand'&&editingId===row.slug&&gtBrandDirty)return alert('此品牌有尚未儲存的修改，請先儲存雲端草稿。');
  if(/\btest\b|測試/i.test(row.name))return alert('測試品牌不允許發布。');
  if(!confirm('即將公開發布「'+row.name+'」。這會取代該品牌在 Sanity 的公開版本，確定繼續？'))return;
+ gtBrandPublishing.add(row.slug);
  try{
   const response=await fetch('/api/editor/publish-brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:row.slug,name:row.name,revision:row.revision,confirmation:'PUBLISH'})});
   const data=await response.json();
@@ -1130,7 +1134,7 @@ async function gtCloudPublishBrand(row){
   alert('已發布到 Sanity 公開資料。請再確認網站的品牌資料。');
   await gtCloudFetchBrandRows();
   gtLoadCloudPublishedBrands();
- }catch(e){alert('發布失敗：'+e.message)}
+ }catch(e){alert('發布失敗：'+e.message)}finally{gtBrandPublishing.delete(row.slug)}
 }
 
 function gtCloudEditorialNotice(){return gtCloudEditorEnabled
@@ -1320,7 +1324,7 @@ function updatePreview(){
  }
  const source=document.getElementById('p-source');if(source)source.textContent=[fval('publisher'),fval('sourceTitle'),fval('sourceDate')].filter(Boolean).join(' / ');
 }
-function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';render()}
+function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';gtBrandPendingSlug='';gtBrandDirty=false;render()}
 function fillEditor(x){
  const map=editorKind==='brand'?{name:x.name,founder:x.founder,founded:x.founded,desc:x.desc,tags:(x.tags||[]).join(', '),url:x.url}:
  editorKind==='article'?{title:x.title,brand:x.brand,writer:x.writer||'',editor:x.editor||'',subject:x.subject||'clothing',category:x.category,publishedAt:gtPublicationDate(x),excerpt:x.excerpt,body:(x.body||[]).join('\n\n'),source:x.source,sourceTitle:x.sourceTitle,publisher:x.publisher,sourceAuthor:x.sourceAuthor,sourceDate:x.sourceDate,coverFit:x.coverFit||'cover',coverMobileFit:x.coverMobileFit||'cover',coverMobileZoom:x.coverMobileZoom??100,coverZoom:x.coverZoom??100,coverX:x.coverX??50,coverY:x.coverY??50,coverMobileX:x.coverMobileX??x.coverX??50,coverMobileY:x.coverMobileY??x.coverY??50,publicationSection:x.publicationSection||'both'}:
@@ -1334,10 +1338,18 @@ function fillEditor(x){
  const submit=document.querySelector('#editor-form button[type="submit"]');
  if(submit)submit.textContent='儲存修改';
  if(editorKind==='brand'){
+  gtBrandPendingSlug='';gtBrandDirty=false;
   const d=gtLogoDisplay(x);
   for(const [k,v] of [['logoScale',d.scale],['logoX',d.x],['logoY',d.y]]){const inp=document.getElementById('f-'+k);if(inp)inp.value=v;}
  }
  updatePreview();
+}
+let gtBrandSaving=false,gtBrandPendingSlug='',gtBrandDirty=false;
+function gtBrandSaveNote(text,isError=false){
+ const form=document.getElementById('editor-form');if(!form)return;
+ let note=document.getElementById('gt-brand-save-status');
+ if(!note){note=document.createElement('p');note.id='gt-brand-save-status';note.setAttribute('role','status');note.setAttribute('aria-live','polite');note.className='cms-hint';(form.querySelector('.editor-actions')||form).append(note)}
+ note.textContent=text;note.style.color=isError?'#a43d35':'#386947';
 }
 async function saveEditor(){
  const arr=editorKind==='article'?localArticles:editorKind==='brand'?localBrands:localReferenceEntries;
@@ -1345,7 +1357,7 @@ async function saveEditor(){
  if(editorKind==='brand'){
   if(!fval('name'))return alert('請輸入品牌名稱');
   if(brands.some(b=>b.name.trim().toLocaleLowerCase()===fval('name').toLocaleLowerCase()&&b.slug!==editingId))return alert('品牌名稱已存在，請避免重複新增；請從下方品牌列表選擇「編輯」。');
-  x={slug:editingId||basicSlug(),name:fval('name'),founder:fval('founder'),founded:fval('founded'),desc:fval('desc'),tags:fval('tags').split(',').map(s=>s.trim()).filter(Boolean),url:fval('url')||null,logo:editorLogo,logoDisplay:{scale:Number(fval('logoScale')||100),x:Number(fval('logoX')||0),y:Number(fval('logoY')||0)}};
+  x={slug:editingId||(gtCloudEditorEnabled?(gtBrandPendingSlug||(gtBrandPendingSlug=basicSlug())):basicSlug()),name:fval('name'),founder:fval('founder'),founded:fval('founded'),desc:fval('desc'),tags:fval('tags').split(',').map(s=>s.trim()).filter(Boolean),url:fval('url')||null,logo:editorLogo,logoDisplay:{scale:Number(fval('logoScale')||100),x:Number(fval('logoX')||0),y:Number(fval('logoY')||0)}};
  }else if(editorKind==='article'){
   if(!fval('title')||!fval('excerpt')||!fval('body'))return alert('請填寫標題、摘要與正文');
   x={slug:editingId||basicSlug(),title:fval('title'),brand:fval('brand'),writer:fval('writer'),editor:fval('editor'),subject:fval('subject')||'clothing',category:fval('category'),publishedAt:fval('publishedAt')||gtLocalDate(),createdAt:(articles.find(a=>a.slug===editingId)||{}).createdAt||new Date().toISOString(),updatedAt:new Date().toISOString(),excerpt:fval('excerpt'),body:fval('body').split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean),source:fval('source')||null,sourceTitle:fval('sourceTitle'),publisher:fval('publisher'),sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),reviewedAt:new Date().toLocaleDateString('en-CA'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverMobileFit:fval('coverMobileFit')||'cover',coverMobileZoom:Number(fval('coverMobileZoom')||100),coverZoom:Number(fval('coverZoom')||100),coverX:Number(fval('coverX')??50),coverY:Number(fval('coverY')??50),coverMobileX:Number(fval('coverMobileX')??50),coverMobileY:Number(fval('coverMobileY')??50),publicationSection:fval('publicationSection')||'stories'};
@@ -1353,7 +1365,37 @@ async function saveEditor(){
   if(!fval('title'))return alert('請填寫資料標題');
   x={id:editingId||basicSlug(),title:fval('title'),brand:fval('brand'),type:fval('category'),season:fval('season')||'常設',summary:fval('excerpt'),publisher:fval('publisher'),date:fval('date'),url:fval('source')};
  }
- if(editorKind==='brand'&&gtCloudEditorEnabled){try{await gtSaveBrandCloud(x)}catch(e){alert('雲端儲存失敗：'+e.message+'\n沒有修改公開網站，也沒有儲存雲端草稿。');return;}}
+ if(editorKind==='brand'&&gtCloudEditorEnabled){
+  if(gtBrandSaving)return;
+  const button=document.querySelector('#editor-form button[type="submit"]');
+  gtBrandSaving=true;if(button){button.disabled=true;button.textContent='儲存中…'}
+  gtBrandSaveNote('正在儲存 Sanity 品牌草稿，尚未公開。');
+  try{
+   const cloudResponse=await gtSaveBrandCloud(x);
+   editingId=x.slug;gtBrandPendingSlug='';gtBrandDirty=false;
+   if(cloudResponse.logoUrl){editorLogo=cloudResponse.logoUrl;x.logo=cloudResponse.logoUrl}
+   const idx=localBrands.findIndex(v=>v.slug===x.slug);
+   if(idx>=0)localBrands[idx]=x;else localBrands.push(x);
+   let backupOk=false;
+   try{
+    const data=JSON.stringify({version:1,exportedAt:new Date().toISOString(),articles:localArticles,brands:localBrands,references:localReferenceEntries,home:gtHomeConfig,siteContent:gtSiteContent});
+    localStorage.setItem(CMS_KEY,data);backupOk=localStorage.getItem(CMS_KEY)===data;
+   }catch(err){console.warn('Cloud brand saved, but local backup not available:',err.message)}
+   const inMemory=brands.findIndex(v=>v.slug===x.slug);
+   if(inMemory>=0)brands[inMemory]=x;else brands.push(x);
+   const h=document.querySelector('.editor-grid .editor-card > h2');if(h)h.textContent='編輯品牌資料';
+   gtBrandSaveNote(backupOk?'品牌雲端草稿儲存成功，並保留本機副本。尚未公開。':'品牌雲端草稿已儲存，尚未公開。本機備份未完成。');
+   await gtCloudFetchBrandRows();
+  }catch(error){
+   gtBrandDirty=true;
+   gtBrandSaveNote('品牌雲端儲存失敗：'+error.message+'。已保留目前表單內容，請確認後重試。',true);
+  }finally{
+   gtBrandSaving=false;
+   const liveButton=document.querySelector('#editor-form button[type="submit"]');
+   if(liveButton){liveButton.disabled=false;liveButton.textContent='儲存雲端草稿'}
+  }
+  return;
+ }
  // Persist draft BEFORE updating the live page, so rejected storage does not give a false success.
  const idx=arr.findIndex(v=>(v.slug||v.id)===editingId);
  const nextArr=idx>=0?arr.map((v,i)=>i===idx?x:v):[...arr,x];
@@ -1455,7 +1497,7 @@ document.addEventListener('click',e=>{
   const row=gtCloudBrandRows.find(b=>b.slug===cloudPublish.dataset.cloudPublish);
   gtCloudPublishBrand(row);return;
  }
- const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
+ const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';gtBrandPendingSlug='';gtBrandDirty=false;if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
  if(e.target.closest('#editor-reset')){resetEditor();return;}
  if(e.target.closest('#export-cms')){downloadCms();return;}
  if(e.target.closest('#import-cms')){document.getElementById('import-cms-file').click();return;}
@@ -1490,6 +1532,8 @@ document.addEventListener('click',e=>{
  }
 });
 document.addEventListener('submit',e=>{if(e.target.id==='editor-form'){e.preventDefault();saveEditor()}});
+document.addEventListener('input',e=>{if(editorKind==='brand'&&e.target.closest('#editor-form'))gtBrandDirty=true},true);
+document.addEventListener('change',e=>{if(editorKind==='brand'&&e.target.closest('#editor-form'))gtBrandDirty=true},true);
 document.addEventListener('input',e=>{if(e.target.closest('#editor-form'))updatePreview()});
 document.addEventListener('change',e=>{if(e.target.closest('#editor-form')&&['f-coverFit','f-coverMobileFit'].includes(e.target.id))updatePreview()});
 // Reliable offline raster-logo preparation. No uploads leave this device.
