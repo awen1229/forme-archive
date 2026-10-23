@@ -79,10 +79,8 @@ const renderEditor=()=>{
  '<fieldset><legend>專題文章（上下按鈕可排序）</legend><div class="gt-issue-choice">'+choices(publishedArticles,'articleSlugs',a.articleSlugs||[])+'</div><div id="gt-issue-order"></div></fieldset>'+
  '<div class="editor-actions"><button type="submit">儲存雲端草稿</button></div></form></section>';
 };
-const baseAdmin=viewAdmin;
-viewAdmin=function(){return editorKind==='features'?renderEditor():baseAdmin()};
-const baseTabs=editorTabs;
-editorTabs=function(){return baseTabs().replace('</div>','<button class="'+(editorKind==='features'?'on':'')+'" data-kind="features">FEATURES 專題</button></div>')};
+// The tab and editor route are owned by index.html to avoid runtime-only navigation.
+window.gtFeatureEditorView=renderEditor;
 const refresh=async()=>{loading=true;error='';render();try{rows=(await api('/api/editor/feature-issues')).records||[]}catch(e){error=e.message}finally{loading=false;render()}};
 const open=async slug=>{try{active=(await api('/api/editor/feature-issues?slug='+encodeURIComponent(slug))).record;articleOrder=[...(active.articleSlugs||[])];coverData='';render();renderOrder()}catch(e){alert('無法讀取專題：'+e.message)}};
 const publish=async slug=>{
@@ -94,7 +92,7 @@ const publish=async slug=>{
 };
 document.addEventListener('click',e=>{
  const k=e.target.closest('[data-kind="features"]');
- if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();articleOrder=[];render();refresh();return}
+ if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();articleOrder=[];coverData='';render();refresh();return}
  const btn=e.target.closest('[data-issue-act]');if(!btn){const shift=e.target.closest('[data-order-shift]');if(shift){e.preventDefault();const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];renderOrder()}}return;}
  e.preventDefault();e.stopImmediatePropagation();
  if(btn.dataset.issueAct==='reload')refresh();
