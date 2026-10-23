@@ -24,7 +24,7 @@ export async function onRequestPost({request,env}){
   }
   const [draft,published]=await Promise.all([
    query('*[_id=="drafts.gt-index-featured-brands"][0]{_id,_rev,slugs}'),
-   query('*[_type=="brand" && defined(slug.current)]{"slug":slug.current}','published')
+   query('*[_type=="brand" && defined(slug.current) && !(_id in path("versions.**"))]{"slug":slug.current}','published')
   ])
   if(!draft||draft._rev!==data.revision)throw new AuthError(409,'草稿已更新，請重新讀取')
   const slugs=draft.slugs
