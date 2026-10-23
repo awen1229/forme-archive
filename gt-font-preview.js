@@ -50,7 +50,7 @@ async function apply(input,entries){
   const id=roles[role];
   const active=id&&!warnings.some(item=>item.startsWith(id+':'));
   const family=active?'"'+FAMILY(id)+'",'+fallback(role):fallback(role);
-  return setRoleFamily(role,family);
+  return active?setRoleFamily(role,family):'';
  }).join('\n');
  if(!style.isConnected)document.head.append(style);
  return {roles,warnings};
