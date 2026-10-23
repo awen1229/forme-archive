@@ -23,7 +23,7 @@ async function state(token){
   published:records.find(x=>x._id===CONTENT_ID)||null}
 }
 async function publishedBrands(token){
- const records=await query(token,'*[_type=="brand" && defined(slug.current)] | order(name asc){name,"slug":slug.current}', 'published')
+ const records=await query(token,'*[_type=="brand" && defined(slug.current) && !(_id in path("versions.**"))] | order(name asc){name,"slug":slug.current}', 'published')
  if(!Array.isArray(records))throw new AuthError(502,'品牌資料格式錯誤')
  const unique=new Map()
  for(const b of records)if(typeof b.name==='string'&&/^[a-z0-9-]{1,90}$/.test(b.slug))unique.set(b.slug,{name:b.name,slug:b.slug})
