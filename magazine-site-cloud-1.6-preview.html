@@ -1070,7 +1070,7 @@ const gtPublicArticles=()=>[...gtPublishedArticleRecords].filter(([slug])=>!gtPu
 const gtPublicBrands=()=>[...gtPublishedBrandRecords].filter(([slug])=>!gtPublishedOnlyPreview||gtSanityPublishedBrandSlugs.has(slug)).map(([,b])=>b);
 const gtEmptyPublishedCopy='<div class="gt-empty" role="status">尚無已發布內容。此頁僅顯示 Sanity 正式發布的文章與品牌。</div>';
 let gtPublicHomeLoadState='loading';
-const gtPublicArticleEmptyCopy=()=>typeof window.gtUnused==='never'?gtEmptyPublishedCopy:(typeof publicArticleNotice==='function'?publicArticleNotice():gtEmptyPublishedCopy);
+const gtPublicArticleEmptyCopy=()=>typeof window.gtPublishedArticleNotice==='function'?window.gtPublishedArticleNotice():gtEmptyPublishedCopy;
 const gtPublicBrandEmptyCopy=()=>gtPublicBrandLoadState==='error'?'<div class="gt-empty" role="alert">已發布品牌載入失敗。請重新整理頁面，若持續發生請回報網站管理員。</div>':gtPublicBrandLoadState==='loading'?'<div class="gt-empty" role="status">正在載入已發布品牌…</div>':gtEmptyPublishedCopy;
 const gtOriginalLibrary=library.map(x=>({...x}));
 const CMS_KEY='forme_archive_editor_v12';
