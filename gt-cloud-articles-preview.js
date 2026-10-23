@@ -2,6 +2,7 @@
 (()=>{
 const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
 let cloudRows=[],cloudRevision='',cloudError='',cloudLoading=false;
+let articleSaving=false,articleDirty=false,pendingArticleSlug='';
 let searchText='',filterStatus='all',filterSubject='all',filterBrand='all',sortBy='recent';
 const gtArticleFilters={search:'',status:'all',subject:'all',brand:'all',category:'all',sort:'updated',page:1};
 const gtArticlePageSize=12;
@@ -155,7 +156,6 @@ render=function(...args){
  return result;
 };
 const originalSave=saveEditor;
-let articleSaving=false,articleDirty=false,pendingArticleSlug='';
 function noteArticle(msg,isError=false){let f=document.getElementById('editor-form');if(!f)return;let note=f.querySelector('#gt-article-cloud-save-status');if(!note){note=document.createElement('p');note.id='gt-article-cloud-save-status';note.setAttribute('role','status');note.className='cms-hint';(f.querySelector('.editor-actions')||f).appendChild(note)}note.textContent=msg;note.style.color=isError?'#a43d35':'#3f684a'}
 saveEditor=async function(...args){
  if(editorKind!=='article')return originalSave(...args);
