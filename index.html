@@ -841,6 +841,7 @@ const gtSubjects=[
  {slug:'objects',name:'OBJECTS',cn:'物件與工藝',desc:'器物、皮革、設計與使用的痕跡。'},
  {slug:'notes',name:'NOTES',cn:'觀察與隨筆',desc:'生活記錄，以及還沒有被分類的好事物。'}
 ];
+const gtSubjectsOf=a=>{const allowed=new Set(gtSubjects.map(s=>s.slug));const primary=String(a.subject||'').toLowerCase();const extras=Array.isArray(a.subjects)?a.subjects:[];const all=[primary,...extras].map(x=>String(x).toLowerCase()).filter(x=>allowed.has(x));return [...new Set(all.length?all:[/PEOPLE|主理人|設計師|專訪/.test(a.category||'')?'people':'clothing'])];};
 const gtSubjectOf=a=>{
  const chosen=String(a.subject||'').toLowerCase();
  if(gtSubjects.some(s=>s.slug===chosen))return chosen;
@@ -864,7 +865,7 @@ function gtCoverArt(){return `<svg class="cover-art" viewBox="0 0 560 590" prese
 </svg>`}
 
 function viewSubjects(){return `<section class="section">${header('GOOD THINGS / CATALOGUE','Subjects','六個開放式主題，從服飾、人物到日常觀察；尚未收錄的分類會隨未來文章逐步充實。')}${gtSubjectCards()}</section>`}
-function viewSubject(slug){const subj=gtSubjects.find(s=>s.slug===slug);if(!subj)return notFound();const chosen=gtSortedArticles(gtPublicArticles().filter(a=>gtSubjectOf(a)===slug));return `<section class="section">${header('SUBJECT / '+subj.name,subj.name,subj.cn+'。'+subj.desc)}${gtTopicNav(slug)}<div class="product-list">${chosen.length?chosen.map((a,i)=>articleRow(a,i)).join(''):`<div class="gt-empty">這個分類目前還沒有正式收錄的文章。未來可以在 EDITOR 選擇「${subj.name}」後新增內容。<br><a class="link-arrow" href="#/journal" style="margin-top:22px">BROWSE OTHER STORIES ${gtArrow()}</a></div>`}</div></section>`}
+function viewSubject(slug){const subj=gtSubjects.find(s=>s.slug===slug);if(!subj)return notFound();const chosen=gtSortedArticles(gtPublicArticles().filter(a=>gtSubjectsOf(a).includes(slug)));return `<section class="section">${header('SUBJECT / '+subj.name,subj.name,subj.cn+'。'+subj.desc)}${gtTopicNav(slug)}<div class="product-list">${chosen.length?chosen.map((a,i)=>articleRow(a,i)).join(''):`<div class="gt-empty">這個分類目前還沒有正式收錄的文章。未來可以在 EDITOR 選擇「${subj.name}」後新增內容。<br><a class="link-arrow" href="#/journal" style="margin-top:22px">BROWSE OTHER STORIES ${gtArrow()}</a></div>`}</div></section>`}
 function viewFeatures(){
  const published=gtSortedArticles(gtPublicArticles()).slice(0,3);
  if(gtPublishedOnlyPreview)return `<section class="section">${header(gtSiteHTML('features.kicker'),gtSiteHTML('features.title'),gtSiteHTML('features.desc'))}<div class="product-list">${published.map((a,i)=>articleRow(a,i)).join('')||gtPublicArticleEmptyCopy()}</div></section>`;
@@ -1111,6 +1112,7 @@ function editorForm(){
   base=`<label>標題 *<input id="f-title" required placeholder="例如：一篇值得閱讀的 COMOLI 訪談"></label>
   <label>相關品牌<select id="f-brand"><option value="GOOD THINGS">不指定品牌 / GOOD THINGS</option>${brands.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}</option>`).join('')}</select></label>
   <label>文章主題<select id="f-subject">${gtSubjects.map(s=>`<option value="${s.slug}">${s.name} / ${s.cn}</option>`).join('')}</select></label>
+  <fieldset class="gt-extra-subjects" style="margin:12px 0;padding:12px;border:1px solid #c8c5ba"><legend>其他分類（可複選）</legend>${gtSubjects.map(s=>`<label style="display:inline-flex;align-items:center;gap:6px;margin:6px 15px 6px 0"><input type="checkbox" name="gt-extra-subject" value="${s.slug}">${s.name}</label>`).join('')}</fieldset>
   <label>發布日期（STORIES 最新排序依此為準）<input id="f-publishedAt" type="date" value="${gtLocalDate()}"></label>
   <label>內容形式<select id="f-category"><option>INTERVIEW NOTES / 專訪導讀</option><option>BRAND NEWS / 品牌新聞</option><option>COLLECTION / 季度整理</option><option>GARMENT NOTES / 單品研究</option><option>EDITORIAL / 原創觀察</option><option>主理人專訪</option><option>品牌理念</option><option>季度理念</option><option>風格研究</option><option>單品解析</option><option>DESIGN PHILOSOPHY</option></select></label>
   <label>中文導讀摘要 *<textarea id="f-excerpt" placeholder="建議用自己的話寫 50～120 字"></textarea></label>
@@ -1201,6 +1203,7 @@ function fillEditor(x){
  editorKind==='article'?{title:x.title,brand:x.brand,subject:x.subject||'clothing',category:x.category,publishedAt:gtPublicationDate(x),excerpt:x.excerpt,body:(x.body||[]).join('\n\n'),source:x.source,sourceTitle:x.sourceTitle,publisher:x.publisher,sourceAuthor:x.sourceAuthor,sourceDate:x.sourceDate,coverFit:x.coverFit||'cover',coverX:x.coverX??50,coverY:x.coverY??50}:
  {title:x.title,brand:x.brand,category:x.type,excerpt:x.summary,season:x.season,publisher:x.publisher,date:x.date,source:x.url};
  for(const [k,v] of Object.entries(map)){const el=document.getElementById('f-'+k);if(el)el.value=v||''}
+ if(editorKind==='article'){const selected=new Set(gtSubjectsOf(x));document.querySelectorAll('input[name="gt-extra-subject"]').forEach(el=>{el.checked=selected.has(el.value)&&el.value!==map.subject});}
  editorCover=x.cover||'';editorLogo=x.logo||'';editorLogoNote='';
  // Make it obvious whether an existing record is being edited.
  const h=document.querySelector('.editor-grid .editor-card > h2');
