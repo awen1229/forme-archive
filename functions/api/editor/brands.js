@@ -9,7 +9,7 @@ export async function onRequestGet({request,env}) {
   try {
     await requireEditor(request,env)
     if (!env.SANITY_EDITOR_TOKEN) throw new AuthError(503,'Sanity 尚未設定')
-    const query = '*[_type == "brand" && !(_id in path("versions.**"))] | order(_updatedAt desc)[0...200]{_id,_rev,_updatedAt,name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}'
+    const query = '*[_type == "brand" && !(_id in path("versions.**"))] | order(_updatedAt desc)[0...200]{_id,_rev,_updatedAt,_createdAt,name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}'
     const u=new URL(API+'/data/query/'+DATASET)
     u.searchParams.set('perspective','raw')
     u.searchParams.set('query',query)
@@ -28,7 +28,7 @@ export async function onRequestGet({request,env}) {
         desc:d.summary||'',tags:Array.isArray(d.tags)?d.tags:[],url:d.website||'',
         logo:d.logoUrl||'',logoDisplay:{
           scale:d.logoScale??100,x:d.logoOffsetX??0,y:d.logoOffsetY??0
-        },updatedAt:d._updatedAt||'', revision:d._rev||''
+        },updatedAt:d._updatedAt||'',createdAt:d._createdAt||'', revision:d._rev||''
       }
       const entry=pairs.get(slug)||{slug,hasDraft:false,hasPublished:false,draft:null,published:null}
       if(draft){entry.hasDraft=true;entry.draft=record}

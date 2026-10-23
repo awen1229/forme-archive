@@ -98,7 +98,6 @@ const publish=async slug=>{
  const row=rows.find(r=>r.slug===slug);
  if(!row||row.status!=='draft'||!row.revision)return alert('請重新讀取專題草稿');
  if(!confirm('要正式發布「'+row.title+'」嗎？'))return;
- if(prompt('輸入 PUBLISH 才會正式公開')!=='PUBLISH')return;
  try{await api('/api/editor/publish-feature',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,revision:row.revision,confirmation:'PUBLISH'})});await refresh();await publicFeatures();alert('專題已正式發布')}catch(e){alert('發布失敗：'+e.message)}
 };
 document.addEventListener('click',e=>{

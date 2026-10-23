@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>GOOD THINGS, | 上線前連線檢查</title>
+<style>
+:root{font-family:Arial,"Noto Sans TC",sans-serif;background:#f2f0e9;color:#26322a;font-synthesis:none}*{box-sizing:border-box}
+body{margin:0;min-height:100vh}.wrap{max-width:720px;margin:auto;padding:54px 22px 80px}
+.kicker{font-size:11px;letter-spacing:.17em;color:#5e6e5e}.brand{font-size:15px;font-weight:700;letter-spacing:.075em}
+h1{font-size:clamp(28px,6vw,46px);font-weight:500;line-height:1.16;margin:30px 0 15px}
+p{font-size:14px;line-height:1.9;color:#556056;max-width:620px}.panel{margin-top:28px;border-top:1px solid #bcc6b8}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border-bottom:1px solid #cdd4c9;padding:17px 0}
+.item strong{display:block;font-size:13px;letter-spacing:.015em}.item small{display:block;font-size:12px;margin-top:7px;color:#67716a}
+.state{font-size:12px;font-weight:600;white-space:nowrap;color:#545d56}.state[data-status="ok"]{color:#426e42}.state[data-status="fail"]{color:#9f463d}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}button,a.nav{appearance:none;display:inline-flex;justify-content:center;align-items:center;padding:12px 17px;background:#2c3b30;border:1px solid #2c3b30;color:#fff;text-decoration:none;font:500 13px Arial,sans-serif;cursor:pointer}
+button.secondary,a.nav{background:transparent;color:#2c3b30}button:disabled{opacity:.5;cursor:default}
+pre{font:12px/1.7 ui-monospace,monospace;background:#e7e9e1;border:1px solid #d1d6cb;padding:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note{margin-top:30px;font-size:12px;color:#788177}.outcome{font-size:16px;font-weight:600;margin-top:22px}
+</style>
+</head>
+<body><main class="wrap">
+<div class="brand">GOOD THINGS,</div>
+<div class="kicker" style="margin-top:12px">PUBLIC LAUNCH / READ-ONLY CHECK</div>
+<h1>正式網站連線檢查</h1>
+<p>這一頁在 GitHub Pages 的正式網域執行，只確認瀏覽器能否讀取 Sanity <strong>已發布</strong>資料，不會登入編輯器，也不會新增、刪除或公開任何內容。</p>
+<div class="panel" id="items" aria-live="polite"></div>
+<div id="outcome" class="outcome" role="status">準備檢查…</div>
+<div class="actions"><button id="run" type="button">重新檢查</button><button class="secondary" id="copy" type="button">複製檢查結果</button><a class="nav" href="./">返回網站</a></div>
+<p class="note">請將下方檢查結果貼回 ChatGPT。若顯示跨網域存取失敗（CORS），代表需要先調整 Sanity 的公開 API 來源權限。草稿數量並不會在這個檢查中讀取。</p>
+<pre id="json">尚未完成檢查</pre>
+</main>
+<script>
+(()=>{
+'use strict';
+const project='8nqupq9u',api='https://'+project+'.api.sanity.io/v2025-02-19/data/query/production';
+const defs=[
+ {id:'brands',name:'品牌 / THE INDEX',q:'count(*[_type=="brand" && !(_id in path("drafts.**"))])',required:true,test:v=>Number.isInteger(v)&&v>=1},
+ {id:'articles',name:'文章 / STORIES',q:'count(*[_type=="article" && !(_id in path("drafts.**"))])',required:true,test:v=>Number.isInteger(v)&&v>=1},
+ {id:'homepage',name:'首頁精選 / HOMEPAGE',q:'*[_id=="gt-homepage"][0]{slides}',required:true,test:v=>Array.isArray(v?.slides)&&v.slides.length>0},
+ {id:'site',name:'網站文字 / SITE CONTENT',q:'*[_id=="gt-site-content"][0]{fieldsJson}',required:true,test:v=>{try{return typeof v?.fieldsJson==='string'&&!!JSON.parse(v.fieldsJson)}catch{return false}}},
+ {id:'features',name:'專題 / FEATURES',q:'count(*[_type=="featureIssue" && !(_id in path("drafts.**"))])',required:false,test:v=>Number.isInteger(v)&&v>=0}
+];
+const $=id=>document.getElementById(id);
+let report={};
+function updateState(id,status,description){
+ const node=document.querySelector('[data-item="'+id+'"]');if(!node)return;
+ const badge=node.querySelector('.state'),detail=node.querySelector('small');
+ badge.dataset.status=status;badge.textContent=status==='ok'?'通過':status==='fail'?'失敗':'檢查中';
+ detail.textContent=description;
+}
+async function check(entry){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),13000);
+ try{
+  const url=api+'?perspective=published&query='+encodeURIComponent(entry.q);
+  const res=await fetch(url,{mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
+  if(!res.ok)throw Error('HTTP '+res.status);
+  const json=await res.json();
+  if(!Object.prototype.hasOwnProperty.call(json,'result'))throw Error('API 回應缺少 result');
+  const val=json.result,ok=entry.test(val),value=entry.id==='homepage'?val?.slides?.length??0:entry.id==='site'?Boolean(val?.fieldsJson):val;
+  updateState(entry.id,ok?'ok':'fail',ok?'公開資料正常：'+String(value):'資料內容未符合上線要求：'+String(value));
+  return {id:entry.id,ok,required:entry.required,value};
+ }catch(e){
+  const message=e.name==='AbortError'?'連線逾時':String(e.message||e);
+  updateState(entry.id,'fail',message);
+  return {id:entry.id,ok:false,required:entry.required,error:message};
+ }finally{clearTimeout(timeout)}
+}
+async function run(){
+ $('run').disabled=true;
+ $('items').innerHTML=defs.map(d=>'<div class="item" data-item="'+d.id+'"><div><strong>'+d.name+'</strong><small>正在連線…</small></div><div class="state">檢查中</div></div>').join('');
+ $('outcome').textContent='檢查中…';
+ const originOK=location.origin==='https://awen1229.github.io';
+ const results=await Promise.all(defs.map(check));
+ const ready=originOK&&results.every(r=>!r.required||r.ok);
+ report={ok:true,mode:'published-readonly-browser-test',origin:location.origin,originVerified:originOK,readyForMerge:ready,productionMutated:false,results};
+ $('outcome').textContent=ready?'公開資料連線全部通過，可以進行最後上線步驟。':'有檢查未通過，請先處理再正式合併。';
+ $('json').textContent=JSON.stringify(report,null,2);
+ $('run').disabled=false;
+}
+$('run').addEventListener('click',run);
+$('copy').addEventListener('click',async()=>{const value=$('json').textContent;try{await navigator.clipboard.writeText(value);$('copy').textContent='已複製';}catch{const sel=window.getSelection(),range=document.createRange();range.selectNodeContents($('json'));sel.removeAllRanges();sel.addRange(range);$('copy').textContent='請複製選取的文字';}});
+run();
+})();
+</script>
+</body>
+</html>
