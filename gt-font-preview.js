@@ -21,8 +21,8 @@ async function ensureFont(font){
  if(loaded.has(font._id))return loaded.get(font._id);
  const format=font.format==='otf'?'opentype':font.format==='ttf'?'truetype':font.format;
  const family=FAMILY(font._id);
- const face=new FontFace(family,'url("'+font.url+'") format("'+format+'")',{style:'normal',weight:'100 900',display:'swap'});
- const pending=face.load().then(v=>{document.fonts.add(v);return family}).catch(error=>{loaded.delete(font._id);throw error});
+ const face=new FontFace(family,'url("/api/editor/font-file?id='+encodeURIComponent(font._id)+'") format("'+format+'")',{style:'normal',weight:'400',display:'swap'});
+ const pending=face.load().then(v=>{document.fonts.add(v);return family}).catch(error=>{loaded.delete(font._id);throw Error('字型無法載入：'+(error?.message||'格式、檔案或權限錯誤'))});
  loaded.set(font._id,pending);
  return pending;
 }
