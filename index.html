@@ -772,7 +772,7 @@ body.gt-drawer-open{overflow:hidden}
   var home=!h||h==='#'||h==='#/';
   var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var replay=new URLSearchParams(location.search).get('intro')==='replay';
-  var seen=sessionStorage.getItem('gt-scroll-entry-v14')==='done';
+  var seen=sessionStorage.getItem('gt-scroll-entry-v15')==='done';
   if(home&&!reduced&&(replay||!seen))document.documentElement.classList.add('gt-scroll-entry-ready');
  }catch(e){}
 })();
@@ -2090,6 +2090,6 @@ gtLoadCloudPublishedBrands();
 <script src="./gt-image-dimension-guide.js?v=20261024-img1" defer></script>
 <script src="./gt-font-preview.js?v=20261024-font6" defer></script>
 <script src="./gt-design-site.js" defer></script>
-<script src="./gt-home-intro.js?v=20261024-track14" defer></script>
+<script src="./gt-home-intro.js?v=20261024-track15" defer></script>
 </body>
 </html>
