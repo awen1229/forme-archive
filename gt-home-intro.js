@@ -49,7 +49,7 @@ function extractOriginal(){
    if(tail>150){
     const padding=3,x=Math.max(0,minX-padding),y=Math.max(0,minY-padding);
     const right=Math.min(W,maxX+padding+1),bottom=Math.min(H,maxY+padding+1);
-    comps.push({x,y,w:right-x,h:bottom-y,area:tail});
+    comps.push({x,y,w:right-x,h:bottom-y,area:tail,seed:start});
    }
   }
   // The separate comma at the bottom-right has the greatest horizontal
@@ -74,25 +74,103 @@ function extractOriginal(){
    el.style.width=(c.w/W*100)+'%';el.style.height=(c.h/H*100)+'%';
    el.append(img);stage.append(el);return el;
   });
-  // Trace the precise alpha edge of the original comma. Keep the stroke
-  // transparent inside, rather than changing its hand-drawn silhouette.
-  const cm=makeCanvas(comma.w,comma.h),cc=cm.getContext('2d');
-  cc.drawImage(original,comma.x,comma.y,comma.w,comma.h,0,0,comma.w,comma.h);
-  const pixels=cc.getImageData(0,0,comma.w,comma.h);
-  const edge=new Uint8ClampedArray(pixels.data.length);
-  const ww=comma.w,hh=comma.h;
-  const at=(x,y)=>x<0||y<0||x>=ww||y>=hh?0:pixels.data[(y*ww+x)*4+3];
-  for(let y=0;y<hh;y++)for(let x=0;x<ww;x++){
-   const alpha=at(x,y);if(alpha<20)continue;
-   let boundary=false;
-   for(const [dx,dy] of [[-3,0],[3,0],[0,-3],[0,3],[-2,-2],[2,2],[-2,2],[2,-2]]){
-    if(at(x+dx,y+dy)<45){boundary=true;break}
+  // Isolate ONLY the connected component belonging to the original comma.
+  // The previous rectangular raster crop could contain nearby S pixels and
+  // was enlarged 5x, causing dirty edges and visible blur.
+  const ww=comma.w,hh=comma.h,ink=new Uint8Array(ww*hh);
+  const visited=new Uint8Array(W*H),q=new Int32Array(comma.area+20);
+  let front=0,back=1;
+  q[0]=comma.seed;visited[comma.seed]=1;
+  while(front<back){
+   const i=q[front++],x=i%W,y=(i/W)|0;
+   const lx=x-comma.x,ly=y-comma.y;
+   if(lx<0||ly<0||lx>=ww||ly>=hh)throw Error('Comma component exceeded crop bounds');
+   ink[ly*ww+lx]=1;
+   const neighbors=[x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1];
+   for(const n of neighbors)if(n>=0&&mask[n]&&!visited[n]){
+    if(back>=q.length)throw Error('Comma trace exceeded measured component');
+    visited[n]=1;q[back++]=n;
    }
-   if(!boundary)continue;
-   const k=(y*ww+x)*4;edge[k]=57;edge[k+1]=117;edge[k+2]=65;edge[k+3]=Math.min(255,alpha);
   }
-  cc.putImageData(new ImageData(edge,ww,hh),0,0);
-  largeComma.src=cm.toDataURL('image/png');
+  if(back<400||back>ww*hh*.92)throw Error('Invalid original comma shape');
+  const filled=(x,y)=>x>=0&&y>=0&&x<ww&&y<hh&&ink[y*ww+x]===1;
+  // Trace the connected component as a closed vector contour. Only genuine
+  // comma pixels participate, so neighboring letters cannot leak into it.
+  const ends=new Map(),edges=[];
+  const key=(x,y)=>y*(ww+1)+x;
+  function edge(x1,y1,x2,y2){
+   const k=key(x1,y1),id=edges.length;
+   edges.push({x1,y1,x2,y2,used:false});
+   const list=ends.get(k);if(list)list.push(id);else ends.set(k,[id]);
+  }
+  for(let y=0;y<hh;y++)for(let x=0;x<ww;x++){
+   if(!filled(x,y))continue;
+   if(!filled(x,y-1))edge(x,y,x+1,y);
+   if(!filled(x+1,y))edge(x+1,y,x+1,y+1);
+   if(!filled(x,y+1))edge(x+1,y+1,x,y+1);
+   if(!filled(x-1,y))edge(x,y+1,x,y);
+  }
+  const contours=[];
+  for(let i=0;i<edges.length;i++){
+   if(edges[i].used)continue;
+   let current=i,loops=0,points=[];
+   const first=key(edges[i].x1,edges[i].y1);
+   while(++loops<=edges.length){
+    const step=edges[current];if(step.used)break;
+    step.used=true;points.push([step.x1,step.y1]);
+    const dest=key(step.x2,step.y2);
+    if(dest===first)break;
+    const options=ends.get(dest)||[];
+    const next=options.find(idx=>!edges[idx].used);
+    if(next===undefined)break;
+    current=next;
+   }
+   if(points.length>10){
+    let area=0;
+    for(let j=0;j<points.length;j++){
+     const c=points[j],n=points[(j+1)%points.length];
+     area+=c[0]*n[1]-n[0]*c[1];
+    }
+    contours.push({points,area:Math.abs(area)});
+   }
+  }
+  contours.sort((a,b)=>b.area-a.area);
+  const outline=contours[0]?.points;
+  if(!outline||contours[0].area<ww*hh*.03)throw Error('No usable comma outline');
+  // Smooth one-pixel stair steps without changing the comma's recognizable
+  // contours. Coordinates remain in the ORIGINAL PNG's pixel space.
+  let simplified=outline.slice();
+  const distance=(p,a,b)=>{
+   const vx=b[0]-a[0],vy=b[1]-a[1],len=Math.hypot(vx,vy)||1;
+   return Math.abs(vy*p[0]-vx*p[1]+b[0]*a[1]-b[1]*a[0])/len;
+  };
+  for(let pass=0;pass<5;pass++){
+   const next=[];
+   for(let j=0;j<simplified.length;j++){
+    const prev=simplified[(j+simplified.length-1)%simplified.length];
+    const cur=simplified[j],after=simplified[(j+1)%simplified.length];
+    if(simplified.length>24&&distance(cur,prev,after)<.73)continue;
+    next.push(cur);
+   }
+   if(next.length<20||next.length===simplified.length)break;
+   simplified=next;
+  }
+  const mid=(a,b)=>[((a[0]+b[0])/2).toFixed(1),((a[1]+b[1])/2).toFixed(1)];
+  let d='';
+  if(simplified.length){
+   const firstMid=mid(simplified[simplified.length-1],simplified[0]);
+   d='M'+firstMid.join(' ');
+   for(let i=0;i<simplified.length;i++){
+    const p=simplified[i],next=simplified[(i+1)%simplified.length];
+    d+=' Q'+p[0]+' '+p[1]+' '+mid(p,next).join(' ');
+   }
+   d+=' Z';
+  }
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+ww+' '+hh+'" width="'+ww+'" height="'+hh+'">'+
+   '<path d="'+d+'" fill="none" stroke="#397541" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+  largeComma.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  largeComma.dataset.originalComma='vector-trace';
+
  });
 }
 function paint(){
