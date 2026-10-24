@@ -1,62 +1,81 @@
-/* GOOD THINGS, / SCROLL TO ENTER
-   A restrained interactive frontispiece. Every movement follows wheel/touch
-   input. No autoplay, image downloads or content replacement. */
+/* GOOD THINGS, / COMMA COLLECTOR
+   Scroll-scrubbed typography inside an oversized outlined comma.
+   No autoplay or third-party motion packages. */
 .gt-scroll-entry{display:none}
+html.gt-scroll-entry-ready{
+ overflow:hidden!important;scroll-behavior:auto!important;overscroll-behavior:none
+}
+html.gt-scroll-entry-ready body{overflow:hidden!important;overscroll-behavior:none}
 html.gt-scroll-entry-ready .gt-scroll-entry{
  position:fixed;inset:0;z-index:220000;display:flex;flex-direction:column;
- width:100%;height:100vh;height:100dvh;min-height:400px;
+ width:100%;height:100vh;height:100dvh;min-height:360px;
  background:#f3f1eb;color:#3c5340;overflow:hidden;
  padding:clamp(20px,3.5vw,42px) clamp(22px,5vw,78px);
- transform:translate3d(0,0,0);will-change:transform;
- touch-action:none;overscroll-behavior:contain;
+ transform:translate3d(0,0,0);
+ will-change:transform;touch-action:none;overscroll-behavior:contain;
  font-family:Arial,"Noto Sans TC","PingFang TC",sans-serif
 }
-html.gt-scroll-entry-ready{overflow:hidden!important;scroll-behavior:auto!important}
-html.gt-scroll-entry-ready body{overflow:hidden!important}
-.gt-scroll-entry::before{
- content:"";position:absolute;inset:0;pointer-events:none;
- border:solid #c5cabb;border-width:0;opacity:.7
-}
 .gt-scroll-entry.is-completing{
- transition:transform .34s cubic-bezier(.54,.07,.22,1);
+ transition:transform .48s cubic-bezier(.66,.02,.23,1);
  transform:translate3d(0,-102%,0)!important
 }
 .gt-scroll-entry-top{
- display:flex;justify-content:space-between;align-items:center;gap:20px;
+ flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:18px;
  border-bottom:1px solid #c4c9bf;padding-bottom:14px;
  font-size:10px;letter-spacing:.13em;color:#69776c
 }
 .gt-scroll-entry-top-label{white-space:nowrap}
 .gt-scroll-entry-skip{
- border:0;background:none;color:#536657;font-size:10px;font-weight:600;
- letter-spacing:.12em;padding:6px 0;cursor:pointer;
- -webkit-tap-highlight-color:transparent
+ appearance:none;border:0;background:transparent;color:#536657;
+ font-size:10px;font-weight:600;letter-spacing:.12em;padding:6px 0;
+ cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap
 }
 .gt-scroll-entry-skip:hover{text-decoration:underline;text-underline-offset:4px}
 .gt-scroll-entry-skip:focus-visible{outline:2px solid #537959;outline-offset:5px}
-.gt-scroll-entry-center{flex:1;min-height:0;display:grid;place-items:center}
-.gt-scroll-entry-mark{
- width:min(650px,78vw);min-width:0;
- display:flex;flex-direction:column;align-items:center;
- position:relative;pointer-events:none;
- transform:translate3d(0,0,0) scale(1);will-change:transform,opacity
+.gt-scroll-entry-center{
+ flex:1 1 auto;min-height:0;display:grid;place-items:center;position:relative
 }
-.gt-scroll-entry-logo{
- width:100%;height:auto;max-height:42dvh;
- display:block;object-fit:contain;filter:none;
+.gt-scroll-entry-sculpture{
+ width:min(78vw,500px,52dvh);aspect-ratio:520 / 620;
+ position:relative;flex:0 0 auto;isolation:isolate;
+ transform:translate3d(0,0,0);will-change:transform,opacity
 }
-.gt-scroll-entry-comma{
- display:block;
- font-family:Georgia,"Times New Roman",serif;
- font-size:clamp(72px,13vw,136px);font-weight:600;
- line-height:.46;color:#53865a;
- margin-top:-12px;
- transform:translate3d(0,0,0) scale(.65);
- transform-origin:50% 20%;
- will-change:transform,opacity;pointer-events:none
+.gt-scroll-entry-outline{
+ position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+ transform:translateZ(0);pointer-events:none
+}
+.gt-scroll-entry-shape{
+ fill:rgba(109,151,115,.02);stroke:#7eaa8b;stroke-width:2.8;
+ stroke-linejoin:round;vector-effect:non-scaling-stroke
+}
+.gt-scroll-entry-trace{
+ fill:none;stroke:#376745;stroke-width:3;stroke-linejoin:round;
+ vector-effect:non-scaling-stroke;will-change:stroke-dashoffset
+}
+.gt-scroll-entry-words{
+ position:absolute;top:30%;left:13%;width:62%;height:26%;z-index:2;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:clamp(4px,.65vw,10px);text-align:center;
+ pointer-events:none
+}
+.gt-scroll-entry-word{
+ display:flex;align-items:center;justify-content:center;white-space:nowrap;
+ font:700 clamp(35px,4.4vw,58px)/1.08 "Arial Narrow",Arial,"Helvetica Neue",sans-serif;
+ letter-spacing:-.052em;color:#31493a;
+ font-synthesis:none;
+}
+.gt-scroll-entry-letter{
+ display:inline-block;position:relative;opacity:0;transform:translate3d(0,-200px,0);
+ will-change:transform,opacity;
+}
+.gt-scroll-entry-word[data-word="things"]{font-size:.83em}
+.gt-scroll-entry-word[data-word="things"] .gt-scroll-entry-letter{letter-spacing:.008em}
+.gt-scroll-entry-caption{
+ position:absolute;bottom:11%;left:50%;transform:translateX(-50%);
+ white-space:nowrap;font-size:10px;letter-spacing:.15em;color:#788579;opacity:0
 }
 .gt-scroll-entry-foot{
- border-top:1px solid #c4c9bf;padding-top:17px;
+ flex:0 0 auto;border-top:1px solid #c4c9bf;padding-top:17px;
  display:grid;grid-template-columns:1fr minmax(86px,160px) auto;
  align-items:center;gap:18px;
  font-size:10px;letter-spacing:.17em;color:#657266
@@ -66,20 +85,24 @@ html.gt-scroll-entry-ready body{overflow:hidden!important}
 .gt-scroll-entry-progress{height:1px;background:#bfc8bc;overflow:hidden}
 .gt-scroll-entry-progress>i{
  display:block;height:100%;width:100%;background:#3d754a;
- transform:scaleX(0);transform-origin:left center;
- will-change:transform
+ transform:scaleX(0);transform-origin:left center;will-change:transform
 }
 .gt-scroll-entry-percent{font-variant-numeric:tabular-nums;min-width:33px;text-align:right;color:#5f7462}
-@media(max-width:650px){
- html.gt-scroll-entry-ready .gt-scroll-entry{padding:20px 23px 27px}
+@media(max-width:700px){
+ html.gt-scroll-entry-ready .gt-scroll-entry{padding:20px 23px 26px}
  .gt-scroll-entry-top{font-size:9px}
- .gt-scroll-entry-mark{width:min(380px,86vw)}
- .gt-scroll-entry-logo{max-height:34dvh}
- .gt-scroll-entry-comma{font-size:76px;margin-top:-4px}
- .gt-scroll-entry-foot{grid-template-columns:1fr 65px 32px;gap:12px;font-size:9px}
+ .gt-scroll-entry-sculpture{width:min(88vw,425px,52dvh)}
+ .gt-scroll-entry-word{font-size:clamp(31px,9vw,47px)}
+ .gt-scroll-entry-word[data-word="things"]{font-size:.83em}
+ .gt-scroll-entry-caption{font-size:9px}
+ .gt-scroll-entry-foot{grid-template-columns:1fr 65px 34px;gap:11px;font-size:9px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .gt-scroll-entry-sculpture{width:min(48vw,38dvh)}
+ .gt-scroll-entry-word{font-size:clamp(20px,4vw,36px)}
+ .gt-scroll-entry-caption{display:none}
 }
 @media(prefers-reduced-motion:reduce){
  .gt-scroll-entry{display:none!important}
- html.gt-scroll-entry-ready{overflow:auto!important}
- html.gt-scroll-entry-ready body{overflow:auto!important}
+ html.gt-scroll-entry-ready,html.gt-scroll-entry-ready body{overflow:auto!important}
 }
