@@ -27,11 +27,10 @@ function paint(){
 function request(){if(!animation)animation=requestAnimationFrame(paint)}
 function complete(){
  if(ended)return;ended=true;
- root.classList.remove('gt-scroll-entry-ready');
  overlay.classList.add('is-completing');
  overlay.style.transform='';
  try{sessionStorage.setItem('gt-scroll-entry-v1','done')}catch{}
- const cleanup=()=>{overlay.remove();window.scrollTo({top:0,behavior:'instant'})};
+ const cleanup=()=>{root.classList.remove('gt-scroll-entry-ready');overlay.remove();window.scrollTo(0,0)};
  overlay.addEventListener('transitionend',cleanup,{once:true});
  setTimeout(cleanup,500);
 }
