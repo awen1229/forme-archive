@@ -68,7 +68,7 @@ html.gt-scroll-entry-ready .gt-scroll-entry{
  display:inline-block;position:relative;opacity:0;transform:translate3d(0,-200px,0);
  will-change:transform,opacity;
 }
-.gt-scroll-entry-word[data-word="things"]{font-size:.83em}
+.gt-scroll-entry-word[data-word="things"]{font-size:clamp(29px,3.7vw,48px)}
 .gt-scroll-entry-word[data-word="things"] .gt-scroll-entry-letter{letter-spacing:.008em}
 .gt-scroll-entry-caption{
  position:absolute;bottom:11%;left:50%;transform:translateX(-50%);
@@ -89,6 +89,7 @@ html.gt-scroll-entry-ready .gt-scroll-entry{
 }
 .gt-scroll-entry-percent{font-variant-numeric:tabular-nums;min-width:33px;text-align:right;color:#5f7462}
 @media(max-width:700px){
+ .gt-scroll-entry-word[data-word="things"]{font-size:clamp(26px,7.5vw,39px)}
  html.gt-scroll-entry-ready .gt-scroll-entry{padding:20px 23px 26px}
  .gt-scroll-entry-top{font-size:9px}
  .gt-scroll-entry-sculpture{width:min(88vw,425px,52dvh)}
