@@ -326,14 +326,24 @@ function bezier(a,b,c,d,t){
  const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
 }
 function paint(){
- frame=0;if(ended||!grainMask)return;
+ frame=0;if(ended)return;
+ if(!grainMask){bar.style.transform='scaleX('+p+')';pct.textContent=Math.round(p*100)+'%';return;}
  const sr=sculpture.getBoundingClientRect(),lr=stage.getBoundingClientRect();
  const iw=largeComma.offsetWidth||260,ih=largeComma.offsetHeight||440;
  const aspect=grainMask.ww/grainMask.hh;
  const w=Math.min(iw,ih*aspect),h=Math.min(ih,iw/aspect);
  if(w<4||h<4)return;
  const cx=sr.left+sr.width*.5,cy=sr.top+sr.height*.47;
- const pack=generatePacking(w,h);
+ let pack;
+ try{pack=generatePacking(w,h)}
+ catch(error){
+  console.warn('Original comma particle packing fallback',error);
+  fallback();
+  if(grainField)grainField.style.opacity='0';
+  bar.style.transform='scaleX('+p+')';
+  pct.textContent=Math.round(p*100)+'%';
+  return;
+ }
  const radius=pack.radius;
  // Tilt and unwind the original comma. The pile rotates with its container,
  // not with an unrelated page coordinate system.
@@ -389,7 +399,6 @@ function paint(){
  const tailX=tailRow.x*w,tailY=h*.885;
  const tail=screen(tailX,tailY);
  const outside=screen(-w*.14,h*.96);
- const maxEnd=Math.max(...releaseTimes.map((a,i)=>a+travelTimes[i]));
  parts.forEach((el,i)=>{
   const homeX=lr.left+el.offsetLeft+el.offsetWidth*.5;
   const homeY=lr.top+el.offsetTop+el.offsetHeight*.5;
