@@ -44,13 +44,64 @@ async function ensureFont(font){
  loaded.set(font._id,pending);
  return pending;
 }
+// Every editorial role must cover the actual public components, not only the
+// sample and large headings. Keep the three roles independent in site preview.
+// CSS !important is needed because the editorial stylesheet has explicit font
+// shorthand declarations on many headings, bylines and navigation elements.
+const ROLE_SELECTORS={
+ headlines:[
+  '.gt-home-intro h1','.gt-lead h1','.gt-mag-copy h2','.gt-carousel-copy h2',
+  '.gt-section-top h2','.gt-discover-head h2','.gt-discover-links a strong',
+  '.gt-subject h3','.article-row h3','.gt-content-intro h2',
+  '.gt-feature-copy h2','.gt-forme h2','.gt-edit-note .gt-note',
+  '.section-heading h1','.section-heading h2','.brand-grid .brand-card h3',
+  '.brand-profile .detail-title','.detail-title',
+  '.gt-issue-series-title .kicker','.gt-issue-card h3',
+  '.gt-feature-series-nav-content strong',
+  '.article-body h1','.article-body h2','.article-body h3',
+  '.article-body h4','.article-body h5','.article-body h6',
+  '.gt-design-demo h2','.gt-font-demo-headline'
+ ],
+ body:[
+  '.gt-home-intro .gt-deck','.gt-lead p','.gt-mag-copy p',
+  '.gt-carousel-copy p','.gt-hero-note p','.gt-section-top p',
+  '.gt-subject p','.article-row p','.gt-content-intro p',
+  '.gt-feature-copy p','.gt-forme p','.gt-intro-footer .gt-note',
+  '.gt-intro-footer .gt-credit','.gt-edit-note p',
+  '.brand-grid .brand-card p','.brand-profile p','.detail-copy',
+  '.gt-issue-intro','.gt-issue-card p',
+  '.article-body p','.article-body li','.article-body .excerpt',
+  '.article-body blockquote','.article-body blockquote p',
+  '.source-section dd','.gt-font-demo-body'
+ ],
+ navigation:[
+  '.utility-bar','.site-header nav','.desktop-nav a','.mobile-nav a',
+  '.site-header .brandmark .eyebrow','.gt-side-tab',
+  '.gt-drawer-nav','.gt-drawer-nav a>span','.gt-drawer-nav a>b',
+  '.gt-drawer-nav small','.gt-drawer-label','.gt-drawer-secondary a',
+  '.gt-drawer-chips a','.gt-drawer-mini a','.gt-drawer-footer',
+  '.gt-meta','.gt-home-intro .gt-label','.gt-feature-intro',
+  '.gt-mag-type','.gt-mag-read','.gt-mag-photo-note',
+  '.gt-mag-progress','.gt-mag-tips','.gt-carousel-index',
+  '.gt-carousel-copy .gt-carousel-category','.gt-hero-note .gt-subnote',
+  '.gt-cover .cover-label','.gt-cover .cover-counter','.gt-caption',
+  '.gt-section-top .kicker','.gt-sectional .kicker',
+  '.kicker','.eyebrow','.meta-tag','.link-arrow','.back',
+  '.gt-subject small','.gt-topic-filter a',
+  '.gt-alpha-head','.gt-alpha-key','.gt-alpha-feedback',
+  '.gt-issue-card .gt-feature-issue-read','.gt-feature-series-nav',
+  '.gt-feature-series-nav-content small',
+  '.brand-profile .brand-profile-breadcrumb .kicker',
+  '.brand-profile .brand-profile-breadcrumb .back',
+  '.brand-grid .brand-card .brand-no',
+  '.article-row small','.article-row .meta',
+  '.gt-discover-links a small','.gt-discover-links .kicker',
+  '.gt-forme-subbrand','.gt-forme-subbrand span',
+  '.gt-font-demo-nav'
+ ]
+};
 function setRoleFamily(role,family){
- const selectors={
-  headlines:'.gt-home-intro h1,.gt-mag-copy h2,.gt-issue-series-title .kicker,.gt-issue-card h3,.gt-feature-series-nav-content strong,.article-body h1,.article-body h2,.gt-section-top h2,.gt-design-demo h2,.gt-font-demo-headline',
-  body:'.article-body p,.article-body li,.article-body .excerpt,.gt-issue-intro,.gt-issue-card p,.gt-feature-series-nav-content small,.gt-font-demo-body',
-  navigation:'.site-header nav,.gt-drawer-nav,.gt-side-tab,.gt-feature-series-nav,.gt-issue-card .gt-feature-issue-read,.gt-font-demo-nav'
- };
- return selectors[role].split(',').map(x=>x.trim()+'{font-family:'+family+'!important}').join('\n');
+ return ROLE_SELECTORS[role].map(selector=>selector+'{font-family:'+family+'!important}').join('\n');
 }
 async function apply(input,entries){
  const roles=normalise(input);
