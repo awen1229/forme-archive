@@ -1,0 +1,31 @@
+/* GOOD THINGS, FEATURED / resilient editorial copy layout.
+   Fixed carousel dimensions must never force the summary or action off-card. */
+.gt-mag-sheet .gt-mag-copy{justify-content:space-between;min-height:0;overflow:hidden}
+.gt-mag-sheet .gt-mag-copy>div:first-child{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;min-width:0;overflow:hidden}
+.gt-mag-sheet .gt-mag-copy .gt-mag-type{flex:0 0 auto;margin-bottom:clamp(8px,1.5vw,17px)}
+.gt-mag-sheet .gt-mag-copy h2{
+ font-size:var(--gt-feature-title-size,clamp(29px,3vw,45px));
+ line-height:1.2;letter-spacing:-.02em;
+ flex:0 1 auto;min-height:0;margin:0 0 12px;
+ overflow:hidden;overflow-wrap:anywhere
+}
+.gt-mag-sheet .gt-mag-copy p{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+ overflow:hidden;flex:0 0 auto;margin:0 0 12px;min-height:0;
+ line-height:1.75
+}
+.gt-mag-sheet .gt-mag-copy>.gt-mag-read{flex:0 0 auto;align-self:flex-start;min-height:24px;max-width:100%}
+.gt-mag-sheet .gt-mag-copy h2.gt-mag-ellipsis{
+ display:-webkit-box;-webkit-box-orient:vertical;
+ -webkit-line-clamp:var(--gt-feature-max-lines,5);overflow:hidden
+}
+@media(max-width:800px){
+ .gt-mag-sheet .gt-mag-copy h2{font-size:var(--gt-feature-title-size,32px)}
+}
+@media(max-width:700px){
+ .gt-mag-sheet .gt-mag-copy{padding:17px 20px 18px;justify-content:space-between}
+ .gt-mag-sheet .gt-mag-copy .gt-mag-type{margin-bottom:6px}
+ .gt-mag-sheet .gt-mag-copy h2{font-size:var(--gt-feature-title-size,25px);line-height:1.17;margin-bottom:7px}
+ .gt-mag-sheet .gt-mag-copy p{-webkit-line-clamp:2;line-height:1.55;margin-bottom:5px}
+ .gt-mag-sheet .gt-mag-copy>.gt-mag-read{font-size:10px;min-height:20px}
+}
