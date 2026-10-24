@@ -409,7 +409,7 @@ function crossedOriginalOpening(body){
  return mouthEdges.some(e=>segmentIntersects(body.plugin.lastInside,body.position,e.a,e.b));
 }
 function initialize(){
- flow=null;gateOpened=false;drainTime=0;exitSequence=[];
+ flow=null;gateOpened=false;drainTime=0;exitSequence=[];lastMouthRelease=-Infinity;
  if(engine){Matter.Composite.clear(engine.world,false);Matter.Engine.clear(engine);}
  const {Engine,Bodies,Composite,Body}=Matter;
  engine=Engine.create({positionIterations:12,velocityIterations:10,constraintIterations:6,enableSleeping:false});
@@ -596,7 +596,7 @@ function drawGlyph(img,x,y,angle,w,h,opacity=1){
 // V12: Matter.js governs the tumble and every entire glyph must exit. Once the bowl has turned, a measured
 // source-mask route transfers each letter into a collision-free editorial
 // conveyor. Both outside journeys advance by arc length, not spring forces.
-let flow=null,gateOpened=false,drainTime=0,exitSequence=[];
+let flow=null,gateOpened=false,drainTime=0,exitSequence=[],lastMouthRelease=-Infinity;
 function fullyOutsideComma(body){
  // Verify the ACTUAL visible letter bounds as well as its physics circle.
  // A center crossing or a circle crossing alone can clip an original glyph.
@@ -713,6 +713,10 @@ function routeAssist(body){
 }
 function startLetterExit(body){
  if(body.plugin.released)return;
+ // Each completed physical descent earns a separate mouth release.
+ // Keep a brief separation without rearranging the true arrival order.
+ if(drainTime-lastMouthRelease<.19)return;
+ lastMouthRelease=drainTime;
  const start=worldToScreen(body.position.x,body.position.y);
  const mouth=worldToScreen(outlet.x,outlet.y);
  const margin=Math.max(72,layout.logoW*.13);
@@ -742,7 +746,7 @@ function advanceDrain(dt){
   if(assist){
    // A targeted recovery is still a visible descent along the source-logo
    // contour. It never skips from the bowl to the screen's left edge.
-   assist.speed=Math.min(model.radius*3.1,assist.speed+model.radius*.072*dt/16.667);
+   assist.speed=Math.min(model.radius*6.4,assist.speed+model.radius*.14*dt/16.667);
    assist.d=Math.min(assist.path.total,assist.d+assist.speed*dt/1000);
    const p=atDistance(assist.path,assist.d);
    const ahead=atDistance(assist.path,Math.min(assist.path.total,assist.d+model.radius*.4));
@@ -885,7 +889,7 @@ function frame(now){
    tilt=Math.PI*(1+ease(elapsed/1.95));
    engine.gravity.x=-Math.sin(tilt);
    engine.gravity.y=Math.cos(tilt);
-   if(elapsed>=1.62&&!gateOpened){
+   if(elapsed>=1.95&&!gateOpened){
     gateOpened=true;
     for(const segment of gate)Matter.Composite.remove(world,segment.body);
    }
