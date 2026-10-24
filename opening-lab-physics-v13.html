@@ -885,8 +885,17 @@ function render(){
     const slow=20,pre=Math.max(0,q.rightLength-slow);
     const u=clamp((travel-pre)/slow);
     const eased=travel<pre?travel:pre+slow*(u+u*u-u*u*u);
-    pos={x:q.rightX-eased,y:q.goal.y};
-    angle=-.09*(1-ease(travel/q.rightLength));
+    // Re-enter along the SAME invisible runway, rolling as distance
+    // advances. Only rise toward the source-logo letter's position near
+    // the final portion of its return.
+    const advance=travel/Math.max(1,q.rightLength);
+    const runwayScreenY=worldToScreen(outlet.x,runwayY).y;
+    const rollingY=runwayScreenY-Math.max(q.goalW,q.goalH)*small*.36;
+    const rise=ease((advance-.42)/.55);
+    pos={x:q.rightX-eased,y:lerp(rollingY,q.goal.y,rise)};
+    const wheelRadius=Math.max(14,Math.max(q.goalW,q.goalH)*small*.33);
+    const rotateOut=1-ease((advance-.72)/.26);
+    angle=-travel/wheelRadius*rotateOut;
     if(travel>=q.rightLength){pos=q.goal;angle=0;}
    }
    if(t>=flow.lastLand)scale=lerp(small,1,gather);
