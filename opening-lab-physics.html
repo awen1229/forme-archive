@@ -102,6 +102,7 @@ function fail(reason){
  mode='error';cancelAnimationFrame(raf);
  errorBox.style.display='block';status.textContent='THE STUDY COULD NOT START';
  startButton.disabled=true;replayButton.disabled=true;
+ report('fail');
 }
 function getBitmap(img){
  const width=img.naturalWidth,height=img.naturalHeight;
@@ -305,7 +306,7 @@ function chooseGate(contour,r){
   distances.push(len);circumference+=len;
  }
  // Keep the aperture close to one glyph wide, so the flow queues up.
- const arc=Math.min(r*1.20,circumference*.10),gap=new Set();
+ const arc=Math.min(r*1.75,circumference*.13),gap=new Set();
  for(const direction of [-1,1]){
   let i=target,covered=0;
   while(covered<arc){
@@ -507,13 +508,13 @@ function frame(now){
       const norm=Math.max(12,Math.hypot(dx,dy));
       const boost=elapsed>6?2.1:1;
       Matter.Body.applyForce(b,b.position,{
-       x:dx/norm*b.mass*.000012*boost,
-       y:dy/norm*b.mass*.000012*boost
+       x:dx/norm*b.mass*.000115*boost,
+       y:dy/norm*b.mass*.000115*boost
       });
      }else{
       // Once a glyph has emerged it continues to ROLL to screen-left.
       Matter.Body.applyForce(b,b.position,{
-       x:-b.mass*.000073,y:0
+       x:-b.mass*.00017,y:-b.mass*.00155
       });
      }
     });
@@ -542,7 +543,8 @@ function frame(now){
    bodies.forEach((b,i)=>{
     if(!b.plugin.released&&!model.inside(b.position.x,b.position.y)){
      b.plugin.released=true;
-     Matter.Body.setVelocity(b,{x:-2.8-.2*rand(i+7),y:Math.min(1.4,b.velocity.y)});
+     Matter.Body.setVelocity(b,{x:-2.8-.2*rand(i+7),y:Math.min(.32,b.velocity.y)});
+     Matter.Body.setAngularVelocity(b,-.065+.035*rand(i+18));
     }
     if(b.plugin.released&&!b.plugin.offLeft){
      const pos=worldToScreen(b.position.x,b.position.y);
