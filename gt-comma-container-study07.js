@@ -198,7 +198,7 @@ function extractOriginal(){
   d+=' Z';
   commaOutline=d;
   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+ww+' '+hh+'" width="'+ww+'" height="'+hh+'" shape-rendering="geometricPrecision">'+
-   '<path d="'+d+'" fill="none" stroke="#397541" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+   '<path d="'+d+'" fill="#dce8d9" fill-opacity=".21" stroke="#397541" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
   largeComma.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
   largeComma.dataset.originalComma='smooth-vector';
   
@@ -252,219 +252,261 @@ function extractOriginal(){
  });
 }
 
-// STUDY 07 / COMMA CONTAINER
-// A true contained initial state, then left-tail release and right-side return.
-// The logo's exact raster glyphs and final intact wordmark are preserved.
+// STUDY 07 / BOTTLE JAM, revision 2
+// Use the ORIGINAL logo glyph bitmaps and ACTUAL comma ink silhouette.
+// Packing tests the complete rotated glyph box against the silhouette and every other box.
+// There is deliberately no visual clipping used to conceal packing errors.
 const startButton=document.getElementById('gt-study-activate');
 const skipButton=document.getElementById('gt-study-skip');
 const hint=overlay.querySelector('.gt-scroll-entry-hint');
-const totalMs=6650,firstExit=190,exitGap=135,exitDuration=1740;
-const firstReturn=3330,returnGap=126,returnDuration=1080;
-const startSeed=70971;
+const prompt=overlay.querySelector('.gt-study-prompt');
+const totalMs=8150;
+const SHAKE_END=1350, POUR_START=1230, POUR_GAP=215, POUR_LENGTH=1580;
+const RETURN_START=4930, RETURN_GAP=135, RETURN_LENGTH=1100;
+const startSeed=4379085;
+let order=[],ready=false,hasFallback=false;
 function rng(seed){return ()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}}
-function cubic2(a,b,c,d,u){
- const v=1-u;
- return v*v*v*a+3*v*v*u*b+3*v*u*u*c+u*u*u*d;
-}
+function cubic(a,b,c,d,t){const v=1-t;return v*v*v*a+3*v*v*t*b+3*v*t*t*c+t*t*t*d}
 function blend(a,b,t){return a+(b-a)*t}
-function localPoint(geometry,x,y){
- return {x:geometry.cx+(x/geometry.ww-.5)*geometry.w,
-         y:geometry.cy+(y/geometry.hh-.5)*geometry.h};
-}
 function getGeometry(){
- const s=sculpture.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
- const border=overlay.getBoundingClientRect(), iw=largeComma.offsetWidth,ih=largeComma.offsetHeight;
- const ww=commaBox.w,hh=commaBox.h,ratio=ww/hh;
- const w=Math.min(iw,ih*ratio),h=Math.min(ih,iw/ratio);
- return {ww,hh,w,h,cx:s.left+s.width*.5,cy:s.top+s.height*.47,stageRect,border};
+ const sr=sculpture.getBoundingClientRect(),r=stage.getBoundingClientRect(),screen=overlay.getBoundingClientRect();
+ const ww=commaBox.w,hh=commaBox.h,aspect=ww/hh;
+ const iw=largeComma.offsetWidth||260,ih=largeComma.offsetHeight||430;
+ const w=Math.min(iw,ih*aspect),h=Math.min(ih,iw/aspect);
+ return {ww,hh,w,h,cx:sr.left+sr.width*.5,cy:sr.top+sr.height*.47,stageRect:r,screen};
 }
-function inside(x,y,rx,ry){
- // All grid samples must remain in the genuine filled comma silhouette.
- const ww=commaBox.w,hh=commaBox.h;
- for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-  const xx=Math.round(x+dx*rx),yy=Math.round(y+dy*ry);
-  if(xx<0||yy<0||xx>=ww||yy>=hh||!commaMask[yy*ww+xx])return false;
+function point(g,x,y){return {x:g.cx+(x/g.ww-.5)*g.w,y:g.cy+(y/g.hh-.5)*g.h}}
+function bodyAt(y){
+ const n=commaRail.length,yy=Math.round(clamp(y,0,1)*(n-1));
+ const r=commaRail[yy];if(!r)return {x:commaBox.w*.5,y:yy,width:commaBox.w*.2};
+ // CommaRail is already derived from the exact, connected source-ink silhouette.
+ const x=r.x*commaBox.w, width=r.width*commaBox.w;
+ return {x,y:yy,width};
+}
+function rotatedInside(item,g,x,y,scale=1){
+ const a=item.angle*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a);
+ const rx=(item.pw*scale/2+1.5)*g.ww/g.w;
+ const ry=(item.ph*scale/2+1.5)*g.hh/g.h;
+ // Check 25 points of rotated painted bounds, not just its center/corners.
+ for(let iy=-2;iy<=2;iy++)for(let ix=-2;ix<=2;ix++){
+  const xx=x+(ix/2*rx)*cs-(iy/2*ry)*sn;
+  const yy=y+(ix/2*rx)*sn+(iy/2*ry)*cs;
+  const ix0=Math.round(xx),iy0=Math.round(yy);
+  if(ix0<0||iy0<0||ix0>=g.ww||iy0>=g.hh||
+     commaMask[iy0*g.ww+ix0]!==1)return false;
  }
  return true;
 }
-function centerAt(y){
- const hh=commaBox.h,ww=commaBox.w;let xSum=0,weight=0,spanSum=0;
- const y0=Math.round(clamp(y,0,1)*(hh-1));
- for(let dy=-5;dy<=5;dy++){
-  const yy=clamp(y0+dy,0,hh-1),z=commaRail[yy];
-  if(!z)continue;
-  const density=5.5-Math.abs(dy),g=density>0?density:0;
-  // Existing rail is safely inside the original comma's connected ink.
-  xSum+=z.x*g;spanSum+=z.width*g;weight+=g;
+function separate(a,b,g){
+ // SAT rotated rectangular collision with ~2 px of breathing room.
+ const ar=a.angle*Math.PI/180,br=b.angle*Math.PI/180;
+ const axes=[[Math.cos(ar),Math.sin(ar)],[-Math.sin(ar),Math.cos(ar)],
+             [Math.cos(br),Math.sin(br)],[-Math.sin(br),Math.cos(br)]];
+ const dx=(a.x-b.x)*g.w/g.ww,dy=(a.y-b.y)*g.h/g.hh;
+ for(const axis of axes){
+  const pa=Math.abs(axis[0]*Math.cos(ar)+axis[1]*Math.sin(ar))*(a.pw*.5+1.3)
+          +Math.abs(-axis[0]*Math.sin(ar)+axis[1]*Math.cos(ar))*(a.ph*.5+1.3);
+  const pb=Math.abs(axis[0]*Math.cos(br)+axis[1]*Math.sin(br))*(b.pw*.5+1.3)
+          +Math.abs(-axis[0]*Math.sin(br)+axis[1]*Math.cos(br))*(b.ph*.5+1.3);
+  if(Math.abs(dx*axis[0]+dy*axis[1])>=pa+pb)return true;
  }
- return {x:(weight?xSum/weight:.5)*ww,
-         y:y0,width:(weight?spanSum/weight:.2)*ww};
+ return false;
 }
-function prepareLayout(){
- if(!parts.length||!commaMask)return;
- const g=getGeometry(),random=rng(startSeed),maxHeight=clamp(g.h*.053,13.4,27);
- // Find a size that allows all ten original letter silhouettes to rest
- // inside the comma with breathing room, not clipped at the contour.
- let result=null;
- for(let shrink=1;shrink>=.60;shrink-=.06){
-  const chosen=[];
-  const sizes=parts.map(el=>{
-   const scale=maxHeight*shrink/Math.max(1,el.offsetHeight);
-   const pxW=el.offsetWidth*scale,pxH=el.offsetHeight*scale;
-   return {scale,pxW,pxH,rx:(pxW*.5+3)*g.ww/g.w,
-                        ry:(pxH*.5+3)*g.hh/g.h};
-  });
-  let failed=false;
-  for(let i=0;i<parts.length;i++){
-   const z=sizes[i];let best=null,bestScore=-Infinity;
-   for(let tryNo=0;tryNo<1900;tryNo++){
-    const x=(.11+random()*.78)*g.ww;
-    const y=(.08+random()*.69)*g.hh;
-    if(!inside(x,y,z.rx,z.ry))continue;
-    let minSeparation=1e7,overlap=false;
-    for(const q of chosen){
-     const dx=Math.abs(x-q.x)*g.w/g.ww,dy=Math.abs(y-q.y)*g.h/g.hh;
-     if(dx<(z.pxW+q.pxW)*.5+2.8&&dy<(z.pxH+q.pxH)*.5+3){overlap=true;break;}
-     minSeparation=Math.min(minSeparation,Math.hypot(dx,dy));
-    }
-    if(overlap)continue;
-    const score=Math.min(60,minSeparation)+random()*14-(y/g.hh)*3;
-    if(score>bestScore){best={x,y,...z};bestScore=score;}
+function attemptPack(g,nominal,seed){
+ const random=rng(seed),angles=[-11,7,-8,10,-4,8,-10,5,-7,9];
+ const info=parts.map((el,i)=>{
+  const scale=nominal/Math.max(1,el.offsetHeight);
+  return {i,angle:angles[i],scale,pw:el.offsetWidth*scale,ph:el.offsetHeight*scale};
+ });
+ // Place the widest glyphs first; otherwise the thin strokes consume the
+ // few roomy positions in the shoulder of the comma.
+ const queue=info.slice().sort((a,b)=>b.pw*b.ph-a.pw*a.ph);
+ const settled=[];
+ for(let q=0;q<queue.length;q++){
+  const item=queue[q];
+  let best=null,bestScore=-Infinity;
+  for(let n=0;n<2550;n++){
+   const y=(.095+random()*.77)*g.hh;
+   const row=bodyAt(y/g.hh);
+   const x=(.06+random()*.88)*g.ww;
+   if(!rotatedInside(item,g,x,y))continue;
+   const probe={...item,x,y};
+   if(settled.some(c=>!separate(probe,c,g)))continue;
+   let nearest=1e5;
+   for(const c of settled){
+    const dx=(x-c.x)*g.w/g.ww,dy=(y-c.y)*g.h/g.hh;
+    const dist=Math.hypot(dx,dy)-(Math.max(item.pw,item.ph)+Math.max(c.pw,c.ph))*.43;
+    nearest=Math.min(nearest,dist);
    }
-   if(!best){failed=true;break;}
-   chosen.push(best);
+   // Seek the compact shoulder around the neck, not evenly scattered dots.
+   const wantedY=.54*g.hh;
+   const closeness=settled.length?(-Math.abs(nearest-4.5)*.50):0;
+   const score=closeness-Math.abs(y-wantedY)*g.h/g.hh*.08
+     -Math.abs(x-row.x)*g.w/g.ww*.025+random()*3;
+   if(score>bestScore){bestScore=score;best=probe;}
   }
-  if(!failed){result=chosen;break;}
+  if(!best)return null;
+  settled.push(best);
  }
- if(!result){
-  // Defensive fallback, never leave glyphs visibly outside the comma.
-  result=[];
-  parts.forEach((el,i)=>{
-   const y=.20+.43*(i/Math.max(1,parts.length-1));
-   const r=centerAt(y);
-   result.push({x:r.x,y:r.y,scale:.11,
-                pxW:el.offsetWidth*.11,pxH:el.offsetHeight*.11});
-  });
+ return settled.sort((a,b)=>a.i-b.i);
+}
+function verifyPacking(items,g){
+ if(!items||items.length!==parts.length)return false;
+ return items.every((c,i)=>rotatedInside(c,g,c.x,c.y)&&
+              items.every((other,j)=>i===j||separate(c,other,g)));
+}
+function pack(){
+ const g=getGeometry();
+ let winner=null;
+ // Ask for ~9-10% of the real comma height rather than the previous ~5%.
+ // Reduce proportionally only if all ten ORIGINAL shapes cannot safely fit.
+ const base=clamp(g.h*.104,28,55);
+ for(const multiplier of [1, .96, .92, .88, .84, .8, .76, .72, .68, .64, .60]){
+  const nominal=base*multiplier;
+  for(let n=0;n<5;n++){
+   const items=attemptPack(g,nominal,startSeed+n*1177+Math.round(multiplier*10000));
+   if(verifyPacking(items,g)){winner=items;break;}
+  }
+  if(winner)break;
  }
- const home=parts.map(el=>({
-  x:g.stageRect.left+el.offsetLeft+el.offsetWidth*.5,
-  y:g.stageRect.top+el.offsetTop+el.offsetHeight*.5
+ if(!winner){
+  throw Error("Insufficient safe space for all ten original glyphs");
+ }
+ const homes=parts.map(el=>({x:g.stageRect.left+el.offsetLeft+el.offsetWidth*.5,
+                             y:g.stageRect.top+el.offsetTop+el.offsetHeight*.5}));
+ glyphs=winner.map((item,i)=>({
+  ...item,homeX:homes[i].x,homeY:homes[i].y,
+  start:point(g,item.x,item.y),releaseIndex:-1
  }));
- glyphs=result.map((pt,i)=>({
-  ...pt,homeX:home[i].x,homeY:home[i].y,
-  start:localPoint(g,pt.x,pt.y),
-  angle:[-7,4,-3,6,-5,3,8,-4,2,-6][i]
- }));
+ // Gravity/left-tip order: the letters nearest the comma's lower exit are freed first.
+ order=glyphs.map((c,i)=>({...c,i})).sort((a,b)=>b.y-a.y||a.x-b.x).map(c=>c.i);
+ order.forEach((glyphIndex,slot)=>glyphs[glyphIndex].releaseIndex=slot);
  layout=g;
+ ready=true;
+ overlay.dataset.packing='verified';
+ overlay.dataset.glyphHeight=Math.round(winner[0].ph).toString();
+ if(hint&&!running)hint.textContent='LETTERS ARE STUCK / 點擊逗號，把它們搖出來';
+ if(prompt)prompt.textContent='SHAKE TO RELEASE / 點擊逗號';
 }
-function drawGlyph(el,i,now){
- const c=glyphs[i],g=layout;if(!c||!g)return;
- const start=firstExit+i*exitGap,release=range(now,start,start+exitDuration);
- const rstart=firstReturn+i*returnGap;
- let x=c.start.x,y=c.start.y,scale=c.scale,opacity=1,rotate=c.angle;
- if(now<start){
-  const phase=(running?now:performance.now())*.0013+i*1.8;
-  x+=Math.sin(phase)*1.2;y+=Math.cos(phase*.88)*1.6;
- }else if(now<rstart){
-  // Every letter follows the same inner corridor to the lower-left tail.
-  if(release<.43){
-   const q=smooth(release/.43),junction=centerAt(.47),join=localPoint(g,junction.x,junction.y);
-   x=cubic2(c.start.x,c.start.x+g.w*.035,join.x+g.w*.015,join.x,q);
-   y=cubic2(c.start.y,c.start.y+g.h*.045,join.y-g.h*.055,join.y,q);
-   scale=blend(c.scale,Math.min(c.scale,clamp(g.w*.11/el.offsetWidth,.13,c.scale)),q);
-  }else if(release<.76){
-   const q=smooth((release-.43)/.33);
-   const ry=.47+(.965-.47)*q;
-   const middle=centerAt(ry),p=localPoint(g,middle.x,middle.y);
-   x=p.x;y=p.y;
-   const fit=Math.min(c.scale,Math.max(.055,(middle.width*g.w/g.ww*.57)/Math.max(1,el.offsetWidth)));
-   scale=blend(Math.min(c.scale,g.w*.11/Math.max(1,el.offsetWidth)),fit,smooth(q));
-  }else{
-   const q=smooth((release-.76)/.24),tip=centerAt(.965);
-   const from=localPoint(g,tip.x,tip.y);
-   const offLeft=g.border.left-Math.max(120,g.w*.3);
-   x=cubic2(from.x,from.x-g.w*.11,offLeft+g.w*.15,offLeft,q);
-   y=cubic2(from.y,from.y+g.h*.085,from.y+g.h*.13,from.y+g.h*.14,q);
-   scale=blend(Math.max(.095,c.scale*.34),c.scale*.89,q);
-  }
-  if(release>=1)opacity=0;
-  rotate=blend(c.angle,0,smooth(release));
- }else{
-  // Fully leave to the LEFT before the same glyph returns from the RIGHT.
-  const arrival=range(now,rstart,rstart+returnDuration);
-  const q=smooth(arrival);
-  const from=g.border.right+Math.max(150,g.w*.34);
-  const advance=c.homeX+Math.min(116,g.border.width*.20);
-  x=cubic2(from,from-g.w*.02,advance,c.homeX,q);
-  y=cubic2(c.homeY-g.h*.09,c.homeY-g.h*.085,c.homeY+g.h*.008,c.homeY,q);
-  scale=blend(c.scale*.87,1,q);
-  rotate=blend(c.angle*.5,0,q);
+function shake(t){
+ if(t>=SHAKE_END)return 0;
+ const rise=smooth(range(t,0,170)),decay=1-smooth(range(t,750,SHAKE_END));
+ return rise*decay*(5.5*Math.sin(t*.029)+2.3*Math.sin(t*.061));
+}
+function wiggle(i,t,g){
+ // Keep collisions and outline respected even during the shake.
+ // If a proposed jiggle fails, this particle stays wedged in its valid slot.
+ const c=glyphs[i],amp=2.5*(1-smooth(range(t,700,1700)));
+ const x=c.x+(Math.sin(t*.019+i*2.47)*amp)*g.ww/g.w;
+ const y=c.y+(Math.cos(t*.024+i*3.13)*amp)*g.hh/g.h;
+ const proposal={...c,x,y};
+ if(rotatedInside(proposal,g,x,y)&&glyphs.every((other,j)=>i===j||separate(proposal,other,g))){
+  return point(g,x,y);
  }
- const intact=smooth(range(now,5740,6200));
- opacity*=1-intact;
- el.style.transform='translate3d('+(x-c.homeX).toFixed(2)+'px,'+
-   (y-c.homeY).toFixed(2)+'px,0) rotate('+rotate.toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
- el.style.opacity=String(opacity);
+ return c.start;
 }
-function paint(now){
- frame=0;
- if(ended||!glyphs.length)return;
- const elapsed=running?now-startedAt:0;
+function animateGlyph(i,t){
+ const c=glyphs[i],g=layout,el=parts[i];
+ const turn=c.releaseIndex,releaseAt=POUR_START+turn*POUR_GAP;
+ const returnAt=RETURN_START+turn*RETURN_GAP;
+ let x=c.start.x,y=c.start.y,rotation=c.angle,scale=c.scale,alpha=1;
+ if(t<releaseAt){
+  const pos=wiggle(i,t,g);x=pos.x;y=pos.y;
+ }else if(t<returnAt){
+  const q=range(t,releaseAt,releaseAt+POUR_LENGTH);
+  const mid=bodyAt(.57),neck=bodyAt(.80),mouth=bodyAt(.90);
+  const a=point(g,mid.x,mid.y),b=point(g,neck.x,neck.y),cMouth=point(g,mouth.x,mouth.y);
+  if(q<.40){
+   const u=smooth(q/.40);
+   x=cubic(c.start.x,c.start.x,a.x+g.w*.08,a.x,u);
+   y=cubic(c.start.y,c.start.y+g.h*.06,a.y-g.h*.075,a.y,u);
+   rotation=blend(c.angle,-13,u);
+  }else if(q<.71){
+   const u=smooth((q-.40)/.31);
+   x=cubic(a.x,a.x-g.w*.055,b.x+g.w*.02,b.x,u);
+   y=cubic(a.y,a.y+g.h*.035,b.y-g.h*.02,b.y,u);
+   scale=blend(c.scale,c.scale*.74,u);
+   rotation=blend(-13,-28,u);
+  }else{
+   const u=smooth((q-.71)/.29),farLeft=g.screen.left-Math.max(140,g.w*.48);
+   x=cubic(b.x,cMouth.x-g.w*.10,farLeft+g.w*.20,farLeft,u);
+   y=cubic(b.y,cMouth.y+g.h*.03,cMouth.y+g.h*.14,cMouth.y+g.h*.17,u);
+   scale=blend(c.scale*.74,c.scale*.93,u);
+   rotation=blend(-28,-17,u);
+  }
+  if(q>=1)alpha=0;
+ }else{
+  const u=smooth(range(t,returnAt,returnAt+RETURN_LENGTH));
+  const offRight=g.screen.right+Math.max(150,g.w*.45);
+  x=cubic(offRight,offRight-g.w*.02,c.homeX+Math.min(110,g.screen.width*.19),c.homeX,u);
+  y=cubic(c.homeY-g.h*.06,c.homeY-g.h*.11,c.homeY,c.homeY,u);
+  scale=blend(c.scale*.95,1,u);
+  rotation=blend(c.angle,0,u);
+ }
+ alpha*=1-smooth(range(t,6920,7300));
+ el.style.transform='translate3d('+(x-c.homeX).toFixed(2)+'px,'+
+  (y-c.homeY).toFixed(2)+'px,0) rotate('+rotation.toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
+ el.style.opacity=String(alpha);
+}
+function render(now){
+ frame=0;if(ended||!ready)return;
+ const t=running?now-startedAt:0;
  if(!running){
-  glyphs.forEach((_,i)=>drawGlyph(parts[i],i,elapsed));
-  frame=requestAnimationFrame(paint);
+  // Fixed large jammed characters, without incessant floating or edge escapes.
+  glyphs.forEach((_,i)=>animateGlyph(i,0));
   return;
  }
- parts.forEach((_,i)=>drawGlyph(parts[i],i,elapsed));
- const faded=smooth(range(elapsed,5180,5740));
- largeComma.style.opacity=String(.92*(1-faded));
- largeComma.style.transform='translate(-50%,-50%) scale('+(1+.012*smooth(range(elapsed,0,750))-.012*faded)+')';
- if(full)full.style.opacity=String(smooth(range(elapsed,5740,6200)));
- if(caption)caption.style.opacity=String(smooth(range(elapsed,5540,6060)));
- if(bar)bar.style.transform='scaleX('+clamp(elapsed/totalMs)+')';
- if(pct)pct.textContent=Math.round(clamp(elapsed/totalMs)*100)+'%';
- if(elapsed>=totalMs){enterSite();return;}
- frame=requestAnimationFrame(paint);
+ sculpture.style.transform='rotate('+shake(t).toFixed(2)+'deg)';
+ glyphs.forEach((_,i)=>animateGlyph(i,t));
+ const fading=smooth(range(t,6760,7160));
+ largeComma.style.opacity=String(.95*(1-fading));
+ if(full)full.style.opacity=String(smooth(range(t,6920,7350)));
+ if(caption)caption.style.opacity=String(smooth(range(t,7130,7390)));
+ if(bar)bar.style.transform='scaleX('+clamp(t/totalMs)+')';
+ if(pct)pct.textContent=Math.round(clamp(t/totalMs)*100)+'%';
+ if(t>=totalMs){finish();return}
+ frame=requestAnimationFrame(render);
 }
-function request(){if(!frame)frame=requestAnimationFrame(paint)}
+function request(){if(!frame)frame=requestAnimationFrame(render)}
 function startStudy(){
- if(running||ended)return;
- if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){enterSite();return;}
- running=true;
- startedAt=performance.now();
- startButton.disabled=true;
+ if(ended||running||!ready)return;
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return}
+ running=true;startedAt=performance.now();startButton.disabled=true;
  overlay.classList.add('is-started');
- if(hint)hint.textContent='LET THE LETTERS GO / 字母正在離開逗號';
+ if(hint)hint.textContent='SHAKE / TILT / POUR / 字母正在擠出瓶口';
  request();
 }
-function enterSite(){
+function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
  try{sessionStorage.setItem('gt-scroll-entry-v16','done')}catch(e){}
- // The experiment never mutates or publishes the real site.
  overlay.classList.add('is-completing');
- setTimeout(()=>{location.assign('./')},470);
+ setTimeout(()=>location.assign('./'),460);
 }
-function showFallback(e){
- console.warn('Original comma study fallback:',e);
- overlay.classList.add('has-error');
- if(full){full.style.opacity='1';}
- if(hint)hint.textContent='ORIGINAL LOGO / 點擊進入網站';
- startButton.addEventListener('click',enterSite,{once:true});
+function fallback(error){
+ console.warn('Comma Container packing fallback:',error);
+ hasFallback=true;overlay.classList.add('has-error');
+ // Never display letters outside the original boundary or overlapping.
+ parts.forEach(el=>el.style.opacity='0');
+ largeComma.style.opacity='0';
+ if(full)full.style.opacity='1';
+ if(hint)hint.textContent='ORIGINAL LOGO / 點擊進入首頁';
+ startButton.addEventListener('click',finish,{once:true});
 }
-startButton.addEventListener('click',startStudy);
-startButton.addEventListener('keydown',e=>{
- if(e.key==='Enter'||e.key===' '){e.preventDefault();startStudy();}
-});
-skipButton.addEventListener('click',enterSite);
+startButton.addEventListener('click',()=>{if(hasFallback)finish();else startStudy()});
+skipButton.addEventListener('click',finish);
 window.addEventListener('resize',()=>{
- if(!running&&!ended){prepareLayout();request();}
+ if(!running&&!ended){
+  try{pack();request()}catch(e){fallback(e)}
+ }
 },{passive:true});
-window.addEventListener('keydown',e=>{if(e.key==='Escape')enterSite()});
-window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',e=>{
- if(e.matches)enterSite();
+window.addEventListener('keydown',e=>{
+ if(e.key==='Escape')finish();
 });
-extractOriginal().then(()=>largeComma.decode?.().catch(()=>{})||Promise.resolve()).then(()=>{
- prepareLayout();
- request();
-}).catch(showFallback);
+window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',e=>{
+ if(e.matches)finish();
+});
+extractOriginal()
+ .then(()=>largeComma.decode?.().catch(()=>{})||Promise.resolve())
+ .then(()=>{pack();request()})
+ .catch(fallback);
 })();
