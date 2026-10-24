@@ -482,7 +482,7 @@ function drawLetters(now){
  if(!ready)return;
  const L=layout(),elapsed=now-releaseAt;
  const active=phase==="releasing",idle=phase==="caged";
- const finishP=active?clamp((elapsed-(releaseTotal-250))/460):phase==="assembled"||phase==="opening"?1:0;
+ const finishP=active?clamp((elapsed-releaseTotal)/310):phase==="assembled"||phase==="opening"?1:0;
  shell.style.opacity=String(idle?1:Math.max(0,1-smooth((elapsed-540)/950)));
  const logoAlpha=smooth(finishP);
  full.style.opacity=String(logoAlpha);
@@ -531,7 +531,7 @@ function drawLetters(now){
   el.style.transform='translate3d('+(pos.x-home.x).toFixed(2)+'px,'+
      (pos.y-home.y).toFixed(2)+'px,0) rotate('+rot.toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
  });
- if(active && elapsed>releaseTotal+400){
+ if(active && elapsed>releaseTotal+360){
   phase="assembled";wordmarkAt=now;
   full.style.opacity="1";shell.style.opacity="0";
   for(const g of glyphs)g.el.style.opacity="0";
