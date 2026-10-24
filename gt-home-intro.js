@@ -24,7 +24,7 @@ let completed=false,timeout=0;
 function finish(){
  if(completed)return;
  completed=true;
- try{sessionStorage.setItem('gt-scroll-entry-physics3','done')}catch(e){}
+ try{sessionStorage.setItem('gt-scroll-entry-physics5','done')}catch(e){}
  overlay.classList.add('is-completing');
  const cleanup=()=>{
   root.classList.remove('gt-scroll-entry-ready');
@@ -58,5 +58,5 @@ window.addEventListener('keydown',onKey);
 window.addEventListener('hashchange',onRoute);
 skip.addEventListener('click',finish);
 frame.addEventListener('error',finish);
-frame.src='./opening-lab-physics.html?embed=1&build=physics03';
+frame.src='./opening-lab-physics.html?embed=1&build=physics05';
 })();
