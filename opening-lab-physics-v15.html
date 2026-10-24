@@ -814,6 +814,23 @@ function advanceDrain(dt){
  drainTime+=dt/1000;
  for(const body of bodies){
   if(body.plugin.released){advanceRunway(body,dt);continue;}
+  // Synchronize state with what is physically on screen. If a body
+  // escaped the open comma before the mouth sensor fired and is ALREADY
+  // wholly off the left viewport, count its actual departure instead
+  // of waiting forever for a collision that can no longer happen.
+  const g=model.glyphs[body.plugin.glyph];
+  const offscreenHalf=Math.max(g.w,g.h)/model.width*layout.logoW*
+   miniature()*.75;
+  const physicalX=worldToScreen(body.position.x,body.position.y).x;
+  if(physicalX+offscreenHalf<=-runwayExitMargin){
+   body.plugin.released=true;
+   body.plugin.exitPlan={at:drainTime,left:true,
+    goalW:g.w/model.width*layout.logoW,
+    goalH:g.h/model.width*layout.logoW};
+   exitSequence.push(body.plugin.glyph);
+   Matter.Composite.remove(world,body);
+   continue;
+  }
   const assist=body.plugin.rollingAssist;
   if(assist){
    // A targeted recovery is still a visible descent along the source-logo
@@ -843,7 +860,7 @@ function advanceDrain(dt){
   // Physical exit was open during clockwise rotation: catch an early
   // departure that has already crossed the only gap in the original rim.
   const p=body.position,r=model.radius;
-  if(p.x<outlet.x+r*.6&&p.x>outlet.x-r*18 &&
+  if(p.x<outlet.x+r*.6 &&
      p.y>outlet.y+r*.65&&!model.inside(p.x,p.y)){
    startLetterExit(body);continue;
   }
