@@ -200,6 +200,42 @@ $(ids.license).addEventListener('change',buttons);
 $(ids.upload).addEventListener('click',upload);
 $('gt-font-reload').addEventListener('click',refresh);
 $(ids.save).addEventListener('click',save);
+// Independent local font test: never uploads, stores or transmits selected file.
+let localFontFace=null;
+let localTestSequence=0;
+const localFile=document.getElementById('gt-font-local-file');
+localFile?.addEventListener('change',async event=>{
+ const seq=++localTestSequence;
+ const file=event.target.files?.[0];
+ const status=document.getElementById('gt-font-local-status');
+ const preview=document.getElementById('gt-font-local-sample');
+ if(!status||!preview)return;
+ preview.hidden=true;
+ if(localFontFace){document.fonts.delete(localFontFace);localFontFace=null}
+ if(!file){status.textContent='請選擇一個要檢查的字型檔案。';return}
+ status.textContent='正在直接讀取本機檔案：'+file.name+'。檔案不會上傳。';
+ const ext=/\.([a-z0-9]+)$/i.exec(file.name)?.[1]?.toLowerCase();
+ const expected={woff2:'wOF2',woff:'wOFF',otf:'OTTO',ttf:'\x00\x01\x00\x00'};
+ if(!Object.hasOwn(expected,ext)){
+  status.textContent='本機測試不支援此格式。請選用 TTF、OTF、WOFF 或 WOFF2。';return;
+ }
+ try{
+  const buffer=await file.arrayBuffer();
+  if(buffer.byteLength<16)throw Error('檔案資料不足，可能不完整。');
+  const magic=String.fromCharCode(...new Uint8Array(buffer).slice(0,4));
+  if(magic!==expected[ext])throw Error('字型檔開頭與副檔名不符，請確認檔案格式。');
+  const face=new FontFace('GTLocalFontDiagnostic',buffer,{style:'normal',weight:'400'});
+  await face.load();
+  if(seq!==localTestSequence)return;
+  document.fonts.add(face);localFontFace=face;
+  preview.style.fontFamily='"GTLocalFontDiagnostic",Arial,"Noto Sans TC",sans-serif';
+  preview.hidden=false;
+  status.textContent='本機載入成功：'+file.name+'。字型本身可被這個瀏覽器解析；若字型庫仍失敗，應優先檢查雲端讀取服務。注意：如果字型不含中文，中文仍會自動顯示備援字型。';
+ }catch(error){
+  if(seq!==localTestSequence)return;
+  status.textContent='本機載入失敗：'+(error?.message||String(error))+'。這時才比較可能是字型格式、檔案損壞或瀏覽器不支援。';
+ }
+});
 updateTestSamples();
 refresh();
 })();
