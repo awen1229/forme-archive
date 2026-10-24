@@ -155,7 +155,7 @@ function close(clear){
  const a=active;active=null;
  dialog.hidden=true;document.body.style.overflow=originalOverflow;
  URL.revokeObjectURL(a.objectURL);
- if(clear&&a.input.isConnected)a.input.value='';
+ if(clear&&a.input?.isConnected)a.input.value='';
  if(returnFocus?.isConnected)returnFocus.focus();
  returnFocus=null;
 }
@@ -163,6 +163,14 @@ function commit(cropped){
  const a=active;if(!a)return;
  const input=a.input;
  try{
+  if(typeof a.onComplete==='function'){
+   const output=cropped||a.file;
+   close(false);
+   Promise.resolve().then(()=>a.onComplete(output)).catch(error=>{
+    alert('無法套用自由裁切：'+(error?.message||String(error)));
+   });
+   return;
+  }
   if(cropped){
    const dt=new DataTransfer();
    dt.items.add(cropped);
@@ -185,14 +193,14 @@ async function applyCrop(){
  const button=dialog.querySelector('[data-crop-action="apply"]');
  button.disabled=true;
  try{
-  const maxSide=a.input.id==='f-logo'?2200:2800;
+  const maxSide=a.input?.id==='f-logo'?2200:2800;
   const scale=Math.min(1,maxSide/Math.max(w,h));
   const canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round(w*scale));
   canvas.height=Math.max(1,Math.round(h*scale));
   const ctx=canvas.getContext('2d',{alpha:true});if(!ctx)throw Error('瀏覽器不支援圖片裁切');
   ctx.drawImage(a.img,x,y,w,h,0,0,canvas.width,canvas.height);
-  const type=a.input.id==='f-logo'||a.file.type==='image/png'?'image/png':'image/jpeg';
+  const type=a.input?.id==='f-logo'||a.file.type==='image/png'?'image/png':'image/jpeg';
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(v=>v?resolve(v):reject(Error('圖片編碼失敗')),type,.9));
   if(active!==a)return;
   const ext=type==='image/png'?'png':'jpg';
@@ -201,7 +209,7 @@ async function applyCrop(){
  }catch(error){alert('裁切失敗：'+(error?.message||String(error)));}
  finally{button.disabled=false}
 }
-async function open(input,file){
+async function open(input,file,onComplete){
  ensure();
  if(active)close(true);
  if(!allowed.test(file.type))return false;
@@ -212,8 +220,8 @@ async function open(input,file){
  try{
   if(img.decode)await img.decode();
   else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('解碼失敗'))});
- }catch(error){URL.revokeObjectURL(url);alert('無法讀取圖片：'+(error?.message||String(error)));input.value='';return true}
- active={input,file,objectURL:url,img,w:img.naturalWidth,h:img.naturalHeight,rect:{x:0,y:0,w:img.naturalWidth,h:img.naturalHeight},ratio:0,drag:null};
+ }catch(error){URL.revokeObjectURL(url);alert('無法讀取圖片：'+(error?.message||String(error)));if(input)input.value='';return true}
+ active={input,file,onComplete,objectURL:url,img,w:img.naturalWidth,h:img.naturalHeight,rect:{x:0,y:0,w:img.naturalWidth,h:img.naturalHeight},ratio:0,drag:null};
  byId('gt-shared-crop-image').src=url;
  byId('gt-shared-crop-ratio').value='free';
  dialog.hidden=false;document.body.style.overflow='hidden';
@@ -221,6 +229,25 @@ async function open(input,file){
  dialog.querySelector('.gt-shared-crop-close').focus();
  return true;
 }
+// Re-open the free crop workspace for an existing Sanity-backed cover.
+// The callback receives a new File. No changes are saved/published automatically.
+async function openExisting(source,onComplete){
+ if(typeof onComplete!=='function')throw Error('缺少裁切完成處理');
+ const allowedSource=typeof source==='string'&&(source.startsWith('data:image/png;base64,')||
+   source.startsWith('data:image/jpeg;base64,')||source.startsWith('data:image/webp;base64,')||
+   /^https:\/\/cdn\.sanity\.io\/images\/8nqupq9u\/production\/[A-Za-z0-9._-]+(?:\?[^#]*)?$/.test(source));
+ if(!allowedSource)throw Error('封面來源格式不受支援，請重新上傳圖片');
+ let response;
+ try{response=await fetch(source,{mode:'cors',cache:'no-store'})}
+ catch{throw Error('無法讀取既有圖片，請確認網路連線或重新上傳')}
+ if(!response.ok)throw Error('無法取得封面圖片 HTTP '+response.status);
+ const blob=await response.blob();
+ if(!allowed.test(blob.type)||blob.size>40_000_000)throw Error('圖片格式不支援或檔案過大');
+ const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
+ const file=new File([blob],'feature-cover.'+ext,{type:blob.type,lastModified:Date.now()});
+ await open(null,file,onComplete);
+}
+window.GTImageCrop={openExisting};
 document.addEventListener('change',e=>{
  const input=e.target;
  if(!isImageField(input))return;
