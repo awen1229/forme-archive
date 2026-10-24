@@ -2,7 +2,7 @@
 (()=>{
 if(typeof gtHomeWorkingCopy!=='function')return;
 const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
-let loaded=false,loading=false,draft=null,published=null,error='',previewDraft=false;
+let loaded=false,loading=false,draft=null,published=null,error='',previewDraft=false,saving=false,publishing=false,actionNote='';
 const api=async(url,options={})=>{
  const resp=await fetch(url,{credentials:'same-origin',cache:'no-store',...options});
  let body={};try{body=await resp.json()}catch{}
@@ -10,7 +10,7 @@ const api=async(url,options={})=>{
  return body;
 };
 const panel=()=>document.getElementById('gt-home-cloud-panel');
-const sanitise=d=>Array.isArray(d?.slides)?d.slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.cover||'',coverFit:s.coverFit||'cover',coverX:s.coverX??50,coverY:s.coverY??50})):[];
+const sanitise=d=>Array.isArray(d?.slides)?d.slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.cover||'',coverFit:s.coverFit||'cover',coverMobileFit:s.coverMobileFit||'cover',coverZoom:s.coverZoom??100,coverMobileZoom:s.coverMobileZoom??100,coverX:s.coverX??50,coverY:s.coverY??50,coverMobileX:s.coverMobileX??s.coverX??50,coverMobileY:s.coverMobileY??s.coverY??50})):[];
 function inject(){
  if(!location.hash.includes('/admin')||editorKind!=='home')return;
  const tabs=document.querySelector('.editor-tabs');
@@ -29,13 +29,13 @@ function draw(){
  el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0">首頁精選雲端管理</h3>'+
  '<p class="muted">雲端草稿與已發布版本獨立保存。從雲端載入時會替換下方未儲存的編輯內容。</p>'+
  '<div class="gt-record-buttons" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">'+
- '<button type="button" data-gt-home="refresh">重新讀取雲端</button>'+
+ '<button type="button" data-gt-home="refresh" '+(saving||publishing?'disabled':'')+'>重新讀取雲端</button>'+
  (draft?'<button type="button" data-gt-home="load">載入草稿編輯</button>':'')+
  (published?'<button type="button" data-gt-home="published">載入已發布版本</button>':'')+
- (draft?'<button type="button" data-gt-home="publish">確認發布</button>':'')+
+ (draft?'<button type="button" data-gt-home="publish" '+(saving||publishing||!loaded?'disabled':'')+'>確認發布</button>':'')+
  '</div>'+
  (loading?'<p class="muted">正在讀取雲端…</p>':'')+
- (error?'<p role="alert" style="color:#a43d35">'+esc(error)+'</p>':'')+
+ (error?'<p role="alert" style="color:#a43d35">'+esc(error)+'</p>':'')+(actionNote?'<p role="status" class="cms-hint">'+esc(actionNote)+'</p>':'')+
  '<p class="muted">'+(draft?'雲端草稿：'+esc(draft.slides.length)+' 篇':'尚無雲端草稿')+' ／ '+(published?'已發布：'+esc(published.slides.length)+' 篇':'尚無已發布首頁版本')+'</p>'+
  (previewDraft?'<p class="muted"><strong>目前是本機草稿預覽，尚未公開。</strong></p>':'');
 }
@@ -58,30 +58,37 @@ function preview(){
  render();draw();
 }
 async function saveDraft(){
+ if(saving||publishing)return;
+ if(gtHomeImagePending)return alert('首頁封面仍在處理，請完成後再儲存。');
  if(!loaded)return alert('請先讀取雲端首頁資料再儲存');
- const chosen=gtHomeDraft.map(v=>({slug:v.slug,title:String(v.title||'').trim(),excerpt:String(v.excerpt||'').trim(),cover:v.cover||'',coverFit:v.coverFit||'cover',coverX:v.coverX??50,coverY:v.coverY??50}));
+ const chosen=gtHomeDraft.map(v=>({slug:v.slug,title:String(v.title||'').trim(),excerpt:String(v.excerpt||'').trim(),cover:v.cover||'',coverFit:v.coverFit||'cover',coverMobileFit:v.coverMobileFit||'cover',coverZoom:v.coverZoom??100,coverMobileZoom:v.coverMobileZoom??100,coverX:v.coverX??50,coverY:v.coverY??50,coverMobileX:v.coverMobileX??v.coverX??50,coverMobileY:v.coverMobileY??v.coverY??50}));
  if(!chosen.length||chosen.length>5||chosen.some(v=>!articles.some(a=>a.slug===v.slug)))return alert('精選中有無效或尚未選擇的文章');
  if(new Set(chosen.map(v=>v.slug)).size!==chosen.length)return alert('精選文章不可重複');
  const revision=draft?.revision||published?.revision||'';
+ saving=true;actionNote='正在儲存首頁雲端草稿…';draw();
  try{
   const result=await api('/api/editor/home',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slides:chosen,revision})});
   draft=result.draft;
   gtHomeDraft=sanitise(draft);
   preview();
-  alert('首頁精選已儲存到 Sanity 雲端草稿，尚未公開。此裝置已切換為草稿預覽。');
- }catch(e){alert('首頁雲端儲存失敗：'+e.message)}
+  actionNote='首頁精選已儲存到雲端草稿，尚未公開。';draw();
+ }catch(e){actionNote='儲存失敗：'+e.message+'。下方未儲存的內容仍保留。';draw()}
+ finally{saving=false;draw()}
 }
 async function publish(){
+ if(saving||publishing)return;
  if(!draft?.revision)return alert('請先讀取最新的首頁雲端草稿');
+ if(JSON.stringify(sanitise({slides:gtHomeDraft}))!==JSON.stringify(sanitise(draft)))return alert('首頁精選有尚未儲存的修改，請先儲存雲端草稿。');
  if(!confirm('即將正式發布這 '+draft.slides.length+' 篇首頁精選，確定嗎？'))return;
- if(prompt('請輸入 PUBLISH 確認公開首頁精選')!=='PUBLISH')return;
+ publishing=true;actionNote='正在發布首頁精選…';draw();
  try{
   await api('/api/editor/publish-home',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:draft.revision,confirmation:'PUBLISH'})});
   previewDraft=false;
   await refresh();
   await loadPublished();
-  alert('首頁精選已在 Sanity 發布。');
- }catch(e){alert('首頁發布失敗：'+e.message)}
+  actionNote='首頁精選已發布。可前往首頁查看公開結果。';
+ }catch(e){actionNote='發布失敗：'+e.message;error=e.message}
+ finally{publishing=false;draw()}
 }
 async function loadPublished(){
  const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
@@ -94,7 +101,7 @@ async function loadPublished(){
   if(isPreview&&!body.ok)throw Error('首頁公開資料服務異常');
   const slides=isPreview?body.slides:body.result?.slides;
   if(!Array.isArray(slides))throw Error('首頁資料格式不正確');
-  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||s.cover||'',coverFit:s.coverFit||'cover',coverX:s.coverX??50,coverY:s.coverY??50}))};
+  gtPublishedHomeConfig={slides:slides.map(s=>({slug:s.slug,title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||s.cover||'',coverFit:s.coverFit||'cover',coverMobileFit:s.coverMobileFit||'cover',coverZoom:s.coverZoom??100,coverMobileZoom:s.coverMobileZoom??100,coverX:s.coverX??50,coverY:s.coverY??50,coverMobileX:s.coverMobileX??s.coverX??50,coverMobileY:s.coverMobileY??s.coverY??50}))};
   if(typeof gtPublicHomeLoadState!=='undefined')gtPublicHomeLoadState='ready';
   if(!previewDraft){gtSlides=gtResolvedSlides();if(!location.hash.includes('/admin'))render()}
  }catch(e){

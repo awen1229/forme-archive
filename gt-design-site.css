@@ -1,0 +1,58 @@
+/* GOOD THINGS, v1.9 / Safe, opt-in visual presets. Original site remains the default. */
+:root[data-gt-design-paper="white"]{--gt-paper:#ffffff;--gt-surface:#f7f7f5;--gt-warm:#eeede9}
+html[data-gt-design-paper="white"],html[data-gt-design-paper="white"] body{background:var(--gt-paper)}
+/* Keep THE INDEX's brand identity intact; font presets affect editorial titles. */
+:root[data-gt-design-font="sans"] .gt-lead h1,
+:root[data-gt-design-font="sans"] .gt-home-intro h1,
+:root[data-gt-design-font="sans"] .article-body h1,
+:root[data-gt-design-font="sans"] .article-body h2,
+:root[data-gt-design-font="sans"] .gt-design-demo h2{font-family:Arial,"Noto Sans TC","PingFang TC",sans-serif}
+:root[data-gt-design-font="serif"] .gt-lead h1,
+:root[data-gt-design-font="serif"] .gt-home-intro h1,
+:root[data-gt-design-font="serif"] .article-body h1,
+:root[data-gt-design-font="serif"] .article-body h2,
+:root[data-gt-design-font="serif"] .gt-design-demo h2{font-family:Georgia,"Noto Serif TC","Times New Roman",serif}
+:root[data-gt-design-font="mixed"] .gt-lead h1,
+:root[data-gt-design-font="mixed"] .gt-home-intro h1,
+:root[data-gt-design-font="mixed"] .gt-design-demo h2{font-family:Georgia,"Noto Serif TC","Times New Roman",serif}
+:root[data-gt-design-font="mixed"] .article-body h1,
+:root[data-gt-design-font="mixed"] .article-body h2{font-family:Arial,"Noto Sans TC","PingFang TC",sans-serif}
+:root[data-gt-design-scale="compact"]{--gt-read-multiplier:.94}
+:root[data-gt-design-scale="standard"]{--gt-read-multiplier:1}
+:root[data-gt-design-scale="large"]{--gt-read-multiplier:1.1}
+:root[data-gt-design-scale="compact"] .article-body p,
+:root[data-gt-design-scale="large"] .article-body p{font-size:calc(16px * var(--gt-read-multiplier))}
+:root[data-gt-design-scale="compact"] .article-body .excerpt,
+:root[data-gt-design-scale="large"] .article-body .excerpt{font-size:calc(17px * var(--gt-read-multiplier))}
+:root[data-gt-design-scale="compact"] .article-body li,
+:root[data-gt-design-scale="large"] .article-body li{font-size:calc(16px * var(--gt-read-multiplier))}
+.editor-tabs .gt-design-editor-link{border:1px solid var(--gt-line,#c9c7c0);padding:10px 15px;display:inline-flex;align-items:center;color:var(--gt-ink,#262924);font-size:13px}
+.editor-tabs .gt-design-editor-link:hover,.editor-tabs .gt-design-editor-link:focus-visible{background:#e9ede6}
+/* Standalone cloud design settings editor */
+.gt-design-settings{max-width:1120px;margin:0 auto;padding:26px clamp(16px,4vw,48px) 80px;font-family:Arial,"Noto Sans TC",sans-serif;color:#273029}
+.gt-design-settings header{display:flex;justify-content:space-between;gap:20px;align-items:center;border-bottom:1px solid #bec6b8;padding-bottom:18px}
+.gt-design-settings h1{font-size:clamp(25px,3.5vw,42px);font-weight:600;letter-spacing:-.04em;line-height:1.16;margin:18px 0 9px}
+.gt-design-settings .eyebrow{letter-spacing:.15em;font-size:10px;color:#5d6d5d}
+.gt-design-settings p{line-height:1.8}
+.gt-design-settings .muted{color:#646d63;font-size:13px}
+.gt-design-settings .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:22px;margin-top:26px}
+.gt-design-settings .panel{border:1px solid #c5cbbf;background:#faf9f5;padding:25px;min-width:0}
+.gt-design-settings fieldset{border:0;border-bottom:1px solid #d5d9cf;padding:0 0 20px;margin:0 0 20px;min-width:0}
+.gt-design-settings fieldset:last-of-type{border:0;margin:0}
+.gt-design-settings legend{font-weight:600;font-size:14px;padding-bottom:11px}
+.gt-design-settings label{display:flex;align-items:center;gap:9px;margin:10px 0;font-size:13px;cursor:pointer}
+.gt-design-settings input[type=radio]{accent-color:#375542;min-width:16px;min-height:16px}
+.gt-design-settings .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.gt-design-settings button,.gt-design-settings .action-link{padding:11px 14px;border:1px solid #38513b;background:transparent;color:#263b2b;font:500 12px Arial,"Noto Sans TC",sans-serif;text-decoration:none;cursor:pointer}
+.gt-design-settings button.primary{background:#2c4635;color:white}
+.gt-design-settings button:disabled{opacity:.5;cursor:wait}
+.gt-design-settings .message{font-size:13px;margin-top:15px;min-height:22px}
+.gt-design-settings .message.error{color:#ab3232}
+.gt-design-demo{border:1px solid #c6cabf;padding:25px;background:var(--gt-paper,#f3f1eb);min-height:280px}
+.gt-design-demo .eyebrow{display:block;margin-bottom:23px}
+.gt-design-demo h2{font:400 clamp(30px,3vw,46px)/1.18 Georgia,serif;letter-spacing:-.035em;margin:0 0 20px}
+.gt-design-demo p{line-height:2;font-size:calc(15px * var(--gt-read-multiplier,1));margin:0 0 24px}
+.gt-design-demo .line{height:1px;background:#b7c1b2;margin:24px 0}
+.gt-design-settings .footnote{margin-top:23px;border-top:1px solid #c4cbbf;padding-top:15px;font-size:12px;color:#647064}
+@media(max-width:740px){.gt-design-settings .layout{grid-template-columns:1fr}.gt-design-settings .panel{padding:18px}.gt-design-settings header{align-items:flex-start;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.gt-design-settings *{scroll-behavior:auto!important;transition:none!important}}

@@ -92,7 +92,7 @@ async function uploadLogo(dataUrl, token) {
   const payload = await response.json()
   const id = payload.document?._id
   if (!id || !id.startsWith('image-')) throw new Error('LOGO 上傳回應不完整')
-  return id
+  return {id, url:typeof payload.document?.url==='string'?payload.document.url:''}
 }
 
 export async function onRequestPost({request, env}) {
@@ -137,9 +137,9 @@ export async function onRequestPost({request, env}) {
       logoOffsetY:safeInteger(input.logoDisplay?.y ?? 0,-45,45),
     }
     if (str(input.founded)) values.foundedYear = founded
-    const logoId = input.logo && String(input.logo).startsWith('data:')
+    const uploadedLogo = input.logo && String(input.logo).startsWith('data:')
       ? await uploadLogo(String(input.logo), env.SANITY_EDITOR_TOKEN) : null
-    if (logoId) values.logo = {_type:'image',asset:{_type:'reference',_ref:logoId}}
+    if (uploadedLogo) values.logo = {_type:'image',asset:{_type:'reference',_ref:uploadedLogo.id}}
     const unset = str(input.founded) ? [] : ['foundedYear']
     const mutations = [
       {createIfNotExists:{...publishedFields,_id:draftId,_type:'brand'}},
@@ -150,7 +150,7 @@ export async function onRequestPost({request, env}) {
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({mutations}),
     })
-    return Response.json({ok:true,draftId}, {headers:{'Cache-Control':'no-store'}})
+    return Response.json({ok:true,draftId,logoUrl:uploadedLogo?.url||''}, {headers:{'Cache-Control':'no-store'}})
   } catch(error) {
     if (!(error instanceof AuthError)) console.error('Brand cloud save failed:', error.message)
     return errorResponse(error)

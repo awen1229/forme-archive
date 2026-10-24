@@ -1,0 +1,66 @@
+/* GOOD THINGS, font library / protected editorial studio */
+.gt-font-app{max-width:1260px;margin:0 auto;padding:25px clamp(18px,4vw,52px) 80px;line-height:1.55;color:#29372c;font-family:Arial,"Noto Sans TC","PingFang TC",sans-serif}
+.gt-font-app *{box-sizing:border-box}
+.gt-font-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid #c4cbbf}
+.gt-font-top strong{font-size:21px;letter-spacing:-.04em}
+.gt-font-top .gt-font-kicker,.gt-font-app .gt-font-kicker{font:500 10px/1.5 Arial,sans-serif;letter-spacing:.16em;color:#607363}
+.gt-font-app h1{font-size:clamp(31px,5vw,54px);font-weight:600;letter-spacing:-.04em;margin:21px 0 12px}
+.gt-font-app h2{font-size:22px;line-height:1.2;margin:9px 0 12px;font-weight:600;letter-spacing:-.03em}
+.gt-font-app p{font-size:13px;line-height:1.8;color:#667265}
+.gt-font-app .muted{color:#788074}
+.gt-font-app .button,.gt-font-app button{display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid #9fab9e;color:#293c30;padding:10px 13px;cursor:pointer;font:500 12px/1.3 Arial,"Noto Sans TC",sans-serif;text-decoration:none;min-height:39px}
+.gt-font-app .button:hover,.gt-font-app button:hover{background:#e9ede5}
+.gt-font-app button.primary{color:#fff;background:#35513c;border-color:#35513c}
+.gt-font-app button:disabled{opacity:.5;cursor:not-allowed}
+.gt-font-app .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(310px,.86fr);gap:24px;margin-top:23px;align-items:start}
+.gt-font-app .panel{background:#f8f8f2;border:1px solid #c9d0c4;padding:25px;min-width:0}
+.gt-font-app .gt-font-panel-eyebrow{font-size:10px;letter-spacing:.12em;color:#74816f}
+.gt-font-app .gt-font-upload-card{margin:14px 0 20px;padding:17px;background:#f1f3ec;border:1px solid #c9d2c7}
+.gt-font-app .gt-font-upload-card input[type=file]{display:block;width:100%;font-size:12px;margin:12px 0;max-width:100%}
+.gt-font-app .gt-font-upload-card label{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.6;margin:13px 0}
+.gt-font-app .gt-font-upload-card input[type=checkbox]{accent-color:#436a48;min-width:17px;min-height:17px;margin:2px 0 0}
+.gt-font-app .gt-font-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.gt-font-app .gt-font-search{border:1px solid #bac4b7;padding:10px 11px;background:white;color:#2c3c30;width:100%;font-size:13px}
+.gt-font-app .gt-font-list{display:grid;gap:0;margin-top:15px;max-height:790px;overflow-y:auto;overscroll-behavior:contain}
+.gt-font-app .gt-font-list-row{border-top:1px solid #d3d9cd;display:grid;gap:7px;padding:17px 2px}
+.gt-font-app .gt-font-row-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gt-font-app .gt-font-row-top b{font-size:12px;overflow-wrap:anywhere}
+.gt-font-app .gt-font-row-top span{font-size:10px;color:#6b7569;text-transform:uppercase}
+.gt-font-app .gt-font-row-sample{font-size:clamp(23px,3vw,34px);line-height:1.4;overflow-wrap:anywhere;font-weight:400}
+.gt-font-app .gt-font-row-meta{font-size:10px;color:#778074;overflow-wrap:anywhere}
+.gt-font-app .gt-font-role{margin:0;padding:16px 0;border:0;border-bottom:1px solid #d1d9cb;display:grid;gap:6px}
+.gt-font-app .gt-font-role label{font-size:12px;font-weight:600}
+.gt-font-app select,.gt-font-app .gt-font-preview-input{border:1px solid #b6c1b3;background:#fff;padding:10px;font-size:13px;color:#253829;min-width:0;width:100%;font-family:inherit}
+.gt-font-app .gt-font-status{border-top:1px solid #cbd3c6;margin-top:15px;padding-top:10px;font-size:12px;color:#45664d;line-height:1.7;white-space:pre-line}
+.gt-font-app .gt-font-status.error{color:#a03831}
+.gt-font-app .gt-font-sample-window{border:1px solid #d0d6cc;background:#fff;padding:22px 18px;margin-top:14px}
+.gt-font-app .gt-font-demo-headline{font-size:clamp(26px,3vw,39px);line-height:1.22;letter-spacing:-.02em;margin:11px 0 12px;font-weight:500}
+.gt-font-app .gt-font-demo-body{font-size:15px;line-height:1.9;margin:0}
+.gt-font-app .gt-font-demo-nav{font-size:10px;letter-spacing:.11em;font-weight:600;color:#506450;margin-top:17px}
+.gt-font-app .gt-font-sample-window .divider{height:1px;background:#d6dacf;margin:20px 0 15px}
+.gt-font-app .gt-font-roles-footnote{font-size:11px;line-height:1.7;color:#687665}
+.gt-font-app .gt-font-upload-progress{font-size:12px;color:#536b56;white-space:pre-wrap;margin-top:12px;line-height:1.7}
+.gt-font-app .gt-font-tag{padding:4px 6px;border:1px solid #bec8b9;font-size:10px;white-space:nowrap}
+@media(max-width:850px){.gt-font-app .layout{grid-template-columns:minmax(0,1fr)}.gt-font-app .panel{padding:20px}.gt-font-app .gt-font-list{max-height:430px}}
+@media(max-width:500px){.gt-font-app{padding-left:16px;padding-right:16px}.gt-font-app .gt-font-row-sample{font-size:24px}.gt-font-app .gt-font-controls .button,.gt-font-app .gt-font-controls button{flex:1}}
+
+/* Private, device-only diagnostic: distinguishes invalid font files from API loading issues. */
+.gt-font-app .gt-font-local-test{margin:18px 0 24px;padding:16px;background:#e9ede5;border:1px solid #aebfb0}
+.gt-font-app .gt-font-local-test h3{font:600 17px/1.3 Arial,"Noto Sans TC",sans-serif;margin:10px 0 6px}
+.gt-font-app .gt-font-local-test p{font-size:12px;margin:0 0 12px}
+.gt-font-app .gt-font-local-test input[type=file]{width:100%;max-width:100%;font-size:12px}
+.gt-font-app .gt-font-local-status{margin-top:12px;font-size:12px;line-height:1.75;color:#405a45;white-space:pre-wrap}
+.gt-font-app .gt-font-local-sample{margin-top:14px;border:1px solid #c1cfc1;background:#fff;padding:13px 15px;font-size:27px;line-height:1.4;overflow-wrap:anywhere}
+.gt-font-app .gt-font-local-sample small{display:block;font-size:18px;margin-top:9px}
+.gt-font-app .gt-font-local-sample[hidden]{display:none}
+.gt-font-app .gt-font-row-error{font:400 11px/1.65 Arial,"Noto Sans TC",sans-serif;color:#a03930;border-left:2px solid #a03930;padding:5px 8px;background:#fff8f5}
+.gt-font-app .gt-font-row-error[hidden]{display:none}
+
+.gt-font-app .gt-font-filter-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.34fr);gap:9px;align-items:stretch}
+.gt-font-app .gt-font-filter-row select,.gt-font-app .gt-font-edit-panel input,.gt-font-app .gt-font-edit-panel select{border:1px solid #b6c1b3;background:#fff;padding:10px;font:400 12px/1.5 Arial,"Noto Sans TC",sans-serif;width:100%;min-width:0}
+.gt-font-app .gt-font-edit-panel{margin:17px 0;padding:17px;display:grid;gap:13px;border:1px solid #b1c4af;background:#e9eee6}
+.gt-font-app .gt-font-edit-panel[hidden]{display:none}
+.gt-font-app .gt-font-edit-panel strong{font-size:14px;line-height:1.4}
+.gt-font-app .gt-font-edit-panel label{display:grid;gap:6px;font-size:12px;font-weight:600}
+.gt-font-app .gt-font-row-category{font-size:10px;letter-spacing:.02em;color:#57715d}
+@media(max-width:570px){.gt-font-app .gt-font-filter-row{grid-template-columns:1fr}}

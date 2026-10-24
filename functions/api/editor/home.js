@@ -14,13 +14,18 @@ function normalizeSlides(raw){
   if(!slugPattern.test(slug)||slugs.has(slug))throw new AuthError(400,'精選文章無效或重複')
   slugs.add(slug)
   const title=str(slide?.title,220),excerpt=str(slide?.excerpt,1200)
-  const cover=str(slide?.cover||slide?.coverUrl,1_500_000)
+  const cover=str(slide?.cover||slide?.coverUrl,3_100_000)
   if(cover && !/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(cover) &&
      !/^https:\/\/cdn\.sanity\.io\/images\/8nqupq9u\/production\/[a-z0-9-]+(?:\.[a-z0-9]+)?(?:\?[^<>"'\s]*)?$/i.test(cover)){
    throw new AuthError(400,'首頁封面必須為上傳圖片或此 Sanity 專案圖片網址')
   }
-  if(cover.length>1_400_000)throw new AuthError(413,'單張首頁封面壓縮後仍過大')
-  return {_key:'featured-'+slug,_type:'featuredSlide',slug,title,excerpt,coverUrl:cover,coverFit:slide.coverFit==='contain'?'contain':'cover',coverX:Math.max(0,Math.min(100,Number(slide.coverX??50)||0)),coverY:Math.max(0,Math.min(100,Number(slide.coverY??50)||0))}
+  if(cover.length>3_000_000)throw new AuthError(413,'單張首頁封面壓縮後仍過大')
+  return {_key:'featured-'+slug,_type:'featuredSlide',slug,title,excerpt,coverUrl:cover,coverFit:slide.coverFit==='contain'?'contain':'cover',coverMobileFit:slide.coverMobileFit==='contain'?'contain':'cover',
+   coverZoom:Math.max(100,Math.min(250,Number(slide.coverZoom??100)||100)),
+   coverMobileZoom:Math.max(100,Math.min(200,Number(slide.coverMobileZoom??100)||100)),
+   coverX:Math.max(0,Math.min(100,Number(slide.coverX??50)||0)),coverY:Math.max(0,Math.min(100,Number(slide.coverY??50)||0)),
+   coverMobileX:Math.max(0,Math.min(100,Number(slide.coverMobileX??slide.coverX??50)||0)),
+   coverMobileY:Math.max(0,Math.min(100,Number(slide.coverMobileY??slide.coverY??50)||0))}
  })
 }
 async function fetchHomes(token){
@@ -36,12 +41,12 @@ async function fetchHomes(token){
 function serialize(doc){
  if(!doc)return null
  return {revision:doc._rev||'',updatedAt:doc._updatedAt||'',slides:(Array.isArray(doc.slides)?doc.slides:[]).map(s=>({
-  slug:s.slug||'',title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||'',coverFit:s.coverFit||'cover',coverX:s.coverX??50,coverY:s.coverY??50
+  slug:s.slug||'',title:s.title||'',excerpt:s.excerpt||'',cover:s.coverUrl||'',coverFit:s.coverFit||'cover',coverMobileFit:s.coverMobileFit||'cover',coverZoom:s.coverZoom??100,coverMobileZoom:s.coverMobileZoom??100,coverX:s.coverX??50,coverY:s.coverY??50,coverMobileX:s.coverMobileX??s.coverX??50,coverMobileY:s.coverMobileY??s.coverY??50
  }))}
 }
 async function imageAsset(data,token){
  const match=/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(data)
- if(!match||match[2].length>1_400_000)throw new AuthError(413,'首頁封面必須先完成圖片壓縮')
+ if(!match||match[2].length>3_000_000)throw new AuthError(413,'首頁封面必須先完成圖片壓縮')
  let raw
  try{raw=Uint8Array.from(atob(match[2]),c=>c.charCodeAt(0))}catch{throw new AuthError(400,'封面資料無法解析')}
  const resp=await fetch(API+'/assets/images/'+DATASET+'?filename=good-things-home-cover',{
@@ -90,6 +95,6 @@ export async function onRequestPost({request,env}){
   if(!resp.ok)throw new AuthError(resp.status===409?409:502,resp.status===409?'草稿已在其他裝置更新':'Sanity 儲存失敗 HTTP '+resp.status)
   const result=await resp.json()
   const updated=result.results?.find(x=>x.document?._id==='drafts.'+HOME_ID)?.document
-  return Response.json({ok:true,draft:serialize(updated)||{revision:'',slides:slides.map(s=>({slug:s.slug,title:s.title,excerpt:s.excerpt,cover:s.coverUrl,coverFit:s.coverFit,coverX:s.coverX,coverY:s.coverY}))}},{headers})
+  return Response.json({ok:true,draft:serialize(updated)||{revision:'',slides:slides.map(s=>({slug:s.slug,title:s.title,excerpt:s.excerpt,cover:s.coverUrl,coverFit:s.coverFit,coverMobileFit:s.coverMobileFit,coverZoom:s.coverZoom,coverMobileZoom:s.coverMobileZoom,coverX:s.coverX,coverY:s.coverY,coverMobileX:s.coverMobileX,coverMobileY:s.coverMobileY}))}},{headers})
  }catch(e){if(!(e instanceof AuthError))console.error('Home save failed',e?.message);return errorResponse(e)}
 }

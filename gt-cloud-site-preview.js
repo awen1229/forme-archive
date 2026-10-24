@@ -1,12 +1,12 @@
 /* GOOD THINGS, cloud SITE CONTENT. Preview only. */
 (()=>{
  const isEditorPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
- let loaded=false,draft=null,published=null,error='',saving=false;
+ let loaded=false,draft=null,published=null,error='',saving=false,publishing=false,actionNote='';
  const api=async(path,opt={})=>{const r=await fetch(path,{credentials:'same-origin',cache:'no-store',...opt});let j={};try{j=await r.json()}catch{}if(!r.ok||!j.ok)throw Error(j.error||'HTTP '+r.status);return j};
  const panel=()=>document.getElementById('gt-site-cloud');
  function draw(){
   const el=panel();if(!el)return;
-  el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3>網站文字雲端管理</h3><p class="muted">儲存只建立未發布草稿，公開前必須再次確認。</p><div class="gt-record-buttons" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-gt-site="read">重新讀取雲端</button>'+(draft?'<button type="button" data-gt-site="draft">載入草稿</button>':'')+(published?'<button type="button" data-gt-site="published">載入已發布</button>':'')+(draft?'<button type="button" data-gt-site="publish">確認發布</button>':'')+'</div><p class="muted">'+(draft?'草稿已儲存':'尚無雲端草稿')+' / '+(published?'已有發布版本':'尚無發布版本')+'</p>'+(error?'<p role="alert" style="color:#a43d35">'+esc(error)+'</p>':'');
+  el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3>網站文字雲端管理</h3><p class="muted">儲存只建立未發布草稿，公開前必須再次確認。</p><div class="gt-record-buttons" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-gt-site="read" '+(saving||publishing?'disabled':'')+'>重新讀取雲端</button>'+(draft?'<button type="button" data-gt-site="draft">載入草稿</button>':'')+(published?'<button type="button" data-gt-site="published">載入已發布</button>':'')+(draft?'<button type="button" data-gt-site="publish" '+(saving||publishing?'disabled':'')+'>確認發布</button>':'')+'</div><p class="muted">'+(draft?'草稿已儲存':'尚無雲端草稿')+' / '+(published?'已有發布版本':'尚無發布版本')+'</p>'+(error?'<p role="alert" style="color:#a43d35">'+esc(error)+'</p>':'')+(actionNote?'<p role="status" class="cms-hint">'+esc(actionNote)+'</p>':'');
  }
  function inject(){
   if(editorKind!=='site'||!location.hash.includes('/admin'))return;
@@ -16,32 +16,36 @@
   const notice=document.querySelector('.editor-notice');if(notice)notice.innerHTML='<b>SITE CONTENT / CLOUD EDITOR</b>：可跨裝置儲存與載入文字草稿。只有手動發布才會公開。';
   draw();
  }
- async function read(){error='';try{const d=await api('/api/editor/site-content');draft=d.draft;published=d.published;loaded=true}catch(e){error=e.message}draw()}
+ async function read(){if(saving)return;error='';try{const d=await api('/api/editor/site-content');draft=d.draft;published=d.published;loaded=true}catch(e){error=e.message}draw()}
  function load(doc){
   if(!doc)return;
   if(!confirm('載入雲端內容會取代目前尚未儲存的編輯欄位，確定嗎？'))return;
   gtSiteDraft={...doc.fields};render();draw();
  }
  async function save(){
-  if(saving)return;
+  if(saving||publishing)return;
   if(!loaded)return alert('請先按「重新讀取雲端」');
-  saving=true;
+  saving=true;actionNote='正在儲存網站文字…';draw();
   try{
    const revision=draft?.revision||published?.revision||'';
    const j=await api('/api/editor/site-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:gtSiteDraft,revision})});
    draft=j.draft;gtSiteDraft={...draft.fields};
-   draw();alert('網站文字已儲存到 Sanity 雲端草稿，尚未公開。');
-  }catch(e){alert('網站文字雲端儲存失敗：'+e.message)}
-  finally{saving=false}
+   actionNote='網站文字已儲存雲端草稿，尚未公開。';draw();
+  }catch(e){actionNote='雲端儲存失敗：'+e.message+'。編輯內容仍保留在目前頁面。';draw()}
+  finally{saving=false;draw()}
  }
  async function publish(){
+  if(saving||publishing)return;
   if(!draft?.revision)return alert('請先重新讀取草稿');
+  const normalized=o=>JSON.stringify(Object.entries(o||{}).sort(([a],[b])=>a.localeCompare(b)));
+  if(normalized(gtSiteDraft)!==normalized(draft.fields))return alert('網站文字有尚未儲存的修改，請先儲存雲端草稿，或載入最新草稿。');
   if(!confirm('要公開發布網站文字嗎？'))return;
-  if(prompt('請輸入 PUBLISH 以確認正式發布')!=='PUBLISH')return;
+  publishing=true;actionNote='正在發布網站文字…';draw();
   try{
    await api('/api/editor/publish-site-content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:draft.revision,confirmation:'PUBLISH'})});
-   await read();await loadPublished();alert('已發布 Sanity 網站文字');
-  }catch(e){alert('發布失敗：'+e.message)}
+   await read();await loadPublished();actionNote='網站文字已正式發布。';
+  }catch(e){actionNote='發布失敗：'+e.message;error=e.message}
+  finally{publishing=false;draw()}
  }
  async function loadPublished(){
   const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';

@@ -21,7 +21,12 @@ function organise(){
         panel.dataset.gtPreviousOpen=panel.open?'yes':'no';
         panel.dataset.gtDesktopControlled='true';
       }
-      panel.open=true;
+      // The cover editor can crowd out the actual body image uploader.
+      // Both tools are independent and keep their own open/closed states.
+      if(panel.matches('.gt-inline-media-fold,.gt-article-cover-fold')){
+        panel.open=panel.dataset.gtLastDesktopOpen==='yes';
+        if(!panel.hasAttribute('data-gt-last-desktop-open'))panel.open=false;
+      }else panel.open=true;
     }else if(panel.hasAttribute('data-gt-desktop-controlled')){
       panel.open=panel.dataset.gtPreviousOpen==='yes';
       delete panel.dataset.gtPreviousOpen;
@@ -29,6 +34,11 @@ function organise(){
     }
   }
 }
+document.addEventListener('toggle',e=>{
+ const panel=e.target;
+ if(desktop.matches&&panel.matches?.('#editor-form .gt-inline-media-fold,#editor-form .gt-article-cover-fold'))
+   panel.dataset.gtLastDesktopOpen=panel.open?'yes':'no';
+},true);
 const originalRender=render;
 render=function(...args){const result=originalRender(...args);organise();return result;};
 if(typeof desktop.addEventListener==='function')desktop.addEventListener('change',organise);
@@ -39,6 +49,11 @@ const style=document.createElement('style');style.textContent='.gt-article-libra
 @media(min-width:761px){
  #editor-form details.gt-editor-fold{border:0;border-top:1px solid #d0d3c9;padding:16px 0 10px;margin:22px 0}
  #editor-form details.gt-editor-fold>summary{display:block;list-style:none;cursor:default;pointer-events:none;padding:2px 0 15px;margin:0;border:0;font-weight:600;font-size:14px;color:#363c34}
+ #editor-form details.gt-inline-media-fold,#editor-form details.gt-article-cover-fold{border:1px solid #cad0c6;padding:0 16px 14px;margin:16px 0}
+ #editor-form details.gt-inline-media-fold>summary,#editor-form details.gt-article-cover-fold>summary{cursor:pointer;pointer-events:auto;padding:16px 0 12px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+ #editor-form details.gt-inline-media-fold>summary span,#editor-form details.gt-article-cover-fold>summary span{display:block;font-size:11px;font-weight:400;color:#697468}
+ #editor-form details.gt-inline-media-fold>summary::after,#editor-form details.gt-article-cover-fold>summary::after{display:inline;content:"+";margin-left:auto;font-size:19px;color:#70816e}
+ #editor-form details.gt-inline-media-fold[open]>summary::after,#editor-form details.gt-article-cover-fold[open]>summary::after{content:"−"}
  #editor-form details.gt-editor-fold>summary::-webkit-details-marker{display:none}
  #editor-form details.gt-editor-fold>summary::marker{content:''}
  #editor-form details.gt-editor-fold>summary::before,#editor-form details.gt-editor-fold>summary::after{display:none}

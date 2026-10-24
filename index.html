@@ -738,8 +738,32 @@ body.gt-drawer-open{overflow:hidden}
  #gt-index-brand-grid>.brand-card .arrow{display:flex;position:static;float:none;grid-column:3;grid-row:1;align-items:center;justify-content:flex-end;min-width:0;margin:0;color:#3c463b}
  #gt-index-brand-grid>.brand-card:focus-visible{outline:2px solid #637968;outline-offset:-2px}
 }
+/* Whole-image mode must not silently use a previously saved crop zoom. */
+.gt-mag-photo img.gt-mag-uploaded-cover[style*="--gt-fit:contain"]{object-fit:contain;transform:none}
+/* Featured editor mobile and desktop photo must respect the same focal point. */
+@media(max-width:700px){
+ .gt-mag-photo img.gt-mag-uploaded-cover{
+  object-position:var(--gt-mobile-x,50%) var(--gt-mobile-y,50%);
+  transform:scale(var(--gt-mobile-zoom,1));
+  transform-origin:var(--gt-mobile-x,50%) var(--gt-mobile-y,50%);
+ }
+ .gt-mag-photo img.gt-mag-uploaded-cover[style*="--gt-mobile-fit:contain"]{
+  object-fit:contain;transform:none;
+ }
+}
+
+/* In-body pictures can set their own width and crop aspect independently of covers. */
+.gt-inline-figure.gt-inline-sized{max-width:100%;width:var(--gt-inline-width,100%);margin-left:0;margin-right:auto}
+.gt-inline-figure.gt-inline-sized .gt-inline-image-frame{width:100%;aspect-ratio:var(--gt-inline-aspect,1.5);height:auto;min-height:0;overflow:hidden}
+.gt-inline-figure.gt-inline-sized .gt-inline-image-frame img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--gt-inline-x,50%) var(--gt-inline-y,50%)}
+@media(max-width:640px){.gt-inline-figure.gt-inline-sized{width:100%;max-width:100%}
+ .gt-inline-figure.gt-inline-sized.gt-inline-mobile-crop .gt-inline-image-frame{height:auto;aspect-ratio:var(--gt-inline-aspect,1.5)}
+ .gt-inline-figure.gt-inline-sized.gt-inline-mobile-full .gt-inline-image-frame{height:auto;aspect-ratio:auto}
+ .gt-inline-figure.gt-inline-sized.gt-inline-mobile-full img{height:auto;object-fit:contain}
+}
 </style>
   <link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="stylesheet" href="./gt-design-site.css">
 </head>
 <body>
   <div class="site-shell">
@@ -1064,13 +1088,20 @@ function gtSourceDetails(a){
  return `<aside class="source-section"><h2>ORIGINAL SOURCE / 資料來源</h2><dl>${rows}${link}</dl></aside>`;
 }
 function gtArticleBodyBlock(p){
- const match=/^\[\[image:(https:\/\/cdn\.sanity\.io\/images\/8nqupq9u\/production\/[^|\]\s]+)(?:\|([^|\]]{0,240}))?(?:\|fit:(full|crop))?\]\]$/.exec(String(p||''));
+ // Old inline-photo tokens remain valid. New optional width and ratio are numeric,
+ // avoiding arbitrary CSS and keeping each article image independently adjustable.
+ const match=/^\[\[image:(https:\/\/cdn\.sanity\.io\/images\/8nqupq9u\/production\/[^|\]\s]+)(?:\|([^|\]]{0,240}))?(?:\|fit:(full|crop))?(?:\|width:(\d{2,3}))?(?:\|ratio:(\d{2,3}))?(?:\|x:(\d{1,3}))?(?:\|y:(\d{1,3}))?\]\]$/.exec(String(p||''));
  if(!match)return '<p>'+esc(p)+'</p>';
- const caption=match[2]||'';
- const mode=match[3]==='full'?'gt-inline-mobile-full':'gt-inline-mobile-crop';
- return '<figure class="gt-inline-figure '+mode+'"><div class="gt-inline-image-frame"><img loading="lazy" src="'+esc(match[1])+'" alt="'+esc(caption||'文章內文圖片')+'"></div>'+(caption?'<figcaption>'+esc(caption)+'</figcaption>':'')+'</figure>';
+ const caption=match[2]||'',mode=match[3]==='full'?'gt-inline-mobile-full':'gt-inline-mobile-crop';
+ const selected=match[4]!=null||match[5]!=null;
+ const width=Math.min(100,Math.max(40,Number(match[4])||100));
+ const ratio=Math.min(250,Math.max(50,Number(match[5])||150));
+ const focusX=Math.min(100,Math.max(0,match[6]!=null?Number(match[6]):50)),focusY=Math.min(100,Math.max(0,match[7]!=null?Number(match[7]):50));
+ const cls=selected?' gt-inline-sized':'';
+ const style=selected?' style="--gt-inline-width:'+width+'%;--gt-inline-aspect:'+(ratio/100).toFixed(2)+';--gt-inline-x:'+focusX+'%;--gt-inline-y:'+focusY+'%"':'';
+ return '<figure class="gt-inline-figure '+mode+cls+'"'+style+'><div class="gt-inline-image-frame"><img loading="lazy" src="'+esc(match[1])+'" alt="'+esc(caption||'文章內文圖片')+'"></div>'+(caption?'<figcaption>'+esc(caption)+'</figcaption>':'')+'</figure>';
 }
-function viewArticle(slug){const a=gtPublicArticles().find(x=>x.slug===slug);if(!a)return notFound();const brandPath=brandSlug(a.brand);return `<section class="section"><div class="article-body"><a class="back" href="#/journal">${gtArrow()} BACK TO STORIES</a><div class="kicker">${esc((gtSubjects.find(s=>s.slug===gtSubjectOf(a))||{}).name||'CLOTHING')} / ${esc(a.brand||'GOOD THINGS')} / ${esc(a.category||'')}</div><div class="gt-article-publication">${gtPublicationDate(a)?'PUBLISHED / '+gtDateText(a):'DATE NOT SET'}${a.updatedAt&&a.updatedAt.slice(0,10)!==gtPublicationDate(a)?' &nbsp; / &nbsp; UPDATED '+a.updatedAt.slice(0,10).replace(/-/g,'.'):''}</div><h1>${esc(a.title)}</h1>${(a.writer||a.editor)?`<div class="gt-article-byline" aria-label="文章署名">${a.writer?`<span>WRITTEN BY <strong>${esc(a.writer)}</strong></span>`:''}${a.editor?`<span>EDITED BY <strong>${esc(a.editor)}</strong></span>`:''}</div>`:''}<div class="excerpt">${esc(a.excerpt)}</div>${a.cover?`<div class="gt-article-cover-frame" data-mobile-fit="${a.coverMobileFit==='contain'?'contain':'cover'}"><img src="${esc(a.cover)}" alt="文章封面" class="gt-article-cover" style="--gt-fit:${a.coverFit==='contain'?'contain':'cover'};--gt-mobile-fit:${a.coverMobileFit==='contain'?'contain':'cover'};--gt-mobile-zoom:${Math.max(1,Math.min(2,Number(a.coverMobileZoom??100)/100||1))};--gt-desktop-zoom:${Math.max(1,Math.min(2.5,Number(a.coverZoom??100)/100||1))};--gt-mobile-x:${Math.max(0,Math.min(100,Number(a.coverMobileX??a.coverX??50)||0))}%;--gt-mobile-y:${Math.max(0,Math.min(100,Number(a.coverMobileY??a.coverY??50)||0))}%;--gt-x:${Math.max(0,Math.min(100,Number(a.coverX??50)||0))}%;--gt-y:${Math.max(0,Math.min(100,Number(a.coverY??50)||0))}%"></div>`:`<div class="article-placeholder" aria-label="文章尚無封面圖片">GOOD THINGS, / EDITORIAL STUDY</div>`}${(a.body||[]).map(gtArticleBodyBlock).join('')}${gtSourceDetails(a)}${gtPublishedOnlyPreview?'':'<div class="notice">編輯說明：既有文章含示範性導讀，正式引用與訪談內容仍需逐篇查核來源。請勿未經授權轉載原文。</div>'}<div class="link-list">${a.source?`<a target="_blank" rel="noopener noreferrer" href="${esc(a.source)}">相關原始資料 ${gtArrow()}</a>`:''}${brandPath?`<a href="#/brand/${brandPath}">前往 ${esc(a.brand)} 品牌檔案 ${gtArrow()}</a>`:''}<a href="#/journal">MORE STORIES ${gtArrow()}</a></div></div></section>`}
+function viewArticle(slug){const a=gtPublicArticles().find(x=>x.slug===slug);if(!a)return notFound();const brandPath=brandSlug(a.brand);return `<section class="section"><div class="article-body"><a class="back" href="#/journal">${gtArrow()} BACK TO STORIES</a><div class="kicker">${esc((gtSubjects.find(s=>s.slug===gtSubjectOf(a))||{}).name||'CLOTHING')} / ${esc(a.brand||'GOOD THINGS')} / ${esc(a.category||'')}</div><div class="gt-article-publication">${gtPublicationDate(a)?'PUBLISHED / '+gtDateText(a):'DATE NOT SET'}${a.updatedAt&&a.updatedAt.slice(0,10)!==gtPublicationDate(a)?' &nbsp; / &nbsp; UPDATED '+a.updatedAt.slice(0,10).replace(/-/g,'.'):''}</div><h1>${esc(a.title)}</h1>${(a.writer||a.editor)?`<div class="gt-article-byline" aria-label="文章署名">${a.writer?`<span>WRITTEN BY <strong>${esc(a.writer)}</strong></span>`:''}${a.editor?`<span>EDITED BY <strong>${esc(a.editor)}</strong></span>`:''}</div>`:''}<div class="excerpt">${esc(a.excerpt)}</div>${a.cover?`<div class="gt-article-cover-frame" data-mobile-fit="${a.coverMobileFit==='contain'?'contain':'cover'}"><img src="${esc(a.cover)}" alt="文章封面" class="gt-article-cover" style="--gt-fit:${a.coverFit==='contain'?'contain':'cover'};--gt-mobile-fit:${a.coverMobileFit==='contain'?'contain':'cover'};--gt-mobile-zoom:${Math.max(1,Math.min(2,Number(entry.coverMobileZoom??a.coverMobileZoom??100)/100||1))};--gt-desktop-zoom:${Math.max(1,Math.min(2.5,Number(entry.coverZoom??a.coverZoom??100)/100||1))};--gt-mobile-x:${Math.max(0,Math.min(100,Number(entry.coverMobileX??entry.coverX??a.coverMobileX??a.coverX??50)||0))}%;--gt-mobile-y:${Math.max(0,Math.min(100,Number(entry.coverMobileY??entry.coverY??a.coverMobileY??a.coverY??50)||0))}%;--gt-x:${Math.max(0,Math.min(100,Number(a.coverX??50)||0))}%;--gt-y:${Math.max(0,Math.min(100,Number(a.coverY??50)||0))}%"></div>`:`<div class="article-placeholder" aria-label="文章尚無封面圖片">GOOD THINGS, / EDITORIAL STUDY</div>`}${(a.body||[]).map(gtArticleBodyBlock).join('')}${gtSourceDetails(a)}${gtPublishedOnlyPreview?'':'<div class="notice">編輯說明：既有文章含示範性導讀，正式引用與訪談內容仍需逐篇查核來源。請勿未經授權轉載原文。</div>'}<div class="link-list">${a.source?`<a target="_blank" rel="noopener noreferrer" href="${esc(a.source)}">相關原始資料 ${gtArrow()}</a>`:''}${brandPath?`<a href="#/brand/${brandPath}">前往 ${esc(a.brand)} 品牌檔案 ${gtArrow()}</a>`:''}<a href="#/journal">MORE STORIES ${gtArrow()}</a></div></div></section>`}
 function matchProduct(p){const q=filters.q.trim().toLowerCase();return (!q||[p.brand,p.name,p.code,p.color,p.season].join(' ').toLowerCase().includes(q))&&(filters.brand==='ALL'||p.brand===filters.brand)&&(filters.size==='ALL'||p.shops.some(s=>s.sizes.includes(filters.size)))&&(!filters.available||p.shops.some(s=>s.status==='available'&&(filters.size==='ALL'||s.sizes.includes(filters.size))))}
 function productRow(p){const n=p.shops.filter(s=>s.status==='available').length;return `<div class="product-row"><a href="#/piece/${p.id}" class="product-thumb" aria-label="檢視 ${esc(p.name)}">${esc(p.brand)}</a><div><div class="meta-tag">${esc(p.brand)} / ${esc(p.season)}</div><a href="#/piece/${p.id}"><h3>${esc(p.name)}</h3></a><p>${esc(p.color)} · ${esc(p.code)}<br>${num(p.price)} · ${p.shops.length} 間示範店家</p><span class="stock-status ${n?'':'off'}">${n?n+' 間示範有貨':'示範售罄'}</span></div><div class="product-actions"><a href="#/piece/${p.id}" class="mini-btn">查看店家 <svg class="ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13M10 4l6 6-6 6"/></svg></a><button type="button" class="mini-btn save-btn ${saved.includes(p.id)?'saved':''}" data-save="${p.id}">${saved.includes(p.id)?'已收藏':'加入收藏'}</button></div></div>`}
 function viewStock(){const found=products.filter(matchProduct);return `<section class="section">${header('STOCKIST INDEX / 003','Stock Finder','搜尋不同品牌、顏色與尺寸。此頁為介面測試，所有庫存、價格和店名皆為虛構示範。')}<div class="notice"><strong>DEMO MODE / 示範資料</strong><br>正式版尚未串接任何日本選品店，請勿以本頁判斷真實庫存或價格。</div><div class="filters"><input id="search" type="search" placeholder="搜尋 COMOLI、M65、襯衫..." value="${esc(filters.q)}" aria-label="搜尋品牌與單品"><select id="brand-filter" aria-label="品牌篩選"><option value="ALL">所有品牌</option>${brands.map(b=>`<option ${filters.brand===b.name?'selected':''} value="${esc(b.name)}">${esc(b.name)}</option>`).join('')}</select><select id="size-filter" aria-label="尺寸篩選">${['ALL','0','1','2','3','4','5'].map(n=>`<option value="${n}" ${filters.size===n?'selected':''}>${n==='ALL'?'所有尺寸':'SIZE '+n}</option>`).join('')}</select></div><div class="filter-meta"><label class="checkbox"><input id="available-filter" type="checkbox" ${filters.available?'checked':''}>只看示範有貨</label><span id="results-count">${found.length} RESULTS</span></div><div class="product-list" id="product-results">${found.map(productRow).join('')||'<div class="empty">沒有找到符合條件的商品。</div>'}</div></section>`}
@@ -1118,12 +1149,14 @@ function gtRenderCloudBrands(){
  }).join('');
  el.innerHTML='<div class="kicker">CLOUD / SANITY</div><h3 style="margin:8px 0 4px">雲端品牌資料</h3><p class="muted" style="font-size:13px">草稿不會自動公開。只有按下「確認發布」並再次確認才會更新 Sanity 公開資料。</p><button type="button" id="gt-cloud-reload" style="margin:8px 0 14px">'+(gtCloudBrandLoading?'讀取中…':'重新讀取雲端')+'</button>'+(gtCloudBrandError?'<p role="alert" style="color:#a23a31">讀取失敗：'+gtCloudEscape(gtCloudBrandError)+'</p>':records.length?rows:'<p class="muted">'+(gtCloudBrandLoading?'正在讀取雲端…':'目前尚未載入資料，請點「重新讀取雲端」。')+'</p>');
 }
+const gtBrandPublishing=new Set();
 async function gtCloudPublishBrand(row){
+ if(gtBrandPublishing.has(row?.slug)||gtBrandSaving)return;
  if(!row||row.status!=='draft'||!row.revision)return alert('請先重新讀取最新雲端草稿。');
+ if(editorKind==='brand'&&editingId===row.slug&&gtBrandDirty)return alert('此品牌有尚未儲存的修改，請先儲存雲端草稿。');
  if(/\btest\b|測試/i.test(row.name))return alert('測試品牌不允許發布。');
  if(!confirm('即將公開發布「'+row.name+'」。這會取代該品牌在 Sanity 的公開版本，確定繼續？'))return;
- const typed=prompt('最後確認：請輸入 PUBLISH 以公開發布 '+row.name);
- if(typed!=='PUBLISH')return;
+ gtBrandPublishing.add(row.slug);
  try{
   const response=await fetch('/api/editor/publish-brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:row.slug,name:row.name,revision:row.revision,confirmation:'PUBLISH'})});
   const data=await response.json();
@@ -1131,11 +1164,11 @@ async function gtCloudPublishBrand(row){
   alert('已發布到 Sanity 公開資料。請再確認網站的品牌資料。');
   await gtCloudFetchBrandRows();
   gtLoadCloudPublishedBrands();
- }catch(e){alert('發布失敗：'+e.message)}
+ }catch(e){alert('發布失敗：'+e.message)}finally{gtBrandPublishing.delete(row.slug)}
 }
 
 function gtCloudEditorialNotice(){return gtCloudEditorEnabled
- ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS、ARTICLES、HOMEPAGE、SITE CONTENT 均可儲存 Sanity 雲端草稿。正式發布功能目前仍鎖定，請先完成上線檢查。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
+ ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS、ARTICLES、HOMEPAGE、SITE CONTENT 可儲存 Sanity 雲端草稿。確認發布後才會更新公開網站。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
  : '<b>GOOD THINGS, 1.6 網站編輯預覽</b>：維持原本編輯介面。目前這個網址尚未連接安全寫入服務，儲存仍只在目前瀏覽器。請匯出 JSON 備份，不要把 Sanity Token 放進網頁。'}
 async function gtSaveBrandCloud(record){
  const response=await fetch('/api/editor/brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});
@@ -1220,13 +1253,15 @@ function editorForm(){
   <label>內容形式<select id="f-category"><option>INTERVIEW NOTES / 專訪導讀</option><option>BRAND NEWS / 品牌新聞</option><option>COLLECTION / 季度整理</option><option>GARMENT NOTES / 單品研究</option><option>EDITORIAL / 原創觀察</option><option>主理人專訪</option><option>品牌理念</option><option>季度理念</option><option>風格研究</option><option>單品解析</option><option>DESIGN PHILOSOPHY</option></select></label>
   <label>中文導讀摘要 *<textarea id="f-excerpt" placeholder="建議用自己的話寫 50～120 字"></textarea></label>
   <label>正文 *（空白行分段）<textarea id="f-body" style="min-height:190px" placeholder="用自己的觀點整理重點，不直接大量翻譯原文。"></textarea></label>
+  <details class="gt-editor-fold gt-inline-media-fold" id="gt-inline-media-fold"><summary>正文圖片 / INLINE MEDIA <span>獨立圖片工具，不受封面設定影響</span></summary><div class="gt-editor-inline-image"><strong>在正文插入圖片</strong><input type="file" id="gt-inline-upload" accept="image/png,image/jpeg,image/webp"><input type="text" id="gt-inline-caption" placeholder="圖片說明（選填）"><label>正文圖片手機版顯示<select id="gt-inline-mobile-fit"><option value="crop">填滿裁切（預設）</option><option value="full">完整顯示（保留整張圖）</option></select></label><button type="button" id="gt-inline-insert">將圖片插入正文游標位置</button><small id="gt-inline-status">圖片會先上傳到 Sanity，文章本身仍需儲存與發布。</small></div></details>
   <details class="gt-editor-fold"><summary>來源與引用資訊 <span>訪談、資料整理、引用原文時使用</span></summary><div class="cms-hint">SOURCE CREDIT / 記錄原文出處，可降低誤認為原創採訪的風險；標示來源不代表取得轉載授權。</div>
   <label>日文原文標題<input id="f-sourceTitle" placeholder="原文文章標題（如適用）"></label>
   <label>媒體／出版方<input id="f-publisher" placeholder="例如：Silver Magazine"></label>
   <label>原作者<input id="f-sourceAuthor" placeholder="作者／編輯姓名（若已知）"></label>
   <label>原文刊登日期<input id="f-sourceDate" type="date"></label>
   <label>原文網址<input id="f-source" type="url" placeholder="https://..."></label></details>
-  <details class="gt-editor-fold"><summary>封面顯示微調 <span>桌面、手機的裁切、縮放與焦點設定</span></summary><div class="gt-cover-control"><strong>文章封面顯示</strong><small>電腦版與手機版分開設定，各自即時預覽。儲存草稿後需確認發布才會更新公開頁。</small>
+  <details class="gt-editor-fold gt-article-cover-fold" id="gt-article-cover-fold"><summary>封面圖片與裁切 <span>桌面、手機獨立預覽及設定</span></summary><label>封面圖片（可選，上傳後會壓縮）<input id="f-cover" type="file" accept="image/png,image/jpeg,image/webp"><small class="cms-file-status" id="cover-status">${editorCover?'已選擇封面，可儲存修改':''}</small></label>
+<div class="gt-cover-control"><strong>文章封面顯示</strong><small>電腦版與手機版分開設定，各自即時預覽。儲存草稿後需確認發布才會更新公開頁。</small>
  <div class="gt-desktop-crop"><strong>DESKTOP / 電腦版</strong>
  <div class="gt-crop-desktop-frame"><img id="gt-crop-desktop-image" alt="電腦版封面即時預覽" hidden><div id="gt-crop-desktop-empty">載入封面後即可即時調整</div></div>
  <label>顯示方式<select id="f-coverFit"><option value="cover">填滿裁切</option><option value="contain">完整顯示</option></select></label>
@@ -1239,7 +1274,7 @@ function editorForm(){
  <label>手機版縮放 <output id="gt-crop-zoom-value">100%</output><input id="f-coverMobileZoom" type="range" min="100" max="200" step="5" value="100"></label>
  <label>手機左右焦點 <output id="gt-crop-x-value">50%</output><input id="f-coverMobileX" type="range" min="0" max="100" value="50"></label>
  <label>手機上下焦點 <output id="gt-crop-y-value">50%</output><input id="f-coverMobileY" type="range" min="0" max="100" value="50"></label>
- <small>填滿裁切時先放大，再移動焦點會較容易觀察效果。</small></div></div></details><details class="gt-editor-fold"><summary>在正文插入圖片 <span>需要穿插照片時展開</span></summary><div class="gt-editor-inline-image"><strong>在正文插入圖片</strong><input type="file" id="gt-inline-upload" accept="image/png,image/jpeg,image/webp"><input type="text" id="gt-inline-caption" placeholder="圖片說明（選填）"><label>正文圖片手機版顯示<select id="gt-inline-mobile-fit"><option value="crop">填滿裁切（預設）</option><option value="full">完整顯示（保留整張圖）</option></select></label><button type="button" id="gt-inline-insert">將圖片插入正文游標位置</button><small id="gt-inline-status">圖片會先上傳到 Sanity，文章本身仍需儲存與發布。</small></div></details><label>封面圖片（可選，上傳後會壓縮）<input id="f-cover" type="file" accept="image/png,image/jpeg,image/webp"><small class="cms-file-status" id="cover-status">${editorCover?'已選擇封面，可儲存修改':''}</small></label>`;
+ <small>填滿裁切時先放大，再移動焦點會較容易觀察效果。</small></div></div></details>`;
  }else if(editorKind==='brand'){
   base=`<label>品牌名稱 *<input id="f-name" required placeholder="例如：everyone"></label>
   <label>設計師／主理人<input id="f-founder" placeholder="日文 / 英文姓名"></label>
@@ -1321,32 +1356,41 @@ function updatePreview(){
  }
  const source=document.getElementById('p-source');if(source)source.textContent=[fval('publisher'),fval('sourceTitle'),fval('sourceDate')].filter(Boolean).join(' / ');
 }
-function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';render()}
+function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;render()}
 function fillEditor(x){
  const map=editorKind==='brand'?{name:x.name,founder:x.founder,founded:x.founded,desc:x.desc,tags:(x.tags||[]).join(', '),url:x.url}:
  editorKind==='article'?{title:x.title,brand:x.brand,writer:x.writer||'',editor:x.editor||'',subject:x.subject||'clothing',category:x.category,publishedAt:gtPublicationDate(x),excerpt:x.excerpt,body:(x.body||[]).join('\n\n'),source:x.source,sourceTitle:x.sourceTitle,publisher:x.publisher,sourceAuthor:x.sourceAuthor,sourceDate:x.sourceDate,coverFit:x.coverFit||'cover',coverMobileFit:x.coverMobileFit||'cover',coverMobileZoom:x.coverMobileZoom??100,coverZoom:x.coverZoom??100,coverX:x.coverX??50,coverY:x.coverY??50,coverMobileX:x.coverMobileX??x.coverX??50,coverMobileY:x.coverMobileY??x.coverY??50,publicationSection:x.publicationSection||'both'}:
  {title:x.title,brand:x.brand,category:x.type,excerpt:x.summary,season:x.season,publisher:x.publisher,date:x.date,source:x.url};
  for(const [k,v] of Object.entries(map)){const el=document.getElementById('f-'+k);if(el)el.value=v||''}
  if(editorKind==='article'){const selected=new Set(gtSubjectsOf(x));document.querySelectorAll('input[name="gt-extra-subject"]').forEach(el=>{el.checked=selected.has(el.value)&&el.value!==map.subject});}
- editorCover=x.cover||'';editorLogo=x.logo||'';editorLogoNote='';
+ editorCover=x.cover||'';editorLogo=x.logo||'';editorLogoNote='';gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;
  // Make it obvious whether an existing record is being edited.
  const h=document.querySelector('.editor-grid .editor-card > h2');
  if(h)h.textContent=editorKind==='brand'?'編輯品牌資料':'編輯既有內容';
  const submit=document.querySelector('#editor-form button[type="submit"]');
  if(submit)submit.textContent='儲存修改';
  if(editorKind==='brand'){
+  gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;
   const d=gtLogoDisplay(x);
   for(const [k,v] of [['logoScale',d.scale],['logoX',d.x],['logoY',d.y]]){const inp=document.getElementById('f-'+k);if(inp)inp.value=v;}
  }
  updatePreview();
 }
+let gtBrandSaving=false,gtBrandPendingSlug='',gtBrandDirty=false;
+function gtBrandSaveNote(text,isError=false){
+ const form=document.getElementById('editor-form');if(!form)return;
+ let note=document.getElementById('gt-brand-save-status');
+ if(!note){note=document.createElement('p');note.id='gt-brand-save-status';note.setAttribute('role','status');note.setAttribute('aria-live','polite');note.className='cms-hint';(form.querySelector('.editor-actions')||form).append(note)}
+ note.textContent=text;note.style.color=isError?'#a43d35':'#386947';
+}
 async function saveEditor(){
+ if(gtCloudEditorEnabled&&editorKind==='brand'&&(gtCloudImagePending||gtCloudImageError)){gtBrandSaveNote(gtCloudImagePending?'圖片仍在處理，請完成後再儲存。':'圖片處理失敗，請重新選擇圖片。',true);return}
  const arr=editorKind==='article'?localArticles:editorKind==='brand'?localBrands:localReferenceEntries;
  let x;
  if(editorKind==='brand'){
   if(!fval('name'))return alert('請輸入品牌名稱');
   if(brands.some(b=>b.name.trim().toLocaleLowerCase()===fval('name').toLocaleLowerCase()&&b.slug!==editingId))return alert('品牌名稱已存在，請避免重複新增；請從下方品牌列表選擇「編輯」。');
-  x={slug:editingId||basicSlug(),name:fval('name'),founder:fval('founder'),founded:fval('founded'),desc:fval('desc'),tags:fval('tags').split(',').map(s=>s.trim()).filter(Boolean),url:fval('url')||null,logo:editorLogo,logoDisplay:{scale:Number(fval('logoScale')||100),x:Number(fval('logoX')||0),y:Number(fval('logoY')||0)}};
+  x={slug:editingId||(gtCloudEditorEnabled?(gtBrandPendingSlug||(gtBrandPendingSlug=basicSlug())):basicSlug()),name:fval('name'),founder:fval('founder'),founded:fval('founded'),desc:fval('desc'),tags:fval('tags').split(',').map(s=>s.trim()).filter(Boolean),url:fval('url')||null,logo:editorLogo,logoDisplay:{scale:Number(fval('logoScale')||100),x:Number(fval('logoX')||0),y:Number(fval('logoY')||0)}};
  }else if(editorKind==='article'){
   if(!fval('title')||!fval('excerpt')||!fval('body'))return alert('請填寫標題、摘要與正文');
   x={slug:editingId||basicSlug(),title:fval('title'),brand:fval('brand'),writer:fval('writer'),editor:fval('editor'),subject:fval('subject')||'clothing',category:fval('category'),publishedAt:fval('publishedAt')||gtLocalDate(),createdAt:(articles.find(a=>a.slug===editingId)||{}).createdAt||new Date().toISOString(),updatedAt:new Date().toISOString(),excerpt:fval('excerpt'),body:fval('body').split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean),source:fval('source')||null,sourceTitle:fval('sourceTitle'),publisher:fval('publisher'),sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),reviewedAt:new Date().toLocaleDateString('en-CA'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverMobileFit:fval('coverMobileFit')||'cover',coverMobileZoom:Number(fval('coverMobileZoom')||100),coverZoom:Number(fval('coverZoom')||100),coverX:Number(fval('coverX')??50),coverY:Number(fval('coverY')??50),coverMobileX:Number(fval('coverMobileX')??50),coverMobileY:Number(fval('coverMobileY')??50),publicationSection:fval('publicationSection')||'stories'};
@@ -1354,7 +1398,37 @@ async function saveEditor(){
   if(!fval('title'))return alert('請填寫資料標題');
   x={id:editingId||basicSlug(),title:fval('title'),brand:fval('brand'),type:fval('category'),season:fval('season')||'常設',summary:fval('excerpt'),publisher:fval('publisher'),date:fval('date'),url:fval('source')};
  }
- if(editorKind==='brand'&&gtCloudEditorEnabled){try{await gtSaveBrandCloud(x)}catch(e){alert('雲端儲存失敗：'+e.message+'\n沒有修改公開網站，也沒有儲存雲端草稿。');return;}}
+ if(editorKind==='brand'&&gtCloudEditorEnabled){
+  if(gtBrandSaving)return;
+  const button=document.querySelector('#editor-form button[type="submit"]');
+  gtBrandSaving=true;if(button){button.disabled=true;button.textContent='儲存中…'}
+  gtBrandSaveNote('正在儲存 Sanity 品牌草稿，尚未公開。');
+  try{
+   const cloudResponse=await gtSaveBrandCloud(x);
+   editingId=x.slug;gtBrandPendingSlug='';gtBrandDirty=false;
+   if(cloudResponse.logoUrl){editorLogo=cloudResponse.logoUrl;x.logo=cloudResponse.logoUrl}
+   const idx=localBrands.findIndex(v=>v.slug===x.slug);
+   if(idx>=0)localBrands[idx]=x;else localBrands.push(x);
+   let backupOk=false;
+   try{
+    const data=JSON.stringify({version:1,exportedAt:new Date().toISOString(),articles:localArticles,brands:localBrands,references:localReferenceEntries,home:gtHomeConfig,siteContent:gtSiteContent});
+    localStorage.setItem(CMS_KEY,data);backupOk=localStorage.getItem(CMS_KEY)===data;
+   }catch(err){console.warn('Cloud brand saved, but local backup not available:',err.message)}
+   const inMemory=brands.findIndex(v=>v.slug===x.slug);
+   if(inMemory>=0)brands[inMemory]=x;else brands.push(x);
+   const h=document.querySelector('.editor-grid .editor-card > h2');if(h)h.textContent='編輯品牌資料';
+   gtBrandSaveNote(backupOk?'品牌雲端草稿儲存成功，並保留本機副本。尚未公開。':'品牌雲端草稿已儲存，尚未公開。本機備份未完成。');
+   await gtCloudFetchBrandRows();
+  }catch(error){
+   gtBrandDirty=true;
+   gtBrandSaveNote('品牌雲端儲存失敗：'+error.message+'。已保留目前表單內容，請確認後重試。',true);
+  }finally{
+   gtBrandSaving=false;
+   const liveButton=document.querySelector('#editor-form button[type="submit"]');
+   if(liveButton){liveButton.disabled=false;liveButton.textContent='儲存雲端草稿'}
+  }
+  return;
+ }
  // Persist draft BEFORE updating the live page, so rejected storage does not give a false success.
  const idx=arr.findIndex(v=>(v.slug||v.id)===editingId);
  const nextArr=idx>=0?arr.map((v,i)=>i===idx?x:v):[...arr,x];
@@ -1456,7 +1530,7 @@ document.addEventListener('click',e=>{
   const row=gtCloudBrandRows.find(b=>b.slug===cloudPublish.dataset.cloudPublish);
   gtCloudPublishBrand(row);return;
  }
- const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
+ const kind=e.target.closest('[data-kind]');if(kind){editorKind=kind.dataset.kind;editingId='';editorCover='';editorLogo='';gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;if(editorKind==='home')gtHomeDraft=gtHomeWorkingCopy();if(editorKind==='site')gtSiteDraft={...gtSiteContent};render();if(editorKind==='brand'&&gtCloudEditorEnabled)gtCloudFetchBrandRows();return;}
  if(e.target.closest('#editor-reset')){resetEditor();return;}
  if(e.target.closest('#export-cms')){downloadCms();return;}
  if(e.target.closest('#import-cms')){document.getElementById('import-cms-file').click();return;}
@@ -1491,6 +1565,8 @@ document.addEventListener('click',e=>{
  }
 });
 document.addEventListener('submit',e=>{if(e.target.id==='editor-form'){e.preventDefault();saveEditor()}});
+document.addEventListener('input',e=>{if(editorKind==='brand'&&e.target.closest('#editor-form'))gtBrandDirty=true},true);
+document.addEventListener('change',e=>{if(editorKind==='brand'&&e.target.closest('#editor-form'))gtBrandDirty=true},true);
 document.addEventListener('input',e=>{if(e.target.closest('#editor-form'))updatePreview()});
 document.addEventListener('change',e=>{if(e.target.closest('#editor-form')&&['f-coverFit','f-coverMobileFit'].includes(e.target.id))updatePreview()});
 // Reliable offline raster-logo preparation. No uploads leave this device.
@@ -1500,7 +1576,7 @@ async function gtDecodeImage(src){return await new Promise((resolve,reject)=>{co
 async function gtPrepareLogo(src){
  const img=await gtDecodeImage(src);const w=img.naturalWidth,h=img.naturalHeight;
  if(!w||!h||w*h>42000000)throw Error('LOGO 圖片尺寸過大');
- const scale=Math.min(1,950/w,740/h);
+ const scale=Math.min(1,1500/w,1000/h);
  const sample=document.createElement('canvas');sample.width=Math.max(1,Math.round(w*scale));sample.height=Math.max(1,Math.round(h*scale));
  const ctx=sample.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,sample.width,sample.height);
  const W=sample.width,H=sample.height,data=ctx.getImageData(0,0,W,H),pixels=data.data;
@@ -1530,7 +1606,7 @@ async function gtPrepareLogo(src){
  const rawW=maxX-minX+1,rawH=maxY-minY+1,pad=Math.max(3,Math.round(Math.min(rawW,rawH)*.055));
  const x0=Math.max(0,minX-pad),y0=Math.max(0,minY-pad),x1=Math.min(W,maxX+pad+1),y1=Math.min(H,maxY+pad+1);
  const cw=x1-x0,ch=y1-y0;
- const outScale=Math.min(1,960/cw,350/ch);
+ const outScale=Math.min(1,1600/cw,700/ch);
  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(cw*outScale));canvas.height=Math.max(1,Math.round(ch*outScale));
  const out=canvas.getContext('2d');out.drawImage(sample,x0,y0,cw,ch,0,0,canvas.width,canvas.height);
  if(light){const pixel=out.getImageData(0,0,canvas.width,canvas.height),p=pixel.data;
@@ -1539,68 +1615,96 @@ async function gtPrepareLogo(src){
   out.putImageData(pixel,0,0);
  }
  let output=canvas.toDataURL('image/webp',.9);
- if(output.length>1060000)output=canvas.toDataURL('image/webp',.70);
- if(output.length>1060000)throw Error('LOGO 圖片壓縮後仍過大，請選較小的圖片');
+ if(output.length>2850000)output=canvas.toDataURL('image/webp',.78);
+ if(output.length>2850000)throw Error('LOGO 圖片壓縮後仍過大，請選較小的圖片');
  const cropped=bg&&cw*ch<W*H*.84;
  const note=cropped?(light?'已自動裁除淺色留白並製作透明底；可再調整大小與位置。':'已自動裁除圖片邊界，保留原比例；可再調整大小與位置。'):
  bg?'已檢查圖片，未發現明顯多餘留白；可用滑桿調整。':'圖片背景較複雜，已保留原圖，建議使用去背 PNG 後重新上傳。';
  return {data:output,note,cropped};
 }
 async function gtCompressImage(file,kind){
- if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先轉換成 PNG）');
+ if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))
+  throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先轉換成 PNG）');
  if(kind==='logo'){
-  // Preserve the original logo trimming and transparency behavior.
   if(file.size>6*1024*1024)throw Error('LOGO 超過 6MB，請改用較小的 PNG 或 WebP');
-  const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('讀取 LOGO 失敗'));reader.readAsDataURL(file)});
+  const data=await new Promise((resolve,reject)=>{
+   const reader=new FileReader();reader.onload=()=>resolve(reader.result);
+   reader.onerror=()=>reject(Error('讀取 LOGO 失敗'));reader.readAsDataURL(file);
+  });
   return gtPrepareLogo(data);
  }
- // Decode directly, then shrink and recompress locally. The raw photo is not sent to our server.
+ // Preserve crisp text and artwork rather than always reducing to 1600 × 1040.
+ // Base64 stays below the homepage / inline-image service caps.
  if(file.size>40*1024*1024)throw Error('原始照片超過 40MB，請先匯出較小的 JPG 或 WebP');
- const url=URL.createObjectURL(file);
+ const url=URL.createObjectURL(file),MAX_DATA_CHARS=2_850_000;
  try{
   const pic=await gtDecodeImage(url);
-  if(!pic.naturalWidth||!pic.naturalHeight)throw Error('無法取得圖片尺寸');
-  const base=Math.min(1,1600/pic.naturalWidth,1040/pic.naturalHeight);
+  if(!pic.naturalWidth||!pic.naturalHeight||pic.naturalWidth*pic.naturalHeight>42_000_000)
+   throw Error('圖片尺寸無效或像素過多，請縮小尺寸後再上傳');
+  // Already reasonably optimized? Avoid a second lossy encode and keep original pixels.
+  if(file.size<=2_050_000 && pic.naturalWidth<=3600 && pic.naturalHeight<=3600){
+   const raw=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(Error('讀取圖片失敗'));reader.readAsDataURL(file);
+   });
+   if(typeof raw==='string'&&raw.length<MAX_DATA_CHARS){
+    return {data:raw,note:'已保留原圖與字體細節 '+pic.naturalWidth+'×'+pic.naturalHeight+'（未二次壓縮）'};
+   }
+  }
+  const base=Math.min(1,2400/pic.naturalWidth,1800/pic.naturalHeight);
   const canvas=document.createElement('canvas');
-  // Safari and embedded iOS browsers sometimes return PNG when WebP encoding is requested.
-  // JPEG is supported broadly and works well for photographic editorial covers.
   const formats=[
-   {mime:'image/webp',label:'WebP',qualities:[.84,.74,.62,.48]},
-   {mime:'image/jpeg',label:'JPEG',qualities:[.86,.76,.64,.5,.38]}
+   {mime:'image/webp',label:'WebP',qualities:[.94,.9,.84,.76,.68,.56]},
+   {mime:'image/jpeg',label:'JPEG',qualities:[.94,.9,.84,.76,.68,.56]}
   ];
-  for(const factor of [1,.86,.72,.58,.46,.35,.26]){
+  for(const factor of [1,.9,.8,.7,.6,.5,.42,.33]){
    const scale=base*factor;
    canvas.width=Math.max(1,Math.round(pic.naturalWidth*scale));
    canvas.height=Math.max(1,Math.round(pic.naturalHeight*scale));
    const ctx=canvas.getContext('2d');
    if(!ctx)throw Error('這個瀏覽器無法壓縮圖片');
-   // JPEG does not support transparency; fill white before drawing a transparent PNG.
-   ctx.fillStyle='#ffffff';
-   ctx.fillRect(0,0,canvas.width,canvas.height);
+   ctx.clearRect(0,0,canvas.width,canvas.height);
+   // WebP can keep transparency; JPEG fallback must use an opaque canvas.
    ctx.drawImage(pic,0,0,canvas.width,canvas.height);
    for(const fmt of formats){
+    if(fmt.mime==='image/jpeg'){
+     ctx.globalCompositeOperation='destination-over';
+     ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+     ctx.globalCompositeOperation='source-over';
+    }
     for(const quality of fmt.qualities){
      let output='';
      try{output=canvas.toDataURL(fmt.mime,quality)}catch{}
-     if(output.startsWith('data:'+fmt.mime+';base64,')&&output.length<1000000){
-      return {data:output,note:'已自動壓縮為 '+fmt.label+' '+canvas.width+'×'+canvas.height};
+     if(output.startsWith('data:'+fmt.mime+';base64,')&&output.length<MAX_DATA_CHARS){
+      return {data:output,note:'高畫質 '+fmt.label+' '+canvas.width+'×'+canvas.height+'（原圖 '+pic.naturalWidth+'×'+pic.naturalHeight+'）'};
      }
-     // Unsupported formats can fall back to PNG; don't accept that uncompressed result.
      if(output.startsWith('data:image/png;')&&fmt.mime==='image/webp')break;
     }
    }
   }
-  throw Error('這張照片無法在目前瀏覽器壓縮至上傳限制，請先匯出較小的 JPG');
+  throw Error('這張照片無法壓縮到安全上傳大小，請在 Photoshop 匯出寬 2000px 左右的 JPG / WebP');
  }finally{URL.revokeObjectURL(url)}
 }
+let gtCloudImagePending=0,gtCloudImageError='',gtCloudImageChoice={cover:0,logo:0};
 document.addEventListener('change',async e=>{
  if(e.target.id==='f-cover'||e.target.id==='f-logo'){
   const el=e.target,file=el.files?.[0];if(!file)return;
-  const kind=el.id==='f-logo'?'logo':'cover';const status=document.getElementById(kind+'-status');
-  if(status)status.textContent='正在處理圖片…';
-  try{const result=await gtCompressImage(file,kind);if(kind==='logo'){editorLogo=result.data;editorLogoNote=result.note;}else editorCover=result.data;
-   if(status)status.textContent='已載入 '+file.name+' · '+result.note+'（約 '+Math.round(result.data.length*.75/1024)+' KB）';updatePreview();}
-  catch(err){if(status)status.textContent=err.message;alert(err.message)}
+  const kind=el.id==='f-logo'?'logo':'cover',choice=++gtCloudImageChoice[kind];
+  const status=document.getElementById(kind+'-status');
+  gtCloudImagePending++;gtCloudImageError='';
+  if(status)status.textContent='正在處理圖片，完成前暫時無法儲存…';
+  try{
+   const result=await gtCompressImage(file,kind);
+   if(choice!==gtCloudImageChoice[kind])return;
+   if(kind==='logo'){editorLogo=result.data;editorLogoNote=result.note}else editorCover=result.data;
+   if(status)status.textContent='已載入 '+file.name+' · '+result.note+'（約 '+Math.round(result.data.length*.75/1024)+' KB）';
+   updatePreview();
+  }catch(err){
+   if(choice!==gtCloudImageChoice[kind])return;
+   gtCloudImageError=err.message||'圖片處理失敗';
+   if(status)status.textContent=gtCloudImageError;
+   alert(gtCloudImageError);
+  }finally{gtCloudImagePending=Math.max(0,gtCloudImagePending-1)}
  }
  if(e.target.id==='import-cms-file')importCms(e.target.files[0]);
 });
@@ -1691,11 +1795,15 @@ document.addEventListener('input',e=>{
   gtHomeDraft[i].title='';gtHomeDraft[i].excerpt='';gtHomeDraft[i].cover='';gtHomeDraft[i].coverFit='cover';gtHomeDraft[i].coverX=50;gtHomeDraft[i].coverY=50;render();
  }
 });
+let gtHomeImagePending=0;
 document.addEventListener('change',async e=>{
  const upload=e.target.closest('[data-home-cover]');if(!upload||!upload.files?.length)return;
  const i=Number(upload.dataset.homeCover);if(!gtHomeDraft[i])return;
- try{const processed=await gtCompressImage(upload.files[0],'cover');gtHomeDraft[i].cover=processed.data;render()}
- catch(err){alert('圖片處理失敗：'+err.message)}
+ const slide=gtHomeDraft[i],originalSlug=slide.slug;
+ gtHomeImagePending++;
+ try{const processed=await gtCompressImage(upload.files[0],'cover');if(gtHomeDraft.includes(slide)&&slide.slug===originalSlug){slide.cover=processed.data;render()}}
+ catch(err){alert('圖片處理失敗：'+err.message+'。目前內容仍保留。')}
+ finally{gtHomeImagePending=Math.max(0,gtHomeImagePending-1)}
 });
 document.addEventListener('click',e=>{
  if(e.target.closest('#gt-home-add')){
@@ -1941,11 +2049,22 @@ gtLoadCloudPublishedBrands();
 
 
 </script>
-<script src="./gt-cloud-articles-preview.js" defer></script>
-<script src="./gt-inline-media-editor.js" defer></script>
-<script src="./gt-cloud-home-preview.js" defer></script>
-<script src="./gt-cloud-site-preview.js" defer></script>
-<script src="./gt-feature-issues-preview.js" defer></script>
-<script src="./gt-article-studio-organizer.js" defer></script>
+<script src="./gt-cloud-articles-preview.js?v=20261024-editor2" defer></script>
+<script src="./gt-inline-media-editor.js?v=20261024-crop1" defer></script>
+<script src="./gt-cloud-home-preview.js?v=20261024-home1" defer></script>
+<script src="./gt-cloud-site-preview.js?v=20261024-editor2" defer></script>
+<script src="./gt-feature-issues-preview.js?v=20261024-feature3" defer></script>
+<script src="./gt-article-studio-organizer.js?v=20261024-editorfold1" defer></script>
+<script src="./gt-brand-studio-v1-8.js" defer></script>
+<link rel="stylesheet" href="./gt-home-crop-preview.css?v=20261024-home1">
+<script src="./gt-home-crop-preview.js?v=20261024-home1" defer></script>
+<link rel="stylesheet" href="./gt-featured-type-fit.css?v=20261024-overflow2">
+<script src="./gt-featured-type-fit.js?v=20261024-overflow2" defer></script>
+<link rel="stylesheet" href="./gt-shared-image-crop.css?v=20261024-crop2">
+<script src="./gt-shared-image-crop.js?v=20261024-crop3" defer></script>
+<link rel="stylesheet" href="./gt-image-dimension-guide.css?v=20261024-img1">
+<script src="./gt-image-dimension-guide.js?v=20261024-img1" defer></script>
+<script src="./gt-font-preview.js?v=20261024-font6" defer></script>
+<script src="./gt-design-site.js" defer></script>
 </body>
 </html>

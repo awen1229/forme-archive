@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>FONT LIBRARY / GOOD THINGS,</title>
+<link rel="stylesheet" href="./gt-font-library.css?v=20261024-font5">
+</head>
+<body style="margin:0;background:#f1f1e9;color:#26372a">
+<main class="gt-font-app" id="gt-font-app">
+<header class="gt-font-top">
+ <div><div class="gt-font-kicker">GOOD THINGS, / EDITORIAL STUDIO</div><strong>FONT LIBRARY</strong></div>
+ <div class="gt-font-controls"><a class="button" href="./design-settings.html">視覺設定</a><a class="button" href="./#/admin">返回編輯後台</a></div>
+</header>
+<div class="gt-font-kicker" style="margin-top:30px">TYPE SYSTEM / DRAFT ONLY</div>
+<h1>字型庫與字體設定</h1>
+<p>先安裝你的字型，不必現在決定整個網站的視覺。可批次上傳、搜尋、試排中英文，分別設定標題／內文／導覽。所有調整先保存在預覽草稿，不會套用到正式網站。</p>
+<div class="layout">
+<section class="panel" aria-label="字型庫管理">
+ <div class="gt-font-panel-eyebrow">01 / FONT ASSETS</div>
+ <h2>字型庫</h2>
+ <p>可一次選取多個 WOFF2、WOFF、OTF、TTF 字型。單檔上限 9 MB，最多保留 150 款；如需大量中文字型，建議優先使用合法授權的 WOFF2 網頁版本。</p>
+ <div class="gt-font-upload-card">
+  <label for="gt-font-files" style="font-weight:600">選擇字型檔案</label>
+  <input id="gt-font-files" type="file" accept=".woff2,.woff,.otf,.ttf,font/woff2,font/woff,font/otf,font/ttf" multiple>
+  <label><input type="checkbox" id="gt-font-license"><span>我確認選取的字型允許在公開網站以 Webfont 方式嵌入及提供訪客下載，並有適當授權。</span></label>
+  <div class="gt-font-controls">
+   <button class="primary" type="button" id="gt-font-upload" disabled>上傳至我的字型庫</button>
+   <button type="button" id="gt-font-reload">重新讀取</button>
+  </div>
+  <div class="gt-font-upload-progress" id="gt-font-progress" role="status" aria-live="polite"></div>
+ </div>
+ <section class="gt-font-local-test" aria-label="本機字型診斷">
+  <div class="gt-font-kicker">FONT DIAGNOSTIC / 不經雲端上傳</div>
+  <h3>先測試字型檔本身</h3>
+  <p>直接選擇電腦上的字型，瀏覽器會在本機檢查是否能載入。這個測試不會把檔案傳到網站。</p>
+  <input type="file" id="gt-font-local-file" accept=".woff2,.woff,.otf,.ttf" aria-label="本機測試字型檔案">
+  <div id="gt-font-local-status" class="gt-font-local-status" role="status" aria-live="polite">選擇一個字型檔即可開始。</div>
+  <div id="gt-font-local-sample" class="gt-font-local-sample" hidden>
+   <div>GOOD THINGS, / Aa Bb Cc 0123456789</div>
+   <small>服裝與日常的美好事物。 日本語と生活</small>
+  </div>
+ </section>
+ <div id="gt-font-edit-panel" class="gt-font-edit-panel" hidden>
+  <strong id="gt-font-edit-title">編輯字型資料</strong>
+  <label>字型名稱<input id="gt-font-edit-name" maxlength="80" type="text"></label>
+  <label>分類<select id="gt-font-edit-category"><option value="uncategorized">未分類</option><option value="serif">Serif 襯線</option><option value="sans">Sans 無襯線</option><option value="display">Display 展示</option><option value="handwriting">Handwriting 手寫</option><option value="other">其他</option></select></label>
+  <div class="gt-font-controls"><button type="button" class="primary" id="gt-font-edit-save">儲存名稱與分類</button><button type="button" id="gt-font-edit-cancel">取消</button></div>
+ </div>
+ <div class="gt-font-filter-row">
+ <input id="gt-font-search" class="gt-font-search" type="search" placeholder="搜尋字型名稱或檔名" aria-label="搜尋字型">
+ <select id="gt-font-category-filter" aria-label="篩選字型分類"><option value="all">全部分類</option><option value="uncategorized">未分類</option><option value="serif">Serif 襯線</option><option value="sans">Sans 無襯線</option><option value="display">Display 展示</option><option value="handwriting">Handwriting 手寫</option><option value="other">其他</option></select>
+ </div>
+ <div class="gt-font-controls" style="justify-content:space-between;margin-top:11px"><span id="gt-font-count" class="muted">載入中…</span><span class="gt-font-tag">A–Z / 字型樣本</span></div>
+ <div class="gt-font-list" id="gt-font-list"></div>
+</section>
+<section class="panel" aria-label="字型套用與即時預覽">
+ <div class="gt-font-panel-eyebrow">02 / EDITORIAL TYPOGRAPHY</div>
+ <h2>字型套用</h2>
+ <p>三組區域各自選擇，留空就沿用網站原本的字體。即時試排不代表發布。</p>
+ <div class="gt-font-role"><label for="gt-font-headlines">EDITORIAL HEADLINES / 標題</label><select id="gt-font-headlines" data-font-role="headlines"><option value="">保留原始字體</option></select></div>
+ <div class="gt-font-role"><label for="gt-font-body">BODY TEXT / 內文</label><select id="gt-font-body" data-font-role="body"><option value="">保留原始字體</option></select></div>
+ <div class="gt-font-role"><label for="gt-font-navigation">NAVIGATION / 導覽與標籤</label><select id="gt-font-navigation" data-font-role="navigation"><option value="">保留原始字體</option></select></div>
+ <div style="margin-top:19px"><div class="gt-font-panel-eyebrow">03 / LIVE TYPE PREVIEW</div>
+  <input class="gt-font-preview-input" id="gt-font-test-line" value="服裝與日常的美好事物。 COMOLI / AURALEE / everyday life" maxlength="200" aria-label="試排文字" style="margin-top:11px">
+  <div class="gt-font-sample-window" id="gt-font-preview-window">
+   <div class="gt-font-kicker">FEATURES / BEHIND THE BRAND</div>
+   <div class="gt-font-demo-headline" id="gt-font-headline-sample">Beyond the Familiar.</div>
+   <div class="gt-font-demo-body" id="gt-font-body-sample">服裝與日常的美好事物。 COMOLI / AURALEE / everyday life</div>
+   <div class="divider"></div>
+   <div class="gt-font-demo-nav" id="gt-font-nav-sample">STORIES &nbsp; / &nbsp; FEATURES &nbsp; / &nbsp; THE INDEX</div>
+  </div>
+ </div>
+ <div class="gt-font-controls" style="margin-top:18px">
+  <button type="button" class="primary" id="gt-font-save" disabled>儲存字型設定草稿</button>
+  <a class="button" id="gt-font-preview-site" target="_blank" rel="noopener" href="./#/">在完整網站預覽</a>
+ </div>
+ <div class="gt-font-status" id="gt-font-status" role="status" aria-live="polite">正在確認字型庫連線…</div>
+ <p class="gt-font-roles-footnote">字型庫上傳與字型設定草稿彼此獨立。正式發布尚未開放；已發布文章與品牌不會被變更。字型如果缺少中文字形，瀏覽器將使用備援字型。</p>
+</section>
+</div>
+</main>
+<script src="./gt-font-preview.js?v=20261024-font6" defer></script>
+<script src="./gt-font-library.js?v=20261024-font5" defer></script>
+</body>
+</html>

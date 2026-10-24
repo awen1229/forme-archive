@@ -1,0 +1,42 @@
+/* Responsive HOME cover tooling. These previews match the public photo slots. */
+.gt-home-cover-sample[hidden],.gt-cover-control[hidden]{display:none!important}
+.gt-home-matched-crop{display:grid;gap:15px;min-width:0}
+.gt-home-crop-intro{display:grid;gap:7px;padding:13px 0 8px;border-top:1px solid #c6ccbf}
+.gt-home-crop-intro b{font-size:12px;letter-spacing:.07em}
+.gt-home-crop-intro span{font-size:11px;line-height:1.7;color:#617060}
+.gt-crop-device{min-width:0;padding:12px 11px 15px;border:1px solid #c7cbbf;background:#f4f3ed}
+.gt-crop-device-label{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:7px;padding:0 0 12px}
+.gt-crop-device-label b{font-size:12px;letter-spacing:.025em}
+.gt-crop-device-label span{font-size:10px;color:#747f72}
+.gt-home-crop-stage{width:100%;position:relative;overflow:hidden;border:1px solid #b4beb0;max-width:100%;background:#d6dad3;cursor:grab;touch-action:none;user-select:none}
+.gt-home-crop-stage:active{cursor:grabbing}
+.gt-home-crop-stage>img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%;pointer-events:none;user-select:none;transform-origin:50% 50%;max-width:none}
+.gt-home-crop-placeholder{display:grid;place-items:center;height:100%;min-height:100px;padding:20px;font-size:12px;line-height:1.65;text-align:center;color:#5e685e}
+.gt-home-crop-guide{position:absolute;inset:0;pointer-events:none;border:1px solid #ffffff70;box-shadow:inset 0 0 0 1px #122b1915}
+.gt-home-crop-guide::before,.gt-home-crop-guide::after{content:"";display:block;position:absolute;opacity:.18;background:#fff;pointer-events:none}
+.gt-home-crop-guide::before{top:0;bottom:0;left:33.33%;width:1px;box-shadow:calc(100cqw / 3) 0 #fff}
+.gt-home-crop-guide::after{left:0;right:0;top:33.33%;height:1px}
+.gt-home-crop-corner{position:absolute;bottom:2px;right:2px;height:29px;width:29px;background:#f8f8f0dd;border:1px solid #596859;box-shadow:0 1px 4px #122b192f;touch-action:none;cursor:nwse-resize;display:grid;place-items:center;color:#233729}
+.gt-home-crop-corner::before{content:"↘";font-size:16px}
+.gt-home-crop-corner[hidden]{display:none!important}
+.gt-home-crop-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:13px}
+.gt-home-crop-actions label{min-width:0;display:grid;gap:5px;font-size:11px;line-height:1.5}
+.gt-home-crop-actions input,.gt-home-crop-actions select{width:100%;min-width:0;max-width:100%;accent-color:#466c4d}
+.gt-home-crop-actions select{border:1px solid #b5beb2;background:#fff;padding:8px 5px;color:#303c31}
+.gt-home-crop-actions output{display:inline;font-variant-numeric:tabular-nums;color:#436549}
+@media(max-width:700px){.gt-home-matched-crop{gap:12px}.gt-crop-device{padding:10px}.gt-home-crop-actions{gap:12px 9px}}
+@media(prefers-reduced-motion:reduce){.gt-home-crop-stage img{transition:none!important}}
+
+/* Published homepage slide: same independent focal point shown in crop editor. */
+@media(max-width:700px){
+ .gt-mag-photo img.gt-mag-uploaded-cover{
+  object-fit:var(--gt-mobile-fit,cover);
+  object-position:var(--gt-mobile-x,50%) var(--gt-mobile-y,50%);
+  transform:scale(var(--gt-mobile-zoom,1));
+  transform-origin:var(--gt-mobile-x,50%) var(--gt-mobile-y,50%);
+ }
+ .gt-mag-photo img.gt-mag-uploaded-cover[style*="--gt-mobile-fit:contain"]{
+  object-fit:contain;
+  transform:none;
+ }
+}
