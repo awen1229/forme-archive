@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f1eb">
+<title>GOOD THINGS, / Interactive Opening Study 02</title>
+<meta name="description" content="GOOD THINGS, interactive printmaking and page-turn experiment. Test branch only.">
+<style>
+:root{--paper:#f3f1eb;--ink:#2a7737;--body:#2d352e;--line:#bfc5b8;--faded:#697568;--ease:cubic-bezier(.76,.05,.2,1)}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:Arial,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--body);background:var(--paper)}
+button,input{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.site-under{position:fixed;inset:0;background:var(--paper);overflow:hidden}
+.site-under iframe{border:0;width:100%;height:100%;display:block;background:var(--paper)}
+.under-loading{position:absolute;inset:0;display:grid;place-items:center;background:#e9e9e2;color:#687568;letter-spacing:.17em;font-size:10px;text-align:center}
+.under-loading[hidden]{display:none}
+.cover{
+ position:fixed;inset:0;z-index:10;background:var(--paper);
+ height:100vh;height:100dvh;min-height:320px;
+ display:flex;flex-direction:column;overflow:hidden;
+ padding:clamp(23px,4.2vh,46px) clamp(22px,5vw,78px) max(112px,calc(env(safe-area-inset-bottom) + 86px));
+ transform-origin:50% 0%;backface-visibility:hidden;will-change:transform;
+ box-shadow:0 18px 40px rgba(41,55,35,.1);
+}
+.cover::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
+ background-image:repeating-linear-gradient(90deg,rgba(70,75,58,.035) 0 1px,transparent 1px 4px),
+ radial-gradient(circle at 20% 15%,rgba(255,255,255,.7),transparent 48%),
+ radial-gradient(circle at 90% 88%,rgba(112,114,95,.07),transparent 55%)}
+.cover::after{content:"";position:absolute;bottom:0;left:0;right:0;height:24px;pointer-events:none;
+ background:linear-gradient(180deg,rgba(92,100,79,0),rgba(92,100,79,.09) 65%,rgba(251,250,245,.92));border-bottom:1px solid rgba(79,87,69,.3)}
+.paper-top,.paper-bottom{flex:0 0 auto;position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.paper-top{padding-bottom:15px;border-bottom:1px solid var(--line)}
+.paper-bottom{padding-top:18px;border-top:1px solid var(--line)}
+.micro{font-size:clamp(9px,.8vw,11px);font-weight:500;letter-spacing:.16em;line-height:1.6;color:#677466}
+.micro-dark{color:#44574a}
+.paper-top .edition{display:flex;align-items:center;gap:13px}
+.skip-cover{border:0;background:transparent;color:#485e4d;padding:7px 0 7px 8px;font-size:10px;letter-spacing:.12em;font-weight:700;white-space:nowrap}
+.skip-cover:hover{text-decoration:underline;text-underline-offset:5px}
+.paper-core{position:relative;z-index:1;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 0 28px}
+.index-tag{font-size:10px;color:#7a8276;letter-spacing:.23em;margin-bottom:clamp(24px,4vh,50px)}
+.plate{position:relative;width:min(75vw,690px);aspect-ratio:1240/562;display:grid;place-items:center}
+.plate img{width:100%;height:100%;display:block;object-fit:contain;visibility:hidden;opacity:.09;pointer-events:none}
+#ink-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none;z-index:2}
+.ink-cursor{position:absolute;z-index:3;pointer-events:none;width:42px;height:42px;border:1px solid #376e42;border-radius:50%;left:0;top:0;transform:translate(-50%,-50%);opacity:0;transition:opacity .15s}
+.ink-cursor::after{content:"";position:absolute;inset:17px;border-radius:50%;background:#376e42;opacity:.6}
+.ink-hint{position:absolute;top:calc(100% + 25px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;color:#607663;letter-spacing:.12em;transition:opacity .3s;text-align:center}
+.ink-hint strong{color:#2a7138;font-weight:500}
+.print-indicator{position:absolute;left:0;bottom:-14px;width:100%;display:flex;justify-content:space-between;gap:12px;color:#70826f;font-size:9px;letter-spacing:.14em;opacity:.65}
+.signature{margin:clamp(29px,6vh,66px) 0 0;text-align:center;font:400 clamp(11px,1.1vw,14px)/1.8 Georgia,"Noto Serif TC",serif;color:#4d5b4c;letter-spacing:.105em}
+.issue-note{margin:8px 0 0;font-size:9px;letter-spacing:.21em;color:#8b9286;text-align:center}
+.paper-bottom .issue{white-space:nowrap}
+.marker{width:9px;height:9px;border:1px solid var(--ink);display:inline-block;vertical-align:-1px;margin-right:9px}
+.fold-back{position:fixed;right:0;bottom:0;z-index:11;pointer-events:none;
+width:var(--fold-width,0px);height:var(--fold-height,0px);
+clip-path:polygon(100% 0,0 100%,100% 100%);
+background:linear-gradient(137deg,#dddcd3 0%,#e8e6de 27%,#fbfaf4 70%,#d6d9cf 100%);
+filter:drop-shadow(-6px -7px 8px rgba(54,66,50,.11));opacity:0}
+.page-grip{position:fixed;right:clamp(20px,4vw,62px);bottom:max(145px,calc(env(safe-area-inset-bottom) + 145px));z-index:24;
+width:clamp(106px,21vw,145px);height:84px;display:flex;flex-direction:column;gap:7px;
+align-items:center;justify-content:center;border:1px solid #8caa90;
+background:#e8eee6e8;color:#315b3b;cursor:grab;touch-action:none;user-select:none;
+letter-spacing:.12em;font-size:10px;box-shadow:2px 4px 14px rgba(39,73,48,.09);
+transform:translate3d(var(--grip-dx,0px),var(--grip-dy,0px),0);will-change:transform;transition:background .2s}
+.page-grip .grip-arrow{font-size:23px;line-height:1;transform:rotate(-35deg)}
+.page-grip strong{font-size:10px;letter-spacing:.13em}
+.page-grip.dragging{cursor:grabbing;background:#d7e3d3}
+.page-grip[hidden]{display:none}
+.cover{clip-path:polygon(0 0,100% 0,100% calc(100% - var(--cut-y,0px)),calc(100% - var(--cut-x,0px)) 100%,0 100%);
+box-shadow:-2px 7px 26px rgba(41,55,35,.08)}
+.paper-corner-help{position:fixed;z-index:23;right:clamp(20px,4vw,62px);bottom:max(237px,calc(env(safe-area-inset-bottom) + 237px));font-size:9px;letter-spacing:.13em;
+color:#7b8979;text-align:right;pointer-events:none}
+.lab-top-note{position:fixed;top:max(8px,env(safe-area-inset-top));right:12px;z-index:5;background:rgba(243,241,235,.95);border:1px solid rgba(80,94,75,.16);font-size:9px;letter-spacing:.1em;color:#556656;padding:7px 10px;pointer-events:none}
+.controls{position:fixed;z-index:30;bottom:max(13px,calc(env(safe-area-inset-bottom) + 11px));left:50%;transform:translateX(-50%);
+ display:flex;align-items:center;gap:16px;width:min(780px,calc(100% - 24px));padding:14px 16px;
+ border:1px solid rgba(89,102,85,.25);border-radius:3px;background:rgba(249,248,243,.975);
+ box-shadow:0 8px 30px rgba(35,51,31,.13);backdrop-filter:blur(16px);
+}
+.controls .group{display:flex;gap:7px;align-items:center;flex:0 0 auto}
+.control-btn{background:transparent;border:1px solid #aeb9a9;padding:10px 12px;font-size:10px;font-weight:600;letter-spacing:.11em;color:#405647;white-space:nowrap}
+.control-btn:hover{background:#e5e9e1}
+.control-btn.primary{background:#315e3c;color:#f7f5ed;border-color:#315e3c}
+.control-btn.primary:hover{background:#22482b}
+.progress-group{min-width:0;flex:1 1 auto}
+.phase{display:flex;justify-content:space-between;gap:8px;color:#637562;font-size:9px;letter-spacing:.14em;margin-bottom:8px}
+.phase output{font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{display:block;appearance:none;-webkit-appearance:none;width:100%;height:16px;background:transparent;cursor:ew-resize;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(to right,#3b7746 0%,#3b7746 var(--seek,0%),#c7cdc2 var(--seek,0%),#c7cdc2 100%)}
+input[type=range]::-moz-range-track{height:2px;background:#c7cdc2}
+input[type=range]::-moz-range-progress{height:2px;background:#3b7746}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border:1px solid #315e3c;background:var(--paper);border-radius:50%;margin-top:-5px}
+input[type=range]::-moz-range-thumb{width:11px;height:11px;border:1px solid #315e3c;background:var(--paper);border-radius:50%}
+.lab-footer-meta{position:fixed;left:18px;bottom:88px;z-index:5;color:#647362;font-size:9px;letter-spacing:.13em;pointer-events:none;text-shadow:0 1px 0 #f3f1eb}
+.intro-error{max-width:520px;text-align:center;font-size:13px;line-height:1.85;color:#7b514c;display:none;padding:15px}
+.intro-error a{color:#315e3c}
+@media(max-width:700px){
+ .cover{padding:23px 22px max(117px,calc(env(safe-area-inset-bottom) + 108px))}
+ .micro{font-size:9px;letter-spacing:.075em}
+ .paper-top{align-items:start}
+ .paper-top .edition{gap:7px}
+ .skip-cover{font-size:9px}
+ .plate{width:min(85vw,520px)}
+ .index-tag{margin-bottom:24px;font-size:9px}
+ .signature{font-size:12px;margin-top:40px;line-height:1.9}
+ .paper-bottom{align-items:end}
+ .paper-bottom .micro:first-child{max-width:65%}
+ .controls{flex-direction:column;align-items:stretch;gap:11px;padding:11px 13px}
+ .page-grip{bottom:max(190px,calc(env(safe-area-inset-bottom) + 190px))}
+ .paper-corner-help{bottom:max(289px,calc(env(safe-area-inset-bottom) + 289px))}
+ .ink-hint{white-space:normal;width:90vw;top:calc(100% + 17px)}
+ .signature{margin-top:clamp(46px,8vh,70px)}
+ .controls .group{justify-content:space-between}
+ .controls .group button{flex:1}
+ .lab-footer-meta{bottom:121px;left:17px;font-size:8px}
+}
+@media(max-height:530px){
+ .cover{padding-top:13px;padding-bottom:90px}
+ .paper-core{padding:8px 0}
+ .index-tag{margin-bottom:9px}
+ .signature{margin-top:12px}
+ .paper-bottom{padding-top:9px}
+ .controls{bottom:7px}
+}
+</style>
+<script>
+// Keep the legacy V16 intro suppressed only in this same-origin preview tab.
+// This isolated lab never changes the production site or its published content.
+try{sessionStorage.setItem("gt-scroll-entry-v16","done")}catch(e){}
+</script>
+</head>
+<body>
+<div class="site-under">
+ <div class="under-loading" id="under-loading">GOOD THINGS, / LOADING JOURNAL</div>
+ <iframe id="real-homepage" title="GOOD THINGS, 真實測試站首頁" loading="eager"></iframe>
+</div>
+<div class="lab-top-note">OPENING STUDY 01 / PREVIEW ONLY</div>
+<section class="cover" id="cover" aria-label="GOOD THINGS, 開場動畫">
+ <header class="paper-top">
+  <div class="micro micro-dark">GOOD THINGS, / AN INDEPENDENT JOURNAL</div>
+  <div class="edition">
+   <span class="micro">NO. 001 / 2026</span>
+   <button class="skip-cover" id="skip-cover" type="button">SKIP ↗</button>
+  </div>
+ </header>
+ <main class="paper-core">
+  <div class="index-tag" id="editorial-phase">01 / THE PRINTING PRESS</div>
+  <div class="plate">
+   <img id="original-logo" alt="GOOD THINGS, 原始手繪 LOGO" width="1240" height="562">
+   <canvas id="ink-canvas" width="1240" height="562" aria-label="請在此區域滑動手指，讓 LOGO 的原始綠色筆畫逐漸顯現"></canvas>
+   <div class="ink-cursor" id="ink-cursor"></div>
+   <div class="ink-hint" id="ink-hint"><strong>TOUCH / TRACE</strong>　滑過 LOGO，讓油墨慢慢浮現</div>
+   <div class="intro-error" id="intro-error">目前無法載入原始 LOGO。請重新整理預覽頁面。</div>
+   <div class="print-indicator"><span>INK ON PAPER / 01</span><span>EST. 2026</span></div>
+  </div>
+  <p class="signature">THINGS WORTH EXPLORING.</p>
+  <p class="issue-note">CLOTHING · PEOPLE · PLACES · EVERYDAY OBJECTS</p>
+ </main>
+ <footer class="paper-bottom">
+  <span class="micro micro-dark"><span class="marker"></span>THE INDEX / FEATURES / NOTES</span>
+  <span class="micro issue">A PAGE TO BEGIN.</span>
+ </footer>
+</section>
+<div class="fold-back" id="fold-back" aria-hidden="true"></div>
+<div class="paper-corner-help" id="corner-help">02 / PULL THE CORNER TO TURN →</div>
+<button class="page-grip" id="page-grip" type="button" aria-label="按住並往左上拖曳，翻開雜誌封面"><span class="grip-arrow">↖</span><strong>DRAG TO OPEN</strong></button>
+<div class="lab-footer-meta">INTERACTIVE STUDY 02 / TEST BRANCH ONLY</div>
+<nav class="controls" aria-label="動畫操作">
+  <div class="group">
+    <button class="control-btn primary" id="replay" type="button">↻ RESTART</button>
+    <button class="control-btn" id="print-all" type="button">PRINT ALL / 顯影</button>
+    <button class="control-btn" id="demo" type="button">▶ DEMO</button>
+    <button class="control-btn" id="turn-button" type="button">TURN ↗</button>
+  </div>
+  <div class="progress-group">
+    <div class="phase"><span id="phase">01 / TRACE THE INK</span><output id="percent">0%</output></div>
+    <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="控制翻頁進度" style="--seek:0%">
+  </div>
+</nav>
+<script>
+(()=>{
+"use strict";
+const get=id=>document.getElementById(id);
+const cover=get("cover"),fold=get("fold-back"),grip=get("page-grip");
+const ghost=get("original-logo"),canvas=get("ink-canvas"),cursor=get("ink-cursor");
+const under=get("real-homepage"),loading=get("under-loading");
+const phase=get("phase"),editorial=get("editorial-phase"),hint=get("ink-hint");
+const progress=get("scrub"),percent=get("percent"),cornerHelp=get("corner-help");
+const replay=get("replay"),printAll=get("print-all"),demo=get("demo");
+const turnButton=get("turn-button"),skip=get("skip-cover");
+const inkCtx=canvas.getContext("2d",{alpha:true});
+const mask=document.createElement("canvas");mask.width=1240;mask.height=562;
+const mctx=mask.getContext("2d",{alpha:true});
+const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
+const ease=n=>{n=clamp(n);return 1-Math.pow(1-n,3)};
+let image=null,loaded=false,turn=0,dragging=false,activePointer=null;
+let gestureStart=null,animation=0,demoToken=0,brushCount=0,lastBrush=null,inkFinished=false;
+const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function drawInk(){
+ if(!loaded)return;
+ inkCtx.clearRect(0,0,1240,562);
+ inkCtx.globalCompositeOperation="source-over";
+ inkCtx.drawImage(image,0,0,1240,562);
+ inkCtx.globalCompositeOperation="destination-in";
+ inkCtx.drawImage(mask,0,0);
+ inkCtx.globalCompositeOperation="source-over";
+}
+function dab(x,y,r=143){
+ const inner=Math.max(2,r*.57),grad=mctx.createRadialGradient(x,y,inner,x,y,r);
+ grad.addColorStop(0,"rgba(0,0,0,1)");
+ grad.addColorStop(1,"rgba(0,0,0,0)");
+ mctx.fillStyle=grad;
+ mctx.beginPath();mctx.arc(x,y,r,0,Math.PI*2);mctx.fill();
+ brushCount++;
+ if(brushCount>5)hint.style.opacity=".2";
+ drawInk();
+}
+function stampLine(a,b){
+ const steps=Math.max(1,Math.ceil(Math.hypot(a.x-b.x,a.y-b.y)/23));
+ for(let i=1;i<=steps;i++){
+  const u=i/steps;
+  dab(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u,156);
+ }
+}
+function pointFromEvent(e){
+ const r=canvas.getBoundingClientRect();
+ return {x:clamp((e.clientX-r.left)/r.width)*1240,
+         y:clamp((e.clientY-r.top)/r.height)*562,
+         px:e.clientX-r.left,py:e.clientY-r.top};
+}
+function updateCursor(e){
+ const r=canvas.getBoundingClientRect(),p=pointFromEvent(e);
+ cursor.style.left=p.px+"px";cursor.style.top=p.py+"px";
+ cursor.style.opacity="1";
+}
+canvas.addEventListener("pointerdown",e=>{
+ if(!loaded||turn>.02)return;
+ e.preventDefault();
+ canvas.setPointerCapture(e.pointerId);
+ activePointer=e.pointerId;lastBrush=pointFromEvent(e);
+ dab(lastBrush.x,lastBrush.y);
+ updateCursor(e);
+});
+canvas.addEventListener("pointermove",e=>{
+ updateCursor(e);
+ if(activePointer!==e.pointerId||!loaded)return;
+ e.preventDefault();const p=pointFromEvent(e);
+ stampLine(lastBrush,p);lastBrush=p;
+});
+function endInk(e){
+ if(activePointer!==e.pointerId)return;
+ activePointer=null;lastBrush=null;cursor.style.opacity="0";
+}
+canvas.addEventListener("pointerup",endInk);
+canvas.addEventListener("pointercancel",endInk);
+canvas.addEventListener("pointerleave",()=>{if(activePointer===null)cursor.style.opacity="0"});
+function fillInk(){
+ if(!loaded)return;
+ mctx.globalCompositeOperation="source-over";
+ mctx.fillStyle="black";mctx.fillRect(0,0,1240,562);
+ inkFinished=true;
+ hint.textContent="印刷完成 / 現在拉動右下角的紙頁";
+ hint.style.opacity="1";
+ drawInk();
+}
+function setTurn(v){
+ turn=clamp(v);
+ const W=window.innerWidth,H=window.innerHeight;
+ const fx=Math.min(W*.96,turn*W*.98),fy=Math.min(H*.81,turn*H*.84);
+ cover.style.setProperty("--cut-x",fx.toFixed(2)+"px");
+ cover.style.setProperty("--cut-y",fy.toFixed(2)+"px");
+ fold.style.setProperty("--fold-width",(fx*.38).toFixed(2)+"px");
+ fold.style.setProperty("--fold-height",(fy*.38).toFixed(2)+"px");
+ fold.style.opacity=turn>.012&&turn<.99?"1":"0";
+ cover.style.transform="translate3d("+(-turn*5).toFixed(2)+"%,"+(-turn*4).toFixed(2)+"%,0) rotate("+(-.7*turn).toFixed(2)+"deg)";
+ const complete=turn>=.998;
+ cover.style.visibility=complete?"hidden":"visible";
+ cover.style.pointerEvents=complete?"none":"auto";
+ grip.hidden=complete;cornerHelp.hidden=complete;
+ grip.style.setProperty("--grip-dx",(-fx*.30).toFixed(1)+"px");
+ grip.style.setProperty("--grip-dy",(-fy*.32).toFixed(1)+"px");
+ const pct=Math.round(turn*100);
+ progress.value=String(Math.round(turn*1000));
+ progress.style.setProperty("--seek",pct+"%");
+ percent.textContent=pct+"%";
+ phase.textContent=complete?"03 / EXPLORE":turn>.02?"02 / TURN THE PAGE":"01 / TRACE THE INK";
+ editorial.textContent=complete?"03 / GOOD THINGS,":turn>.02?"02 / TURN THE PAGE":"01 / THE PRINTING PRESS";
+ if(turn>.01)cursor.style.opacity="0";
+}
+function cancelAnimation(){
+ cancelAnimationFrame(animation);animation=0;demoToken++;
+}
+function animateTurn(target,duration=670,after=null){
+ cancelAnimation();
+ const from=turn,start=performance.now(),token=demoToken;
+ function step(now){
+  if(token!==demoToken)return;
+  const t=clamp((now-start)/duration);
+  setTurn(from+(target-from)*ease(t));
+  if(t<1)animation=requestAnimationFrame(step);
+  else if(after)after();
+ }
+ animation=requestAnimationFrame(step);
+}
+function beginDrag(e){
+ if(!loaded)return;
+ e.preventDefault();cancelAnimation();
+ dragging=true;grip.classList.add("dragging");
+ gestureStart={x:e.clientX,y:e.clientY,turn};
+ grip.setPointerCapture(e.pointerId);grip.dataset.pointerId=String(e.pointerId);
+}
+function moveDrag(e){
+ if(!dragging||String(e.pointerId)!==grip.dataset.pointerId)return;
+ e.preventDefault();
+ const dx=Math.max(0,gestureStart.x-e.clientX);
+ const dy=Math.max(0,gestureStart.y-e.clientY);
+ const value=gestureStart.turn+dx/Math.max(160,innerWidth*.72)*.71+dy/Math.max(170,innerHeight*.65)*.29;
+ setTurn(value);
+}
+function endDrag(e){
+ if(!dragging||String(e.pointerId)!==grip.dataset.pointerId)return;
+ dragging=false;grip.classList.remove("dragging");
+ const go=turn>.38;
+ animateTurn(go?1:0,go?570:480);
+}
+grip.addEventListener("pointerdown",beginDrag);
+grip.addEventListener("pointermove",moveDrag);
+grip.addEventListener("pointerup",endDrag);
+grip.addEventListener("pointercancel",endDrag);
+progress.addEventListener("input",()=>{cancelAnimation();setTurn(Number(progress.value)/1000)});
+function reset(){
+ cancelAnimation();activePointer=null;dragging=false;grip.classList.remove("dragging");
+ if(loaded){mctx.clearRect(0,0,1240,562);drawInk();}
+ brushCount=0;inkFinished=false;lastBrush=null;hint.style.opacity="1";
+ hint.innerHTML="<strong>TOUCH / TRACE</strong>　滑過 LOGO，讓油墨慢慢浮現";
+ setTurn(0);
+}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+async function autoDemo(){
+ if(!loaded)return;
+ reset();
+ const token=demoToken;
+ demo.textContent="DEMO PLAYING...";
+ demo.disabled=true;
+ const run=async()=>{
+  const begin=performance.now();
+  return new Promise(resolve=>{
+   function frame(now){
+    if(token!==demoToken){resolve(false);return}
+    const t=clamp((now-begin)/1580);
+    const x=90+t*1080;
+    dab(x,170+30*Math.sin(t*6.28),180);
+    dab(x,410+18*Math.sin(t*7.3),180);
+    if(t<1)requestAnimationFrame(frame);
+    else{fillInk();resolve(true)}
+   }
+   requestAnimationFrame(frame);
+  });
+ };
+ const ok=await run();
+ if(ok&&demoToken===token){
+  await delay(350);
+  if(demoToken===token)animateTurn(1,1100);
+ }
+ demo.disabled=false;demo.textContent="▶ DEMO";
+}
+replay.addEventListener("click",reset);
+printAll.addEventListener("click",fillInk);
+demo.addEventListener("click",autoDemo);
+turnButton.addEventListener("click",()=>{if(!inkFinished)fillInk();animateTurn(1)});
+skip.addEventListener("click",()=>{cancelAnimation();setTurn(1)});
+window.addEventListener("resize",()=>setTurn(turn));
+window.addEventListener("keydown",e=>{
+ if(e.key==="Escape"){cancelAnimation();setTurn(1);}
+ if(e.key==="ArrowRight"&&document.activeElement!==progress){fillInk();animateTurn(1)}
+ if(e.key==="r"&&!(e.target instanceof HTMLInputElement)){reset()}
+});
+function waitForIframe(){
+ return new Promise(resolve=>{
+  let settled=false;
+  const done=()=>{if(settled)return;settled=true;loading.hidden=true;resolve()};
+  under.addEventListener("load",done,{once:true});
+  setTimeout(done,4500);
+ });
+}
+async function loadLogo(){
+ // Use pixel-exact original logo embedded in THIS branch's real masthead.
+ const response=await fetch("./index.html?opening-source=interactive2",{cache:"no-store"});
+ if(!response.ok)throw Error("Original logo source unavailable: "+response.status);
+ const doc=new DOMParser().parseFromString(await response.text(),"text/html");
+ const src=doc.querySelector(".site-header .gt-brand-logo")?.getAttribute("src");
+ if(!src||!src.startsWith("data:image/"))throw Error("Original logo asset missing");
+ const img=new Image();img.src=src;
+ if(img.decode)await img.decode();
+ else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+ image=img;ghost.src=src;ghost.style.visibility="visible";loaded=true;
+ drawInk();
+}
+async function init(){
+ const ready=waitForIframe();
+ under.src="./index.html?intro=off&opening-lab-frame=2#/";
+ try{await loadLogo()}
+ catch(err){
+  console.warn(err);
+  get("intro-error").style.display="block";
+  demo.disabled=true;printAll.disabled=true;turnButton.disabled=true;
+  phase.textContent="原始 LOGO 載入失敗";
+  return;
+ }
+ await ready;
+ reset();
+ if(reduce)fillInk();
+}
+setTurn(0);init();
+})();
+</script>
+</body>
+</html>
