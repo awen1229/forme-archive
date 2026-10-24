@@ -165,18 +165,18 @@ function extractOriginal(){
   // cubics gives flowing curves while keeping the logo's broad silhouette.
   const ring=outline.slice();
   const gaussian=[];
-  for(let k=-8;k<=8;k++)gaussian.push(Math.exp(-.5*Math.pow(k/3.25,2)));
+  for(let k=-15;k<=15;k++)gaussian.push(Math.exp(-.5*Math.pow(k/5.5,2)));
   const weight=gaussian.reduce((a,b)=>a+b,0);
   const softened=ring.map((_,i)=>{
    let x=0,y=0;
-   for(let k=-8;k<=8;k++){
-    const p=ring[(i+k+ring.length)%ring.length],w=gaussian[k+8];
+   for(let k=-15;k<=15;k++){
+    const p=ring[(i+k+ring.length)%ring.length],w=gaussian[k+15];
     x+=p[0]*w;y+=p[1]*w;
    }
    return [x/weight,y/weight];
   });
   const sampled=[];
-  const step=Math.max(3,Math.round(softened.length/155));
+  const step=Math.max(4,Math.round(softened.length/115));
   for(let i=0;i<softened.length;i+=step)sampled.push(softened[i]);
   if(sampled.length<14)throw Error('Not enough points for smooth comma outline');
   const crisp=n=>Number(n.toFixed(2));
@@ -241,15 +241,17 @@ function bezier(a,b,c,d,t){
 }
 function rail(t){
  t=clamp(t);
- // Start above the mark, join the right interior and glide toward the tail.
- if(t<.16){
-  const k=smooth(t/.16);
-  return {x:.52+.10*k,y:-.18+.24*k};
+ // Follow the source PNG's actual comma silhouette. Stay inside the wide
+ // upper and middle sections until the letter leaves at the tail.
+ if(t<.17){
+  const k=smooth(t/.17);
+  const first=commaRail[Math.round(commaRail.length*.13)]||{x:.55,width:.28};
+  return {x:.50+(first.x-.50)*k,y:-.17+.30*k,width:first.width};
  }
- const u=range(t,.16,1);
- const row=commaRail[Math.min(commaRail.length-1,Math.max(0,Math.round(u*(commaRail.length-1))))];
- // Never place the small glyph at the outermost edge.
- return row?{x:clamp(row.x,.27,.77),y:row.y}:{x:.58,y:u};
+ const u=range(t,.17,1);
+ const relY=.13+.68*smooth(u);
+ const row=commaRail[Math.min(commaRail.length-1,Math.max(0,Math.round(relY*(commaRail.length-1))))];
+ return row?{x:row.x,y:relY,width:row.width}:{x:.55,y:relY,width:.20};
 }
 function paint(){
  frame=0;if(ended)return;
@@ -275,8 +277,12 @@ function paint(){
  // center and dimensions are stable while transforms move the outline.
  const cx=sculptureRect.left+sculptureRect.width*.5;
  const cy=sculptureRect.top+sculptureRect.height*.47;
- const w=largeComma.offsetWidth||Math.max(1,bounds.width);
- const h=largeComma.offsetHeight||Math.max(1,bounds.height);
+ const boxW=largeComma.offsetWidth||Math.max(1,bounds.width);
+ const boxH=largeComma.offsetHeight||Math.max(1,bounds.height);
+ // Respect object-fit's transparent letterboxing if the source aspect ratio
+ // is narrower than the viewport's image element box.
+ const aspect=commaBox?commaBox.w/commaBox.h:boxW/boxH;
+ const w=Math.min(boxW,boxH*aspect),h=Math.min(boxH,boxW/aspect);
  const point=(u,v)=>({x:cx+(u-.5)*w,y:cy+(v-.5)*h});
  const tail=rail(1),tip=point(tail.x,tail.y);
  parts.forEach((el,i)=>{
@@ -306,7 +312,9 @@ function paint(){
   const reveal=smooth(range(t,0,.11));
   // Glyphs travel at 43% of their logo size to fit the comma track, then
   // return to exactly 100% in the final clean logo composition.
-  const travellingScale=.43;
+  const onRail=rail(smooth(Math.min(1,t/.77)));
+  const availableWidth=Math.max(6,(onRail.width||.18)*w*.65);
+  const travellingScale=clamp(availableWidth/Math.max(el.offsetWidth,1),.14,.43);
   const landing=smooth(range(t,.78,1));
   const glyphScale=travellingScale+(1-travellingScale)*landing;
   el.style.opacity=String(reveal*(1-assembling));
