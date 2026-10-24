@@ -123,17 +123,23 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offs
   location.assign('./');
  };
  skip.addEventListener('click',go);
- if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){
-  document.querySelector('.gt-scroll-entry-hint').textContent='REDUCED MOTION / 點擊進入網站';
-  document.getElementById('gt-study-activate').addEventListener('click',go);
-  return;
- }
+ var reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
  fetch('./index.html',{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('source page '+r.status);return r.text()})
  .then(function(content){
   var match=content.match(/class="gt-brand-logo"\s+src="(data:image\/png;base64,[^"]+)"/);
   if(!match)throw Error('original logo not present');
   document.getElementById('gt-study-source').src=match[1];
-  var script=document.createElement('script');script.src='./gt-comma-container-study07.js?v=1';
+  if(reduced){
+   var still=document.createElement('img');
+   still.className='gt-scroll-entry-full-logo';
+   still.src=match[1];still.alt='GOOD THINGS,';
+   still.style.opacity='1';
+   document.querySelector('.gt-scroll-entry-logo-stage').appendChild(still);
+   document.querySelector('.gt-scroll-entry-hint').textContent='REDUCED MOTION / 點擊進入網站';
+   document.getElementById('gt-study-activate').addEventListener('click',go);
+   return;
+  }
+  var script=document.createElement('script');script.src='./gt-comma-container-study07.js?v=2';
   script.onerror=function(){document.querySelector('.gt-scroll-entry-hint').textContent='無法載入動畫，請按 SKIP 進入網站';};
   document.body.appendChild(script);
  }).catch(function(error){
