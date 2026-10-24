@@ -1576,7 +1576,7 @@ async function gtDecodeImage(src){return await new Promise((resolve,reject)=>{co
 async function gtPrepareLogo(src){
  const img=await gtDecodeImage(src);const w=img.naturalWidth,h=img.naturalHeight;
  if(!w||!h||w*h>42000000)throw Error('LOGO 圖片尺寸過大');
- const scale=Math.min(1,950/w,740/h);
+ const scale=Math.min(1,1500/w,1000/h);
  const sample=document.createElement('canvas');sample.width=Math.max(1,Math.round(w*scale));sample.height=Math.max(1,Math.round(h*scale));
  const ctx=sample.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,sample.width,sample.height);
  const W=sample.width,H=sample.height,data=ctx.getImageData(0,0,W,H),pixels=data.data;
@@ -1606,7 +1606,7 @@ async function gtPrepareLogo(src){
  const rawW=maxX-minX+1,rawH=maxY-minY+1,pad=Math.max(3,Math.round(Math.min(rawW,rawH)*.055));
  const x0=Math.max(0,minX-pad),y0=Math.max(0,minY-pad),x1=Math.min(W,maxX+pad+1),y1=Math.min(H,maxY+pad+1);
  const cw=x1-x0,ch=y1-y0;
- const outScale=Math.min(1,960/cw,350/ch);
+ const outScale=Math.min(1,1600/cw,700/ch);
  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(cw*outScale));canvas.height=Math.max(1,Math.round(ch*outScale));
  const out=canvas.getContext('2d');out.drawImage(sample,x0,y0,cw,ch,0,0,canvas.width,canvas.height);
  if(light){const pixel=out.getImageData(0,0,canvas.width,canvas.height),p=pixel.data;
@@ -1615,58 +1615,74 @@ async function gtPrepareLogo(src){
   out.putImageData(pixel,0,0);
  }
  let output=canvas.toDataURL('image/webp',.9);
- if(output.length>1060000)output=canvas.toDataURL('image/webp',.70);
- if(output.length>1060000)throw Error('LOGO 圖片壓縮後仍過大，請選較小的圖片');
+ if(output.length>2850000)output=canvas.toDataURL('image/webp',.78);
+ if(output.length>2850000)throw Error('LOGO 圖片壓縮後仍過大，請選較小的圖片');
  const cropped=bg&&cw*ch<W*H*.84;
  const note=cropped?(light?'已自動裁除淺色留白並製作透明底；可再調整大小與位置。':'已自動裁除圖片邊界，保留原比例；可再調整大小與位置。'):
  bg?'已檢查圖片，未發現明顯多餘留白；可用滑桿調整。':'圖片背景較複雜，已保留原圖，建議使用去背 PNG 後重新上傳。';
  return {data:output,note,cropped};
 }
 async function gtCompressImage(file,kind){
- if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先轉換成 PNG）');
+ if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))
+  throw Error('目前接受 JPG、PNG 或 WebP 圖片（SVG 請先轉換成 PNG）');
  if(kind==='logo'){
-  // Preserve the original logo trimming and transparency behavior.
   if(file.size>6*1024*1024)throw Error('LOGO 超過 6MB，請改用較小的 PNG 或 WebP');
-  const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('讀取 LOGO 失敗'));reader.readAsDataURL(file)});
+  const data=await new Promise((resolve,reject)=>{
+   const reader=new FileReader();reader.onload=()=>resolve(reader.result);
+   reader.onerror=()=>reject(Error('讀取 LOGO 失敗'));reader.readAsDataURL(file);
+  });
   return gtPrepareLogo(data);
  }
- // Decode directly, then shrink and recompress locally. The raw photo is not sent to our server.
+ // Preserve crisp text and artwork rather than always reducing to 1600 × 1040.
+ // Base64 stays below the homepage / inline-image service caps.
  if(file.size>40*1024*1024)throw Error('原始照片超過 40MB，請先匯出較小的 JPG 或 WebP');
- const url=URL.createObjectURL(file);
+ const url=URL.createObjectURL(file),MAX_DATA_CHARS=2_850_000;
  try{
   const pic=await gtDecodeImage(url);
-  if(!pic.naturalWidth||!pic.naturalHeight)throw Error('無法取得圖片尺寸');
-  const base=Math.min(1,1600/pic.naturalWidth,1040/pic.naturalHeight);
+  if(!pic.naturalWidth||!pic.naturalHeight||pic.naturalWidth*pic.naturalHeight>42_000_000)
+   throw Error('圖片尺寸無效或像素過多，請縮小尺寸後再上傳');
+  // Already reasonably optimized? Avoid a second lossy encode and keep original pixels.
+  if(file.size<=2_050_000 && pic.naturalWidth<=3600 && pic.naturalHeight<=3600){
+   const raw=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(Error('讀取圖片失敗'));reader.readAsDataURL(file);
+   });
+   if(typeof raw==='string'&&raw.length<MAX_DATA_CHARS){
+    return {data:raw,note:'已保留原圖與字體細節 '+pic.naturalWidth+'×'+pic.naturalHeight+'（未二次壓縮）'};
+   }
+  }
+  const base=Math.min(1,2400/pic.naturalWidth,1800/pic.naturalHeight);
   const canvas=document.createElement('canvas');
-  // Safari and embedded iOS browsers sometimes return PNG when WebP encoding is requested.
-  // JPEG is supported broadly and works well for photographic editorial covers.
   const formats=[
-   {mime:'image/webp',label:'WebP',qualities:[.84,.74,.62,.48]},
-   {mime:'image/jpeg',label:'JPEG',qualities:[.86,.76,.64,.5,.38]}
+   {mime:'image/webp',label:'WebP',qualities:[.94,.9,.84,.76,.68,.56]},
+   {mime:'image/jpeg',label:'JPEG',qualities:[.94,.9,.84,.76,.68,.56]}
   ];
-  for(const factor of [1,.86,.72,.58,.46,.35,.26]){
+  for(const factor of [1,.9,.8,.7,.6,.5,.42,.33]){
    const scale=base*factor;
    canvas.width=Math.max(1,Math.round(pic.naturalWidth*scale));
    canvas.height=Math.max(1,Math.round(pic.naturalHeight*scale));
    const ctx=canvas.getContext('2d');
    if(!ctx)throw Error('這個瀏覽器無法壓縮圖片');
-   // JPEG does not support transparency; fill white before drawing a transparent PNG.
-   ctx.fillStyle='#ffffff';
-   ctx.fillRect(0,0,canvas.width,canvas.height);
+   ctx.clearRect(0,0,canvas.width,canvas.height);
+   // WebP can keep transparency; JPEG fallback must use an opaque canvas.
    ctx.drawImage(pic,0,0,canvas.width,canvas.height);
    for(const fmt of formats){
+    if(fmt.mime==='image/jpeg'){
+     ctx.globalCompositeOperation='destination-over';
+     ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+     ctx.globalCompositeOperation='source-over';
+    }
     for(const quality of fmt.qualities){
      let output='';
      try{output=canvas.toDataURL(fmt.mime,quality)}catch{}
-     if(output.startsWith('data:'+fmt.mime+';base64,')&&output.length<1000000){
-      return {data:output,note:'已自動壓縮為 '+fmt.label+' '+canvas.width+'×'+canvas.height};
+     if(output.startsWith('data:'+fmt.mime+';base64,')&&output.length<MAX_DATA_CHARS){
+      return {data:output,note:'高畫質 '+fmt.label+' '+canvas.width+'×'+canvas.height+'（原圖 '+pic.naturalWidth+'×'+pic.naturalHeight+'）'};
      }
-     // Unsupported formats can fall back to PNG; don't accept that uncompressed result.
      if(output.startsWith('data:image/png;')&&fmt.mime==='image/webp')break;
     }
    }
   }
-  throw Error('這張照片無法在目前瀏覽器壓縮至上傳限制，請先匯出較小的 JPG');
+  throw Error('這張照片無法壓縮到安全上傳大小，請在 Photoshop 匯出寬 2000px 左右的 JPG / WebP');
  }finally{URL.revokeObjectURL(url)}
 }
 let gtCloudImagePending=0,gtCloudImageError='',gtCloudImageChoice={cover:0,logo:0};
