@@ -14,7 +14,7 @@ function noCache(data){return Response.json(data,{headers:HEADERS})}
 async function query(token){
  const url=new URL(API+'/data/query/production')
  url.searchParams.set('perspective','raw')
- url.searchParams.set('query','*[_type=="gtWebFont" && !(_id in path("drafts.**"))] | order(_createdAt desc)[0...151]{_id,name,format,url,originalName,_createdAt}')
+ url.searchParams.set('query','*[_type=="gtWebFont" && !(_id in path("drafts.**"))] | order(_createdAt desc)[0...151]{_id,_rev,name,category,format,url,originalName,_createdAt}')
  const response=await fetch(url,{headers:{Authorization:'Bearer '+token},cache:'no-store'})
  if(!response.ok)throw new AuthError(502,'讀取字型庫失敗')
  const records=(await response.json()).result
@@ -61,7 +61,7 @@ export async function onRequestPost({request,env}){
   const asset=(await uploaded.json()).document
   if(!asset?._id?.startsWith('file-')||!/^https:\/\/cdn\.sanity\.io\/files\/8nqupq9u\/production\/[a-zA-Z0-9._-]+$/.test(asset.url||''))
    throw new AuthError(502,'Sanity 字型網址無效')
-  const font={_id:'gt-font-'+uuid,_type:'gtWebFont',name,format:ext,url:asset.url,originalName:originalName.slice(0,140),fileAsset:{_type:'reference',_ref:asset._id}}
+  const font={_id:'gt-font-'+uuid,_type:'gtWebFont',name,category:'uncategorized',format:ext,url:asset.url,originalName:originalName.slice(0,140),fileAsset:{_type:'reference',_ref:asset._id}}
   const result=await fetch(API+'/data/mutate/production',{
    method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
    body:JSON.stringify({mutations:[{create:font}]})
