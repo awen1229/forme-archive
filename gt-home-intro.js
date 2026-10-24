@@ -107,12 +107,12 @@ function paint(){
   const shift=dir*bw*(.48+(i%3)*.085)*(1-t);
   const y=(-bh*(2+(i%4)*.32))*(1-t)+Math.sin(Math.PI*t)*bh*.16;
   const rot=dir*(12+i%4*3)*(1-t);
-  el.style.opacity=String(smooth(range(t,0,.14)));
+  el.style.opacity=String(smooth(range(t,0,.14))*(1-smooth(range(p,.76,.87))));
   el.style.transform='translate3d('+shift+'px,'+y+'px,0) rotate('+rot+'deg)';
  });
  const settle=smooth(range(p,.76,.87));
  if(full)full.style.opacity=String(settle);
- parts.forEach(el=>el.style.opacity=String((1-settle)*Number(el.style.opacity||0)));
+
  caption.style.opacity=String(smooth(range(p,.79,.9)));
  const out=smooth(range(p,.89,1));
  sculpture.style.opacity=String(1-.1*out);
