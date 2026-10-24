@@ -43,3 +43,15 @@
 .gt-font-app .gt-font-tag{padding:4px 6px;border:1px solid #bec8b9;font-size:10px;white-space:nowrap}
 @media(max-width:850px){.gt-font-app .layout{grid-template-columns:minmax(0,1fr)}.gt-font-app .panel{padding:20px}.gt-font-app .gt-font-list{max-height:430px}}
 @media(max-width:500px){.gt-font-app{padding-left:16px;padding-right:16px}.gt-font-app .gt-font-row-sample{font-size:24px}.gt-font-app .gt-font-controls .button,.gt-font-app .gt-font-controls button{flex:1}}
+
+/* Private, device-only diagnostic: distinguishes invalid font files from API loading issues. */
+.gt-font-app .gt-font-local-test{margin:18px 0 24px;padding:16px;background:#e9ede5;border:1px solid #aebfb0}
+.gt-font-app .gt-font-local-test h3{font:600 17px/1.3 Arial,"Noto Sans TC",sans-serif;margin:10px 0 6px}
+.gt-font-app .gt-font-local-test p{font-size:12px;margin:0 0 12px}
+.gt-font-app .gt-font-local-test input[type=file]{width:100%;max-width:100%;font-size:12px}
+.gt-font-app .gt-font-local-status{margin-top:12px;font-size:12px;line-height:1.75;color:#405a45;white-space:pre-wrap}
+.gt-font-app .gt-font-local-sample{margin-top:14px;border:1px solid #c1cfc1;background:#fff;padding:13px 15px;font-size:27px;line-height:1.4;overflow-wrap:anywhere}
+.gt-font-app .gt-font-local-sample small{display:block;font-size:18px;margin-top:9px}
+.gt-font-app .gt-font-local-sample[hidden]{display:none}
+.gt-font-app .gt-font-row-error{font:400 11px/1.65 Arial,"Noto Sans TC",sans-serif;color:#a03930;border-left:2px solid #a03930;padding:5px 8px;background:#fff8f5}
+.gt-font-app .gt-font-row-error[hidden]{display:none}
