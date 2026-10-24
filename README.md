@@ -131,3 +131,13 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 - There is no public font publishing API or button. Draft assignments are stored separately and do not alter formal `gt-design-settings` or any existing brand/article content. GitHub main remains unchanged.
 - Static syntax checks passed for the nine touched page/module/API files; Cloudflare Pages preview deployment for commit `7af998e1b334790e568a1d0fa3185ce099f830ae` reported success. Real authenticated font upload, Sanity file-storage/CORS rendering, iOS font rendering and live draft round trip have NOT been exercised end-to-end.
 - Future: when the owner verifies WOFF2 upload and browser font rendering, implement explicit production-only font release procedure and optional catalog rename/delete, without inadvertently publishing unapproved assets or overriding brand LOGOs.
+
+### GOOD THINGS, v1.13 font catalog organization
+
+- Added authenticated edit endpoint /api/editor/font-metadata for safe, revision-checked modification of a font catalog's display name and category; no file bytes or reference IDs change.
+- Catalog GET now returns font _rev and category. Newly uploaded fonts default to uncategorized. Existing catalog entries without a category are treated as uncategorized.
+- Font Library UI now offers per-font 名稱／分類, editable display name and category with save/cancel, filtering by category in addition to search, and labeled category in results.
+- Categories: uncategorized, serif, sans, display, handwriting, other. Editing a category never changes content already published on the main site.
+- Existing Delete safeguards, single-font retry, local-only font test and custom font preview remain. Full-site preview uses the secured host and GET of protected font catalog; no production font release action was created.
+- Source deployment passed Cloudflare Pages check for commit 4c4c7da39743dacfba31217fd077cb2bbce61d59. JS syntax and frontend/backend wiring checked statically. Real authenticated rename, category filter, save/read, full-site visual parity, and mobile behavior still need hands-on owner verification.
+- Preview: https://feature-secure-editor-cloud.forme-archive.pages.dev/font-library.html. Do not claim production GitHub Pages main was updated.
