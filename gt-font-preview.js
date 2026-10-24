@@ -95,6 +95,7 @@ const ROLE_SELECTORS={
   '.brand-profile .brand-profile-breadcrumb .back',
   '.brand-grid .brand-card .brand-no',
   '.article-row small','.article-row .meta',
+  '.article-row .article-meta','.article-row .meta-date',
   '.gt-discover-links a small','.gt-discover-links .kicker',
   '.gt-forme-subbrand','.gt-forme-subbrand span',
   '.gt-font-demo-nav'
