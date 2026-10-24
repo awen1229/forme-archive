@@ -15,6 +15,7 @@ const source=document.querySelector('.site-header .gt-brand-logo');
 if(!stage||!largeComma||!source){root.classList.remove('gt-scroll-entry-ready');overlay.remove();return}
 let parts=[],full=null,commaBox=null,commaRail=[],commaOuterRail=[],p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
 let grainMask=null,grainField=null,grainPieces=[],grainPacking=null;
+let autoplayFrame=0,autoplayStart=0,autoplayFrom=0,touchDragged=false;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
 const range=(v,a,b)=>clamp((v-a)/(b-a));
@@ -270,8 +271,12 @@ function extractOriginal(){
 // A fixed, seeded packing made from the actual original glyph bitmaps.
 // The comma's actual traced ink is the containment mask. No traced guide
 // line, fake character, or substitute logo is introduced.
-const releaseTimes=[.170,.222,.268,.286,.350,.405,.431,.490,.537,.583];
-const travelTimes=[.345,.330,.355,.327,.345,.333,.338,.347,.335,.325];
+// V18: ten original letter cutouts, one real comma contour. Inverted
+// collection, upright release, exit LEFT, return from RIGHT, exact-logo finish.
+const releaseTimes=Array.from({length:10},(_,i)=>.274+i*.031);
+const reentryTimes=Array.from({length:10},(_,i)=>.674+i*.018);
+const arrivalTimes=Array.from({length:10},(_,i)=>.884+i*.007);
+const exitDuration=.188;
 const clampPoint=(x,y,r,w,h)=>{
  if(!grainMask)return false;
  const {ink,ww,hh}=grainMask;
@@ -289,37 +294,43 @@ const clampPoint=(x,y,r,w,h)=>{
 function generatePacking(w,h){
  const key=Math.round(w)+'x'+Math.round(h);
  if(grainPacking&&grainPacking.key===key)return grainPacking;
- // First fill the wide bowl from the bottom upward, then stack the next
- // original characters over its shoulders, retaining an actual gap.
- let radius=Math.min(w*.064,h*.052,22);
- let positions=[];
- for(let attempt=0;attempt<11;attempt++){
-  const candidates=[],step=Math.max(5,radius*.56);
-  for(let y=h*.72;y>=h*.10;y-=step){
-   for(let x=radius*1.2;x<w-radius*1.2;x+=step){
-    const n=Math.sin(x*.083+y*.171)*.37;
-    const px=x+n*step,py=y+Math.sin(x*.123-y*.079)*step*.17;
-    if(!clampPoint(px,py,radius*1.12,w,h))continue;
-    const score=-py+h*.13*Math.sin(x*.025+y*.04);
-    candidates.push({x:px,y:py,score});
+ let radius=Math.min(w*.064,h*.052,22),positions=null,initialPositions=null;
+ // The source comma is upright: its broad upper bowl becomes the
+ // lower "container" when rotated by 180 degrees at the opening.
+ for(let attempt=0;attempt<15;attempt++){
+  const candidates=[],step=Math.max(4,radius*.52);
+  for(let y=h*.09;y<=h*.82;y+=step){
+   for(let x=radius*1.15;x<w-radius*1.15;x+=step){
+    const px=x+Math.sin(x*.083+y*.171)*step*.22;
+    const py=y+Math.cos(x*.123-y*.079)*step*.13;
+    if(!clampPoint(px,py,radius*1.08,w,h))continue;
+    candidates.push({x:px,y:py});
    }
   }
-  candidates.sort((a,b)=>a.score-b.score);
-  const selected=[];
-  for(const c of candidates){
-   if(selected.every(q=>Math.hypot(c.x-q.x,c.y-q.y)>radius*2.19)){
-    selected.push({x:c.x,y:c.y});
-    if(selected.length===10)break;
+  function choose(top){
+   const sorted=candidates.slice().sort((a,b)=>
+    (top?a.y-b.y:b.y-a.y)+Math.sin(a.x*.044+a.y*.025)*h*.003);
+   const result=[];
+   for(const q of sorted){
+    if(result.every(x=>Math.hypot(q.x-x.x,q.y-x.y)>radius*2.16)){
+     result.push({x:q.x,y:q.y});
+     if(result.length===10)break;
+    }
    }
+   // Exit order follows the old pile nearest the pointed lower tail.
+   return result.length===10?result:null;
   }
-  if(selected.length===10){positions=selected;break;}
-  radius*=.91;
+  const bottom=choose(false),top=choose(true);
+  if(bottom&&top){
+   positions=bottom;
+   // Pair each initial letter with a release slot to prevent bunching.
+   initialPositions=top.slice().sort((a,b)=>a.x-b.x||a.y-b.y);
+   break;
+  }
+  radius*=.92;
  }
- if(positions.length!==10)throw Error('Original comma has insufficient room for ten separated glyphs');
- // Exit starts around the tail; other letters follow in loosely clustered
- // pairs. Each grain keeps its own independent position.
- positions.sort((a,b)=>b.y-a.y||(a.x-b.x));
- grainPacking={key,radius,positions};
+ if(!positions||!initialPositions)throw Error('Original comma cannot fit ten letters');
+ grainPacking={key,radius,positions,initialPositions};
  return grainPacking;
 }
 function bezier(a,b,c,d,t){
@@ -337,130 +348,108 @@ function paint(){
  let pack;
  try{pack=generatePacking(w,h)}
  catch(error){
-  console.warn('Original comma particle packing fallback',error);
-  fallback();
-  if(grainField)grainField.style.opacity='0';
-  bar.style.transform='scaleX('+p+')';
-  pct.textContent=Math.round(p*100)+'%';
-  return;
+  console.warn('Original glyph packing fallback',error);
+  fallback();if(grainField)grainField.style.opacity='0';
+  bar.style.transform='scaleX('+p+')';pct.textContent=Math.round(p*100)+'%';return;
  }
- const radius=pack.radius;
- // Tilt and unwind the original comma. The pile rotates with its container,
- // not with an unrelated page coordinate system.
- const tilt=-11*smooth(range(p,.035,.285))
-           +7*smooth(range(p,.48,.70))
-           +4*smooth(range(p,.72,.88));
- const rad=tilt*Math.PI/180,co=Math.cos(rad),si=Math.sin(rad);
+ const {radius}=pack;
+ const orientation=180*(1-smooth(range(p,.024,.236)));
+ const rad=orientation*Math.PI/180,co=Math.cos(rad),si=Math.sin(rad);
  const screen=(x,y)=>({
   x:cx+(x-w*.5)*co-(y-h*.5)*si,
   y:cy+(x-w*.5)*si+(y-h*.5)*co
  });
+ // Both the comma and its precisely matched containment mask turn as one.
+ // Counter-rotation lets individual letters stay readable while it flips.
  grainField.style.width=w+'px';grainField.style.height=h+'px';
- grainField.style.transform='translate(-50%,-50%) rotate('+tilt.toFixed(2)+'deg)';
- grainField.style.opacity=String(1-smooth(range(p,.855,.948)));
- const commaFade=smooth(range(p,.785,.942));
+ grainField.style.transform='translate(-50%,-50%) rotate('+orientation.toFixed(2)+'deg)';
+ grainField.style.opacity=String(1-smooth(range(p,.715,.795)));
+ const commaFade=smooth(range(p,.733,.825));
  largeComma.style.opacity=String(.88*(1-commaFade));
- largeComma.style.transform='translate(-50%,-50%) rotate('+tilt.toFixed(2)+'deg)';
- const intact=smooth(range(p,.936,.985));
+ largeComma.style.transform='translate(-50%,-50%) rotate('+orientation.toFixed(2)+'deg)';
+ const intact=smooth(range(p,.954,.991));
  if(full)full.style.opacity=String(intact);
 
- // Local contact solver: the remaining grains respond to the tilt and the
- // empty spaces left by neighbors, without intersecting one another.
- const occupied=pack.positions.map((q,i)=>({x:q.x,y:q.y,i}));
- const released=releaseTimes.filter(t=>p>t).length;
- for(let i=0;i<occupied.length;i++){
-  if(p>=releaseTimes[i])continue;
-  const q=occupied[i],trigger=smooth(range(p,releaseTimes[i]-.18,releaseTimes[i]));
-  const dx=-radius*.43*smooth(range(p,.055,.39))
-    +Math.sin(i*3.7+p*17)*radius*.11*trigger;
-  const dy=Math.min(radius*.72,released*radius*.12)
-    +Math.sin(i*2.37+p*20)*radius*.095*trigger;
-  if(clampPoint(q.x+dx,q.y+dy,radius*1.1,w,h)){
-   q.x+=dx;q.y+=dy;
-  }
- }
- for(let pass=0;pass<5;pass++){
-  for(let i=0;i<occupied.length;i++){
-   if(p>=releaseTimes[i])continue;
-   for(let j=i+1;j<occupied.length;j++){
-    if(p>=releaseTimes[j])continue;
-    const a=occupied[i],b=occupied[j];
-    let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
-    if(d<.001){dx=1;dy=0;d=1;}
-    const overlap=radius*2.14-d;
-    if(overlap<=0)continue;
-    const ox=dx/d*overlap*.51,oy=dy/d*overlap*.51;
-    if(clampPoint(a.x-ox,a.y-oy,radius*1.08,w,h)){a.x-=ox;a.y-=oy;}
-    if(clampPoint(b.x+ox,b.y+oy,radius*1.08,w,h)){b.x+=ox;b.y+=oy;}
-   }
-  }
- }
- const tailRow=commaRail[Math.round(commaRail.length*.885)]||{x:.36};
- const tailX=tailRow.x*w,tailY=h*.885;
- const tail=screen(tailX,tailY);
- const outside=screen(-w*.14,h*.96);
+ // The slender lower-left comma tail acts as the real release point.
+ // Use original source pixels to identify the path, not an invented shape.
+ const tailRow=commaRail[Math.round((commaRail.length-1)*.89)]||{x:.37};
+ const tail=screen(tailRow.x*w,h*.89);
+ // Fully off-screen on the left before a separate entrance on the right.
+ const leftOff={x:-Math.max(110,innerWidth*.16),y:tail.y+Math.min(56,h*.16)};
+ const rightOffX=innerWidth+Math.max(110,innerWidth*.14);
+ const settled=smooth(range(p,.045,.249));
+
  parts.forEach((el,i)=>{
   const homeX=lr.left+el.offsetLeft+el.offsetWidth*.5;
   const homeY=lr.top+el.offsetTop+el.offsetHeight*.5;
-  const grain=grainPieces[i],boxW=el.offsetWidth,boxH=el.offsetHeight;
-  const glyphScale=Math.min(1,(radius*1.38)/Math.max(1,boxW,boxH));
+  const boxW=el.offsetWidth,boxH=el.offsetHeight;
+  const grain=grainPieces[i];
+  const glyphScale=Math.min(1,(radius*1.43)/Math.max(1,boxW,boxH));
   grain.style.width=boxW+'px';grain.style.height=boxH+'px';
-  const release=releaseTimes[i],u=range(p,release,release+travelTimes[i]);
-  const before=p<release;
-  let innerX=occupied[i].x,innerY=occupied[i].y;
-  let innerScale=glyphScale,innerOpacity=before?1:0;
-  if(!before){
-   // A short pause, then a gravity-led slide through the real silhouette.
-   // At the narrowing tail, glyphs become smaller rather than crossing ink.
-   const f=smooth(range(u,.035,.565));
-   innerY=pack.positions[i].y+(tailY-pack.positions[i].y)*f;
-   const idx=Math.round(clamp(innerY/h)*(commaRail.length-1));
-   const rail=commaRail[idx]||{x:.5,clearance:.13};
-   const targetX=rail.x*w;
-   innerX=pack.positions[i].x+(targetX-pack.positions[i].x)*f;
-   const localR=radius*(1-.50*smooth(range(u,.20,.58)));
-   if(!clampPoint(innerX,innerY,localR,w,h)){
-    // Never paint an unmasked grain outside the supplied comma ink.
-    const previous=pack.positions[i];
-    innerX=previous.x+(targetX-previous.x)*smooth(range(u,.03,.36))*.4;
-    innerY=previous.y+(tailY-previous.y)*smooth(range(u,.03,.36))*.4;
-   }
-   innerScale=glyphScale*(1-.42*smooth(range(u,.18,.58)));
-   innerOpacity=1-smooth(range(u,.47,.635));
-  }
-  grain.style.left=innerX.toFixed(2)+'px';
-  grain.style.top=innerY.toFixed(2)+'px';
-  grain.style.opacity=String(innerOpacity*(1-intact));
-  const rotation=(-13+(i*17%27))*(1-.5*smooth(range(u,.08,.5)));
-  grain.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(2)+'deg) scale('+innerScale.toFixed(3)+')';
-
-  // Crossfade at the tail from a strictly masked interior letter to the
-  // same original glyph on the exterior; then each finds its unique slot.
-  const outer=smooth(range(u,.485,.645));
-  const q=range(u,.485,1);
-  let pos=tail;
-  if(q<.32){
-   const t=smooth(q/.32);
-   pos={
-    x:bezier(tail.x,tail.x-w*.10,outside.x+w*.045,outside.x,t),
-    y:bezier(tail.y,tail.y+h*.07,outside.y,outside.y,t)
-   };
+  const start=pack.initialPositions[i],stop=pack.positions[i];
+  const at={
+   x:start.x+(stop.x-start.x)*settled,
+   y:start.y+(stop.y-start.y)*settled
+  };
+  const release=releaseTimes[i];
+  const ex=range(p,release,release+exitDuration);
+  const released=p>=release;
+  let insideX=at.x,insideY=at.y;
+  // A very small independent wobble instead of rigidly glued letters.
+  const wobble=Math.sin(i*2.43+p*31)*Math.min(radius*.13,2.4);
+  if(!released){
+   const tx=insideX+wobble,ty=insideY+Math.sin(i*3.16+p*21)*radius*.065;
+   if(clampPoint(tx,ty,radius*.8,w,h)){insideX=tx;insideY=ty;}
   }else{
-   const t=smooth((q-.32)/.68);
-   pos={
-    x:bezier(outside.x,outside.x-w*.06,homeX+w*.11,homeX,t),
-    y:bezier(outside.y,outside.y+h*.09,homeY-h*.075,homeY,t)
-   };
+   const approach=smooth(range(ex,0,.57));
+   insideY=at.y+(h*.89-at.y)*approach;
+   const row=commaRail[Math.round(clamp(insideY/h)*(commaRail.length-1))]||tailRow;
+   insideX=at.x+(row.x*w-at.x)*approach;
   }
-  const arrive=smooth(range(q,.34,1));
-  const scale=innerScale+(1-innerScale)*arrive;
-  el.style.opacity=String((before?0:outer)*(1-intact));
+  grain.style.left=insideX.toFixed(2)+'px';
+  grain.style.top=insideY.toFixed(2)+'px';
+  const grainHide=released?smooth(range(ex,.42,.59)):0;
+  grain.style.opacity=String((1-grainHide)*(1-intact));
+  const grainAngle=(-orientation+Math.sin(i*1.8+p*22)*7
+    -115*smooth(range(ex,.16,.59)));
+  grain.style.transform='translate(-50%,-50%) rotate('+grainAngle.toFixed(2)+
+   'deg) scale('+(glyphScale*(1-.29*smooth(range(ex,.12,.6)))).toFixed(3)+')';
+
+  let opacity=0,spin=0,scale=glyphScale*.77,pos=tail;
+  const endExit=release+exitDuration,enter=reentryTimes[i],arrive=arrivalTimes[i];
+  if(released&&p<endExit){
+   // Interior cutout and exterior glyph briefly overlap at the opening.
+   const emergence=smooth(range(ex,.46,.62));
+   const roll=smooth(range(ex,.5,1));
+   pos={
+    x:bezier(tail.x,tail.x-w*.17,leftOff.x+innerWidth*.08,leftOff.x,roll),
+    y:bezier(tail.y,tail.y+h*.15,leftOff.y-h*.025,leftOff.y,roll)
+   };
+   spin=-320*roll;opacity=emergence;scale=glyphScale*(.71+.10*roll);
+  }else if(p>=enter){
+   // A distinct right-side entrance. No teleporting from the comma
+   // directly into the wordmark and no mid-screen respawn.
+   const t=smooth(range(p,enter,arrive));
+   const fromY=cy+h*.27+Math.sin(i*1.13)*h*.045;
+   pos={
+    x:bezier(rightOffX,rightOffX-innerWidth*.23,
+      homeX+Math.min(innerWidth*.15,140),homeX,t),
+    y:bezier(fromY,fromY+h*.07,homeY+h*.07,homeY,t)
+   };
+   spin=250*(1-t);
+   scale=glyphScale*.79+(1-glyphScale*.79)*t;
+   opacity=smooth(range(p,enter,enter+.035))*(1-intact);
+  }else{
+   // Hold beyond the left viewport until its own right-side entrance.
+   pos=leftOff;
+  }
+  el.style.opacity=String(opacity*(1-intact));
   el.style.transform='translate3d('+(pos.x-homeX).toFixed(2)+'px,'+
-    (pos.y-homeY).toFixed(2)+'px,0) rotate('+
-    (rotation*(1-arrive)).toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
+   (pos.y-homeY).toFixed(2)+'px,0) rotate('+spin.toFixed(2)+
+   'deg) scale('+scale.toFixed(3)+')';
  });
- caption.style.opacity=String(smooth(range(p,.84,.955)));
- const out=smooth(range(p,.975,1));
+ caption.style.opacity=String(smooth(range(p,.894,.965)));
+ const out=smooth(range(p,.985,1));
  sculpture.style.opacity=String(1-.08*out);
  overlay.style.transform='translate3d(0,'+(-12*out)+'%,0)';
  bar.style.transform='scaleX('+p+')';
@@ -468,31 +457,55 @@ function paint(){
 }
 function request(){if(!frame)frame=requestAnimationFrame(paint)}
 function cleanup(){
+ cancelAnimationFrame(autoplayFrame);
  if(overlay.dataset.cleanup)return;overlay.dataset.cleanup='1';
  root.classList.remove('gt-scroll-entry-ready');overlay.remove();
  window.removeEventListener('wheel',wheel,true);
  window.removeEventListener('touchstart',touchStart,true);
  window.removeEventListener('touchmove',touchMove,true);
  window.removeEventListener('keydown',key);
+ overlay.removeEventListener('click',clickPlay);
  window.scrollTo(0,0);
 }
 function finish(){
- if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v17','done')}catch{}
+ if(ended)return;ended=true;cancelAnimationFrame(frame);cancelAnimationFrame(autoplayFrame);
+ try{sessionStorage.setItem('gt-scroll-entry-v18','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
 }
-function move(amount){if(ended)return;p=clamp(p+amount);if(p>=.999)finish();else request()}
+function move(amount){
+ if(ended)return;
+ if(autoplayFrame){cancelAnimationFrame(autoplayFrame);autoplayFrame=0;}
+ p=clamp(p+amount);if(p>=.999){p=1;paint();finish();}else request();
+}
+function clickPlay(e){
+ if(ended||e.target.closest('button'))return;
+ if(touchDragged){touchDragged=false;return;}
+ if(autoplayFrame)return;
+ autoplayFrom=p;autoplayStart=performance.now();
+ const run=now=>{
+  autoplayFrame=0;
+  if(ended)return;
+  const t=clamp((now-autoplayStart)/4050);
+  p=autoplayFrom+(1-autoplayFrom)*smooth(t);
+  paint();
+  if(t>=1){finish();return;}
+  autoplayFrame=requestAnimationFrame(run);
+ };
+ autoplayFrame=requestAnimationFrame(run);
+}
 function wheel(e){
  if(ended)return;e.preventDefault();
  const now=performance.now();if(now-wheelTime<5)return;wheelTime=now;
  move(clamp(e.deltaY*(e.deltaMode===1?19:e.deltaMode===2?innerHeight:1),-180,180)/1120);
 }
-function touchStart(e){startTouch=e.changedTouches[0]?.clientY??null}
+function touchStart(e){startTouch=e.changedTouches[0]?.clientY??null;touchDragged=false}
 function touchMove(e){
  if(ended||startTouch===null)return;e.preventDefault();
- const y=e.changedTouches[0]?.clientY??startTouch;move((startTouch-y)/Math.max(700,innerHeight*1.6));startTouch=y;
+ const y=e.changedTouches[0]?.clientY??startTouch;
+ if(Math.abs(startTouch-y)>3)touchDragged=true;
+ move((startTouch-y)/Math.max(700,innerHeight*1.6));startTouch=y;
 }
 function key(e){
  if(ended||e.target?.closest?.('.gt-scroll-entry-skip'))return;
@@ -506,6 +519,7 @@ window.addEventListener('touchmove',touchMove,{passive:false,capture:true});
 window.addEventListener('touchend',()=>startTouch=null,{passive:true});
 window.addEventListener('keydown',key);
 overlay.querySelector('.gt-scroll-entry-skip')?.addEventListener('click',finish);
+overlay.addEventListener('click',clickPlay);
 window.addEventListener('hashchange',()=>{if(!home())finish()},{once:true});
 window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',e=>{if(e.matches)finish()},{once:true});
 const fallback=()=>{
