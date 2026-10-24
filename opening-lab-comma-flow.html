@@ -258,7 +258,7 @@ const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let glyphs=[],commaRows=[],commaAspect=.65,ready=false,phase="caged",hover=null;
 let clock=0,releaseAt=0,frame=0,wordmarkAt=0,lift=0,liftFrame=0,opened=false,complete=false;
 let pointerStart=null;
-const releaseStep=108,releaseDuration=1540,releaseTotal=1540+9*releaseStep;
+const releaseStep=92,releaseDuration=1400,releaseTotal=1400+9*releaseStep;
 const commaStroke="#397541";
 function commaContour(labels,part,fullW){
  const W=part.w,H=part.h;
@@ -536,15 +536,15 @@ function drawLetters(now){
   full.style.opacity="1";shell.style.opacity="0";
   for(const g of glyphs)g.el.style.opacity="0";
  }
- if(phase==="assembled"&&now-wordmarkAt>410){
+ if(phase==="assembled"&&now-wordmarkAt>300){
   phase="opening";startLift();
  }
  if(phase!=="finished")frame=requestAnimationFrame(drawLetters);
  else frame=0;
 }
 function beginRelease(){
- if(!ready||phase!=="caged")return;
- if(reduced){phase="assembled";full.style.opacity="1";shell.style.opacity="0";startLift();return}
+ if(!ready||(phase!=="caged"&&!(reduced&&phase==="assembled")))return;
+ if(reduced){startLift();return}
  phase="releasing";releaseAt=performance.now();
  stage.classList.add("is-releasing");
  hint.querySelector("strong").textContent="LET THE STORIES FLOW";
@@ -633,7 +633,9 @@ async function loadOriginal(){
  if(!glyphs.length||!commaRows.length)throw Error("Could not separate the original artwork");
  ready=true;
  if(reduced){
-  shell.style.opacity="0";full.style.opacity="1";hint.querySelector("strong").textContent="進入 GOOD THINGS,";
+  phase="assembled";wordmarkAt=Number.POSITIVE_INFINITY;
+  shell.style.opacity="0";full.style.opacity="1";
+  hint.querySelector("strong").textContent="進入 GOOD THINGS,";
  }else{
   shell.style.opacity="1";full.style.opacity="0";
  }
