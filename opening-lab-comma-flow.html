@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f0e8">
+<title>GOOD THINGS, | OPENING STUDY 06: COMMA RELEASE</title>
+<meta name="description" content="GOOD THINGS, interactive comma release: original logo letters flow from the original hollow comma and open the real homepage. Experimental preview only.">
+<style>
+:root{--paper:#f3f1eb;--green:#26743a;--text:#324237;--soft:#737d70;--line:#bfc7ba;--page-speed:840ms}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:var(--paper);color:var(--text);font-family:Arial,"PingFang TC","Noto Sans TC",sans-serif}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+#under{position:fixed;inset:0;z-index:0;background:var(--paper)}
+#under-frame{border:0;width:100%;height:100%;display:block;background:var(--paper)}
+#under-note{position:absolute;inset:0;background:var(--paper);display:grid;place-items:center;font-size:11px;letter-spacing:.18em;color:var(--soft)}
+#under-note[hidden]{display:none}
+#cover{
+ --lift:0;--edge:0px;
+ position:fixed;inset:0;z-index:10;overflow:hidden;
+ height:100vh;height:100dvh;min-height:320px;
+ background:var(--paper);
+ touch-action:none;overscroll-behavior:contain;
+ transform-origin:50% 0;will-change:transform;
+ box-shadow:0 16px 55px rgba(36,50,31,.16);
+ user-select:none;-webkit-user-select:none;
+ padding:clamp(26px,4vh,44px) clamp(24px,5.5vw,78px) max(35px,env(safe-area-inset-bottom));
+ display:flex;flex-direction:column;
+}
+#cover::before{
+ content:"";pointer-events:none;position:absolute;inset:0;z-index:0;
+ background:
+  radial-gradient(ellipse at 25% 8%,rgba(255,255,255,.85),transparent 53%),
+  repeating-linear-gradient(0deg,rgba(89,100,79,.018) 0px,rgba(89,100,79,.018) 1px,transparent 1px,transparent 6px),
+  radial-gradient(ellipse at 90% 87%,rgba(67,72,54,.065),transparent 52%);
+}
+#cover::after{
+ content:"";pointer-events:none;position:absolute;left:0;right:0;bottom:0;height:var(--edge);
+ background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.45) 35%,rgba(75,85,67,.13) 100%);
+ border-bottom:1px solid rgba(73,90,74,.18);
+}
+#cover.is-dragging{cursor:grabbing}
+#cover.is-complete{visibility:hidden;pointer-events:none}
+#page-curl{
+ position:fixed;z-index:11;bottom:0;right:0;pointer-events:none;
+ width:var(--curl,0px);height:var(--curl,0px);
+ background:linear-gradient(132deg,#bfc5b8 0%,#e5e7df 24%,#f8f7f0 64%,#cbd1c6 100%);
+ clip-path:polygon(100% 0%,0% 100%,100% 100%);
+ opacity:var(--curl-opacity,0);filter:drop-shadow(-3px -8px 10px rgba(52,72,55,.12));
+}
+#cover-head,#cover-foot{position:relative;z-index:2;display:flex;justify-content:space-between;gap:16px;align-items:center}
+#cover-head{padding-bottom:16px;border-bottom:1px solid var(--line)}
+#cover-foot{padding-top:15px;border-top:1px solid var(--line)}
+.label{font-size:clamp(9px,.9vw,11px);letter-spacing:.14em;line-height:1.5;font-weight:500}
+.muted{color:var(--soft)}
+#skip{color:#48664e;background:none;border:0;padding:7px 1px;font-size:10px;letter-spacing:.14em;white-space:nowrap;font-weight:600}
+#cover-center{position:relative;z-index:1;min-height:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.folio{color:#798579;letter-spacing:.21em;font-size:10px;margin-bottom:clamp(30px,5.2vh,67px);text-align:center}
+#logo-box{width:min(82vw,720px);aspect-ratio:1240/562;position:relative}
+#original-logo{display:block;width:100%;height:100%;object-fit:contain;opacity:0;visibility:hidden}
+#ink-print{
+ position:absolute;inset:0;display:block;width:100%;height:100%;
+ object-fit:contain;visibility:hidden;
+ will-change:mask-image;-webkit-mask-size:100% 100%;mask-size:100% 100%;
+}
+#logo-error{font-size:12px;color:#8a5148;text-align:center;display:none;line-height:1.7;padding:16px}
+#caption{margin:clamp(29px,4.9vh,58px) 0 0;text-align:center;letter-spacing:.12em;font-size:clamp(11px,1.2vw,14px);color:#536452;font-family:Georgia,"Noto Serif TC",serif}
+#secondary{font-size:9px;letter-spacing:.21em;text-align:center;margin:11px 0 0;color:#889487}
+#hint{display:flex;align-items:center;gap:14px;border-top:1px solid #cdd1c7;padding-top:16px;margin-top:clamp(34px,7.3vh,76px);color:#436348}
+#hint-arrow{font-size:25px;display:block;line-height:1;transform:translateY(0);animation:uphint 2.1s ease-in-out infinite}
+#hint strong{font-size:12px;letter-spacing:.08em;font-weight:500}
+#hint small{font-size:10px;letter-spacing:.11em;display:block;color:#7a8778;margin-top:7px}
+@keyframes uphint{0%,100%{transform:translateY(3px)}50%{transform:translateY(-6px)}}
+#cover-foot .page-count{white-space:nowrap}
+#reopen{position:fixed;z-index:7;right:clamp(14px,4vw,45px);bottom:max(14px,env(safe-area-inset-bottom));padding:10px 13px;display:none;border:1px solid #bac8ba;background:rgba(247,247,241,.96);color:#3b6344;letter-spacing:.12em;font-size:10px;box-shadow:0 5px 14px rgba(35,47,31,.08)}
+#reopen.show{display:block}
+#preview-flag{position:fixed;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2;pointer-events:none;color:#5b6e5a;font-size:9px;letter-spacing:.12em;background:#f3f1ebf2;padding:7px 10px;border:1px solid #d5dbd2;white-space:nowrap}
+@media(max-width:700px){
+ #cover{padding:24px 23px max(28px,env(safe-area-inset-bottom))}
+ .label{font-size:9px;letter-spacing:.08em}
+ #cover-head{align-items:flex-start}
+ #cover-head span:first-child{max-width:67%}
+ #logo-box{width:87vw}
+ .folio{margin-bottom:30px}
+ #caption{margin-top:35px}
+ #hint{margin-top:45px}
+ #hint strong{font-size:11px}
+ #hint small{font-size:9px}
+ #cover-foot span:first-child{max-width:64%}
+}
+@media(max-height:570px){
+ #cover{padding-top:10px;padding-bottom:10px}
+ .folio{margin-bottom:10px}
+ #caption{margin-top:10px}
+ #hint{margin-top:13px;padding-top:8px}
+ #secondary{margin-top:3px}
+ #cover-head{padding-bottom:6px}
+ #cover-foot{padding-top:6px}
+}
+@media(prefers-reduced-motion:reduce){#hint-arrow{animation:none}*{scroll-behavior:auto!important}}
+
+/* Study 05: original logo glyphs are the only kinetic subjects. */
+#logo-box{position:relative;cursor:crosshair;touch-action:none;outline-offset:13px}
+#original-logo{position:absolute;inset:0;z-index:1;opacity:0;visibility:hidden;pointer-events:none}
+#kinetic-layer{position:absolute;inset:0;z-index:2;pointer-events:none;isolation:isolate}
+#kinetic-layer .letter{
+ position:absolute;display:block;transform-origin:50% 50%;opacity:0;
+ will-change:transform,opacity;pointer-events:none;backface-visibility:hidden;
+}
+#kinetic-layer .letter>img{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+#kinetic-note{
+ position:absolute;left:50%;top:calc(100% + 18px);transform:translateX(-50%);
+ font-size:9px;letter-spacing:.2em;color:#4e7254;white-space:nowrap;
+ opacity:0;transition:opacity .5s;pointer-events:none;text-align:center;
+}
+#kinetic-note.active{opacity:1}
+#logo-box:focus-visible{outline:1px solid #88a88d}
+#hint{margin-top:clamp(66px,12vh,120px)}
+#hint small{font-size:9px}
+#preview-flag{letter-spacing:.1em}
+#motion-replay{
+ position:fixed;right:16px;bottom:max(15px,env(safe-area-inset-bottom));
+ z-index:4;display:block;border:1px solid #b3c1b3;color:#3b6844;
+ background:rgba(249,248,242,.97);padding:10px 13px;
+ letter-spacing:.12em;font-size:10px;
+}
+#reopen.show{bottom:max(60px,calc(env(safe-area-inset-bottom) + 46px))}
+@media(max-width:700px){
+ #kinetic-note{top:calc(100% + 13px);font-size:8px;letter-spacing:.12em}
+ #hint{margin-top:clamp(57px,9.5vh,100px)}
+ #motion-replay{bottom:max(15px,env(safe-area-inset-bottom));right:13px}
+}
+@media(max-height:570px){#kinetic-note{top:calc(100% + 3px)}#hint{margin-top:35px}}
+@media(prefers-reduced-motion:reduce){#kinetic-note{transition:none}}
+
+/* Study 06. The original logo glyphs and original comma's traced silhouette. */
+#cover-center{overflow:visible}
+#showcase{
+ position:relative;display:block;flex:0 1 auto;
+ width:min(100%,940px);height:clamp(310px,59dvh,560px);
+ min-height:260px;touch-action:none;cursor:pointer;user-select:none;isolation:isolate;
+}
+#comma-shell{
+ position:absolute;left:50%;top:48%;width:260px;height:420px;max-width:none;
+ display:block;object-fit:fill;opacity:0;
+ transform:translate(-50%,-50%);transition:opacity .18s;
+ will-change:transform,opacity;pointer-events:none;
+ filter:drop-shadow(0 0 0 transparent);
+}
+#floating-letters{position:absolute;inset:0;pointer-events:none;isolation:isolate}
+#floating-letters .letter{
+ position:absolute;display:block;opacity:0;transform-origin:center center;
+ will-change:opacity,transform;backface-visibility:hidden;pointer-events:none;
+}
+#floating-letters .letter>img{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+#assembled-logo{
+ position:absolute;left:50%;top:50%;width:min(83%,690px);
+ height:auto;aspect-ratio:1240/562;object-fit:contain;
+ transform:translate(-50%,-50%);opacity:0;pointer-events:none;
+ will-change:opacity;display:block;
+}
+#comma-interact{
+ display:block;position:absolute;z-index:4;left:50%;top:49%;
+ transform:translate(-50%,-50%);width:min(76%,580px);height:85%;
+ background:transparent;border:0;cursor:pointer;touch-action:none;
+ -webkit-tap-highlight-color:transparent;border-radius:42%;color:transparent;
+}
+#comma-interact:focus-visible{outline:1px solid #4a8355;outline-offset:0;border-radius:43%}
+#interaction-marker{
+ position:absolute;z-index:5;left:50%;bottom:0;transform:translateX(-50%);
+ font-size:10px;letter-spacing:.19em;color:#427049;white-space:nowrap;
+ padding:9px 14px;border:1px solid #becabf;background:rgba(243,241,235,.94);
+ pointer-events:none;transition:opacity .25s;
+}
+#interaction-marker::before{content:"✳";font-size:12px;margin-right:11px;color:#4b8352}
+#showcase.is-releasing #interaction-marker{opacity:0}
+#hint{margin-top:clamp(8px,2vh,28px);border:0;padding-top:5px;justify-content:center;text-align:center}
+#hint-arrow{display:none}
+#hint strong{font-size:11px;letter-spacing:.16em;font-weight:600}
+#hint small{font-size:9px;letter-spacing:.13em}
+#cover.is-opening #hint{opacity:0;transition:opacity .3s}
+#motion-reset{
+ position:fixed;z-index:5;bottom:max(16px,env(safe-area-inset-bottom));left:clamp(14px,4vw,45px);
+ padding:10px 13px;background:rgba(246,245,239,.94);border:1px solid #bdcbbd;
+ color:#476c4e;font-size:10px;letter-spacing:.12em;cursor:pointer;
+}
+#motion-reset[hidden]{display:none}
+#reopen.show{z-index:13}
+#preview-flag{letter-spacing:.1em}
+@media(max-width:700px){
+ #cover{padding-top:22px;padding-bottom:max(19px,env(safe-area-inset-bottom))}
+ #showcase{width:100%;height:clamp(300px,56dvh,510px)}
+ #interaction-marker{font-size:9px;letter-spacing:.12em;padding:8px 11px;bottom:3px}
+ #assembled-logo{width:92%}
+ #hint{margin-top:12px}
+ .folio{margin-bottom:13px}
+ #caption{margin-top:11px}
+ #secondary{margin-top:6px}
+}
+@media(max-height:590px){
+ #showcase{height:clamp(210px,52dvh,300px);min-height:190px}
+ .folio{margin-bottom:7px}
+ #hint{margin-top:0}
+ #interaction-marker{bottom:0}
+ #caption{margin-top:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ #interaction-marker::before{content:""}
+}
+
+</style>
+<script>
+// Suppress the V16 experimental overlay inside the actual preview homepage.
+try{sessionStorage.setItem("gt-scroll-entry-v16","done")}catch(e){}
+</script>
+</head>
+<body>
+<div id="under"><div id="under-note">GOOD THINGS, / OPENING A JOURNAL</div><iframe id="under-frame" title="GOOD THINGS, 測試站真實首頁"></iframe></div>
+<div id="preview-flag">OPENING STUDY 06 / COMMA RELEASE</div>
+<section id="cover" aria-label="GOOD THINGS, 可以上滑或輕觸的雜誌封面" tabindex="0">
+ <header id="cover-head">
+  <span class="label">GOOD THINGS, / AN INDEPENDENT JOURNAL</span>
+  <button type="button" id="skip">SKIP / 直接進入 ↗</button>
+ </header>
+ <main id="cover-center">
+  <div class="folio">THE STORIES WE LET OUT</div>
+  <div id="showcase" aria-label="空心逗號中藏著 GOOD THINGS 的原始字母">
+  <img id="comma-shell" alt="" aria-hidden="true">
+  <div id="floating-letters" aria-hidden="true"></div>
+  <img id="assembled-logo" alt="GOOD THINGS, 原始手繪 LOGO">
+  <button id="comma-interact" type="button" aria-label="觸碰空心逗號，讓字母流出並進入首頁">Release the letters</button>
+  <span id="interaction-marker">TOUCH THE COMMA TO BEGIN</span>
+  <div id="logo-error">無法載入原始 LOGO。可以點選右上角 SKIP 直接進站。</div>
+ </div>
+  <p id="caption">THINGS WORTH EXPLORING.</p>
+  <p id="secondary">CLOTHING / PEOPLE / STYLE / PLACES</p>
+  <div id="hint" role="status"><span id="hint-arrow" aria-hidden="true">↑</span><span><strong>點一下逗號，讓故事開始</strong><small>ONE TOUCH / FROM COMMA TO HOMEPAGE</small></span></div>
+ </main>
+ <footer id="cover-foot"><span class="label muted">THE INDEX / FEATURES / PERSONAL NOTES</span><span class="label page-count">NO. 001 / 2026</span></footer>
+</section>
+<div id="page-curl" aria-hidden="true"></div>
+<button type="button" id="motion-reset">↻ RESET</button>
+<button type="button" id="reopen">↻ REPLAY INTRO</button>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const cover=$("cover"),curl=$("page-curl"),stage=$("showcase"),shell=$("comma-shell");
+const layer=$("floating-letters"),full=$("assembled-logo"),touch=$("comma-interact");
+const marker=$("interaction-marker"),resetButton=$("motion-reset"),skip=$("skip"),replay=$("reopen");
+const under=$("under-frame"),loading=$("under-note"),hint=$("hint");
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
+const easeOut=t=>1-Math.pow(1-clamp(t),3);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let glyphs=[],commaRows=[],commaAspect=.65,ready=false,phase="caged",hover=null;
+let clock=0,releaseAt=0,frame=0,wordmarkAt=0,lift=0,liftFrame=0,opened=false,complete=false;
+let pointerStart=null;
+const releaseStep=108,releaseDuration=1540,releaseTotal=1540+9*releaseStep;
+const commaStroke="#397541";
+function commaContour(labels,part,fullW){
+ const W=part.w,H=part.h;
+ const marked=new Uint8Array(W*H),rows=Array.from({length:H},()=>({left:W,right:-1}));
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  if(labels[(y+part.y)*fullW+x+part.x]!==part.id)continue;
+  marked[y*W+x]=1;
+  const row=rows[y];row.left=Math.min(row.left,x);row.right=Math.max(row.right,x);
+ }
+ const has=(x,y)=>x>=0&&x<W&&y>=0&&y<H&&marked[y*W+x]===1;
+ const starts=new Map(),edges=[];
+ const key=(x,y)=>y*(W+1)+x;
+ function edge(x1,y1,x2,y2){
+  const index=edges.length,id=key(x1,y1);
+  edges.push({x1,y1,x2,y2,used:false});
+  const bucket=starts.get(id);if(bucket)bucket.push(index);else starts.set(id,[index]);
+ }
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(has(x,y)){
+  if(!has(x,y-1))edge(x,y,x+1,y);
+  if(!has(x+1,y))edge(x+1,y,x+1,y+1);
+  if(!has(x,y+1))edge(x+1,y+1,x,y+1);
+  if(!has(x-1,y))edge(x,y+1,x,y);
+ }
+ const rings=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const start=key(edges[i].x1,edges[i].y1);
+  const pts=[];let current=i;
+  for(let j=0;j<=edges.length;j++){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push([e.x1,e.y1]);
+   const end=key(e.x2,e.y2);
+   if(end===start)break;
+   const next=(starts.get(end)||[]).find(n=>!edges[n].used);
+   if(next===undefined)break;
+   current=next;
+  }
+  if(pts.length>12){
+   let area=0;
+   for(let j=0;j<pts.length;j++){
+    const a=pts[j],b=pts[(j+1)%pts.length];area+=a[0]*b[1]-b[0]*a[1];
+   }
+   rings.push({pts,area:Math.abs(area)});
+  }
+ }
+ rings.sort((a,b)=>b.area-a.area);
+ const ring=rings[0]?.pts;
+ if(!ring||rings[0].area<W*H*.025)throw Error("Original comma contour missing");
+ const gaussian=[];
+ for(let i=-15;i<=15;i++)gaussian.push(Math.exp(-.5*(i/5.5)**2));
+ const sum=gaussian.reduce((a,b)=>a+b,0);
+ const smoothed=ring.map((_,i)=>{
+  let x=0,y=0;
+  for(let k=-15;k<=15;k++){
+   const p=ring[(i+k+ring.length)%ring.length],w=gaussian[k+15];
+   x+=p[0]*w;y+=p[1]*w;
+  }
+  return [x/sum,y/sum];
+ });
+ const step=Math.max(3,Math.round(smoothed.length/90));
+ const selected=smoothed.filter((_,i)=>i%step===0);
+ if(selected.length<14)throw Error("Contour too small");
+ const round=n=>Number(n.toFixed(2));
+ let d="M"+round(selected[0][0])+" "+round(selected[0][1]);
+ for(let i=0;i<selected.length;i++){
+  const p0=selected[(i+selected.length-1)%selected.length];
+  const p1=selected[i],p2=selected[(i+1)%selected.length];
+  const p3=selected[(i+2)%selected.length];
+  const tension=.16;
+  const x1=p1[0]+(p2[0]-p0[0])*tension,y1=p1[1]+(p2[1]-p0[1])*tension;
+  const x2=p2[0]-(p3[0]-p1[0])*tension,y2=p2[1]-(p3[1]-p1[1])*tension;
+  d+=" C"+round(x1)+" "+round(y1)+" "+round(x2)+" "+round(y2)+" "+round(p2[0])+" "+round(p2[1]);
+ }
+ d+=" Z";
+ for(let y=0;y<H;y++)if(rows[y].right<0){
+  const before=rows[Math.max(0,y-1)],after=rows[Math.min(H-1,y+1)];
+  rows[y]={left:before?.right>=0?before.left:after?.left??0,
+           right:before?.right>=0?before.right:after?.right??W};
+ }
+ const curve=rows.map((row,y)=>{
+  let l=0,r=0,k=0;
+  for(let j=-5;j<=5;j++){
+   const p=rows[clamp(y+j,0,H-1)],weight=6-Math.abs(j);
+   l+=p.left*weight;r+=p.right*weight;k+=weight;
+  }
+  return {left:clamp((l/k)/W),right:clamp((r/k)/W),y:y/Math.max(1,H-1)};
+ });
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" shape-rendering="geometricPrecision">'+
+ '<path d="'+d+'" fill="none" stroke="'+commaStroke+'" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+ return {svg:"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg),rows:curve};
+}
+function makeOriginalCommaOutline(labels,part,fullW){
+ return commaContour(labels,part,fullW);
+}
+function makeCanvas(w,h){const c=document.createElement("canvas");c.width=w;c.height=h;return c}
+function sliceRealLogo(img){
+ const W=img.naturalWidth,H=img.naturalHeight;
+ if(W*H>2600000)throw Error("Logo larger than anticipated");
+ const canvas=makeCanvas(W,H),ctx=canvas.getContext("2d",{willReadFrequently:true});
+ ctx.drawImage(img,0,0);
+ const rgba=ctx.getImageData(0,0,W,H).data;
+ const mask=new Uint8Array(W*H),seen=new Uint8Array(W*H);
+ const labels=new Uint16Array(W*H),stack=new Int32Array(W*H);
+ for(let i=0;i<mask.length;i++)mask[i]=rgba[i*4+3]>24?1:0;
+ const comps=[];let nextId=0;
+ for(let start=0;start<mask.length;start++){
+  if(!mask[start]||seen[start])continue;
+  const id=++nextId;let head=0,tail=1,minX=W,minY=H,maxX=0,maxY=0;
+  stack[0]=start;seen[start]=1;
+  while(head<tail){
+   const n=stack[head++],x=n%W,y=(n/W)|0;
+   labels[n]=id;
+   if(x<minX)minX=x;if(x>maxX)maxX=x;
+   if(y<minY)minY=y;if(y>maxY)maxY=y;
+   const neighbors=[n-1,n+1,n-W,n+W];
+   for(let k=0;k<4;k++){
+    const xx=k===0?x-1:k===1?x+1:x;
+    const yy=k===2?y-1:k===3?y+1:y;
+    if(xx<0||xx>=W||yy<0||yy>=H)continue;
+    const j=neighbors[k];
+    if(mask[j]&&!seen[j]){seen[j]=1;stack[tail++]=j;}
+   }
+  }
+  if(tail>150){
+   const pad=3,x=Math.max(0,minX-pad),y=Math.max(0,minY-pad);
+   const right=Math.min(W,maxX+pad+1),bottom=Math.min(H,maxY+pad+1);
+   comps.push({x,y,w:right-x,h:bottom-y,area:tail,id});
+  }
+ }
+ const comma=comps.filter(c=>c.x>W*.78&&c.y>H*.5).sort((a,b)=>b.x-a.x)[0];
+ if(!comma)throw Error("Cannot locate original punctuation");
+ const letters=comps.filter(c=>c!==comma&&c.area>500).sort((a,b)=>{
+  const ra=a.y<H*.46?0:1,rb=b.y<H*.46?0:1;
+  return ra-rb||a.x-b.x;
+ });
+ if(letters.length!==10)throw Error("Original logo component count differs: "+letters.length);
+ const outline=makeOriginalCommaOutline(labels,comma,W);
+ shell.src=outline.svg;commaRows=outline.rows;commaAspect=comma.w/comma.h;
+ // Preserve original per-letter antialiased ink. This is the same split as
+ // the previous V16, NOT new typesetting or any substitute font.
+ function bitmap(c){
+  const el=makeCanvas(c.w,c.h),ec=el.getContext("2d");
+  ec.drawImage(canvas,c.x,c.y,c.w,c.h,0,0,c.w,c.h);
+  const data=ec.getImageData(0,0,c.w,c.h);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const i=(y*c.w+x)*4,g=(y+c.y)*W+x+c.x;
+   if(labels[g]===c.id)continue;
+   let near=false;
+   if(rgba[g*4+3]<28){
+    for(let dy=-1;dy<=1&&!near;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=x+c.x+dx,yy=y+c.y+dy;
+     if(xx>=0&&xx<W&&yy>=0&&yy<H&&labels[yy*W+xx]===c.id){near=true;break;}
+    }
+   }
+   if(!near)data.data[i+3]=0;
+  }
+  ec.putImageData(data,0,0);
+  return el.toDataURL("image/png");
+ }
+ glyphs=[...letters,comma].map((c,i)=>{
+  const el=document.createElement("span"),im=document.createElement("img");
+  el.className="letter";im.alt="";im.src=bitmap(c);el.append(im);
+  el.style.left=(c.x/W*100)+"%";el.style.top=(c.y/H*100)+"%";
+  el.style.width=(c.w/W*100)+"%";el.style.height=(c.h/H*100)+"%";
+  layer.append(el);
+  return {el,i,row:i<4?0:1,isComma:i===10,cx:(c.x+c.w/2)/W,cy:(c.y+c.h/2)/H,cw:c.w/W,ch:c.h/H};
+ });
+ return glyphs;
+}
+
+const cells=[
+ [-.245,-.205],[.005,-.22],[.235,-.198],
+ [-.22,-.055],[.03,-.065],[.245,-.042],
+ [-.205,.10],[.035,.095],[.227,.118],
+ [-.008,.246]
+];
+function layout(){
+ const r=stage.getBoundingClientRect();
+ const ratio=Math.max(.32,Math.min(.95,commaAspect));
+ let ch=Math.min(r.height*.93,window.innerWidth<680?480:510);
+ let cw=ch*ratio;
+ if(cw>r.width*.55){cw=r.width*.55;ch=cw/ratio}
+ shell.style.width=cw+"px";shell.style.height=ch+"px";
+ const rr=stage.getBoundingClientRect();
+ const fr=full.getBoundingClientRect();
+ const cx=rr.width*.5,cy=rr.height*.48;
+ return {stage:rr,logo:fr,cx,cy,w:cw,h:ch};
+}
+function rowAt(t){
+ const n=clamp(Math.round(t*(commaRows.length-1)),0,commaRows.length-1);
+ return commaRows[n]||{left:.15,right:.9};
+}
+function localComma(L,u,v){return {x:L.cx+(u-.5)*L.w,y:L.cy+(v-.5)*L.h}}
+function cubic(a,b,c,d,t){
+ const v=1-t;return {
+  x:v*v*v*a.x+3*v*v*t*b.x+3*v*t*t*c.x+t*t*t*d.x,
+  y:v*v*v*a.y+3*v*v*t*b.y+3*v*t*t*c.y+t*t*t*d.y
+ };
+}
+function pathAt(g,L,t,jail,home){
+ const edgeAt=(k,inset=0)=>localComma(L,rowAt(k).right-inset,k);
+ const leftAt=(k,offset=0)=>localComma(L,rowAt(k).left+offset,k);
+ const a=edgeAt(.41,.10),b=edgeAt(.69,.10);
+ const c=leftAt(.84,-.07);
+ const exit={x:c.x-L.w*.14,y:c.y+L.h*.044};
+ t=clamp(t);
+ if(t<.27)return cubic(jail,
+   {x:lerp(jail.x,a.x,.55),y:jail.y-L.h*.09},
+   {x:a.x-L.w*.10,y:a.y-L.h*.085},a,smooth(t/.27));
+ if(t<.52)return cubic(a,
+   {x:a.x+L.w*.085,y:a.y+L.h*.13},
+   {x:b.x+L.w*.055,y:b.y-L.h*.14},b,smooth((t-.27)/.25));
+ if(t<.74)return cubic(b,
+   {x:b.x-L.w*.06,y:b.y+L.h*.12},
+   {x:c.x+L.w*.17,y:c.y},exit,smooth((t-.52)/.22));
+ return cubic(exit,
+   {x:exit.x-L.w*.20,y:exit.y+L.h*.02},
+   {x:home.x-L.w*.12,y:home.y-L.h*.11},home,smooth((t-.74)/.26));
+}
+function drawLetters(now){
+ if(!ready)return;
+ const L=layout(),elapsed=now-releaseAt;
+ const active=phase==="releasing",idle=phase==="caged";
+ const finishP=active?clamp((elapsed-(releaseTotal-250))/460):phase==="assembled"||phase==="opening"?1:0;
+ shell.style.opacity=String(idle?1:Math.max(0,1-smooth((elapsed-540)/950)));
+ const logoAlpha=smooth(finishP);
+ full.style.opacity=String(logoAlpha);
+ const dx=hover?hover.x:0,dy=hover?hover.y:0;
+ glyphs.forEach(g=>{
+  const el=g.el;
+  if(g.isComma){el.style.display="none";return}
+  const dimW=L.logo.width*g.cw,dimH=L.logo.height*g.ch;
+  const home={x:L.logo.left-L.stage.left+L.logo.width*g.cx,
+              y:L.logo.top-L.stage.top+L.logo.height*g.cy};
+  el.style.left=(home.x-dimW*.5)+"px";
+  el.style.top=(home.y-dimH*.5)+"px";
+  el.style.width=dimW+"px";el.style.height=dimH+"px";
+  const cell=cells[g.i];
+  const idleS=now*.001;
+  const cage={x:L.cx+cell[0]*L.w,
+              y:L.cy+cell[1]*L.h};
+  let pos,scale=.66,rot=0;
+  if(idle){
+   let shake=0;
+   if(hover){
+    const xx=cage.x-dx,yy=cage.y-dy;
+    const d=Math.hypot(xx,yy),reach=Math.max(64,L.w*.42);
+    shake=Math.exp(-(d*d)/(reach*reach))*9;
+   }
+   pos={x:cage.x+Math.sin(idleS*1.1+g.i*1.13)*3.2+(g.i%2?1:-1)*shake,
+        y:cage.y+Math.cos(idleS*.96+g.i*.74)*3.6-shake*.52};
+   rot=Math.sin(idleS*.77+g.i)*3+(g.i%2?1:-1)*shake*.35;
+   scale=Math.min(.90,Math.max(.48,L.w*.138/Math.max(dimW,dimH)));
+  }else if(active){
+   const t=clamp((elapsed-g.i*releaseStep)/releaseDuration);
+   if(elapsed<g.i*releaseStep){
+    pos=cage;
+    scale=Math.min(.90,Math.max(.48,L.w*.138/Math.max(dimW,dimH)));
+   }else{
+    pos=pathAt(g,L,t,cage,home);
+    const startSize=Math.min(.90,Math.max(.48,L.w*.138/Math.max(dimW,dimH)));
+    scale=lerp(startSize,1,smooth((t-.70)/.30));
+    rot=12*Math.sin(Math.PI*t)*(g.i%2?-1:1)*(1-smooth((t-.70)/.30));
+   }
+  }else{
+   pos=home;scale=1;rot=0;
+  }
+  const opacity=active?1-smooth((finishP-.54)/.45):phase==="opening"?0:idle?1:1-logoAlpha;
+  el.style.opacity=String(clamp(opacity));
+  el.style.transform='translate3d('+(pos.x-home.x).toFixed(2)+'px,'+
+     (pos.y-home.y).toFixed(2)+'px,0) rotate('+rot.toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
+ });
+ if(active && elapsed>releaseTotal+400){
+  phase="assembled";wordmarkAt=now;
+  full.style.opacity="1";shell.style.opacity="0";
+  for(const g of glyphs)g.el.style.opacity="0";
+ }
+ if(phase==="assembled"&&now-wordmarkAt>410){
+  phase="opening";startLift();
+ }
+ if(phase!=="finished")frame=requestAnimationFrame(drawLetters);
+ else frame=0;
+}
+function beginRelease(){
+ if(!ready||phase!=="caged")return;
+ if(reduced){phase="assembled";full.style.opacity="1";shell.style.opacity="0";startLift();return}
+ phase="releasing";releaseAt=performance.now();
+ stage.classList.add("is-releasing");
+ hint.querySelector("strong").textContent="LET THE STORIES FLOW";
+ hint.querySelector("small").textContent="LETTERS RETURN TO THE ORIGINAL LOGO";
+ touch.disabled=true;resetButton.hidden=true;
+}
+function startLift(){
+ if(opened)return;
+ opened=true;phase="opening";
+ cover.classList.add("is-opening");
+ const begin=performance.now(),from=lift;
+ function move(now){
+  const t=clamp((now-begin)/(reduced?1:790));
+  lift=lerp(from,1,easeOut(t));
+  const w=innerWidth,h=innerHeight;
+  cover.style.transform="translate3d(0,"+(-108*lift).toFixed(2)+"%,0) rotate("+(-1.2*lift).toFixed(2)+"deg)";
+  cover.style.setProperty("--edge",(7+lift*26).toFixed(1)+"px");
+  curl.style.setProperty("--curl",(Math.min(130,w*.17)*Math.sin(Math.PI*lift)+.01).toFixed(2)+"px");
+  curl.style.setProperty("--curl-opacity",lift>.025&&lift<.95?"1":"0");
+  curl.style.transform="translate3d(0,"+(-h*.91*lift).toFixed(2)+"px,0)";
+  if(t<1)liftFrame=requestAnimationFrame(move);
+  else{
+   cover.classList.add("is-complete");cover.setAttribute("aria-hidden","true");
+   replay.classList.add("show");resetButton.hidden=true;
+   phase="finished";cancelAnimationFrame(frame);frame=0;
+  }
+ }
+ liftFrame=requestAnimationFrame(move);
+}
+function resetAll(){
+ cancelAnimationFrame(frame);cancelAnimationFrame(liftFrame);frame=0;
+ phase="caged";releaseAt=0;opened=false;wordmarkAt=0;lift=0;hover=null;touch.disabled=false;
+ cover.classList.remove("is-complete","is-opening");
+ cover.removeAttribute("aria-hidden");cover.style.transform="translate3d(0,0,0)";
+ stage.classList.remove("is-releasing");resetButton.hidden=false;replay.classList.remove("show");
+ hint.querySelector("strong").textContent="點一下逗號，讓故事開始";
+ hint.querySelector("small").textContent="ONE TOUCH / FROM COMMA TO HOMEPAGE";
+ full.style.opacity=0;
+ if(ready)frame=requestAnimationFrame(drawLetters);
+}
+function hitPointer(e){
+ const rect=stage.getBoundingClientRect();
+ hover={x:e.clientX-rect.left,y:e.clientY-rect.top};
+}
+stage.addEventListener("pointermove",e=>{if(phase==="caged")hitPointer(e)});
+stage.addEventListener("pointerleave",()=>{hover=null});
+touch.addEventListener("click",e=>{e.stopPropagation();beginRelease()});
+cover.addEventListener("pointerdown",e=>{
+ if(e.target.closest("button"))return;
+ pointerStart={x:e.clientX,y:e.clientY,time:performance.now()};
+});
+cover.addEventListener("pointerup",e=>{
+ if(phase!=="caged"||!pointerStart)return;
+ const dy=pointerStart.y-e.clientY,p=pointerStart;pointerStart=null;
+ if(dy>28||Math.hypot(p.x-e.clientX,p.y-e.clientY)<14)beginRelease();
+});
+cover.addEventListener("wheel",e=>{
+ if(phase==="finished")return;
+ e.preventDefault();if(e.deltaY>5)beginRelease();
+},{passive:false});
+touch.addEventListener("keydown",e=>{
+ if(["Enter"," "].includes(e.key)){e.preventDefault();beginRelease()}
+});
+skip.addEventListener("click",e=>{
+ e.stopPropagation();cancelAnimationFrame(frame);cancelAnimationFrame(liftFrame);
+ phase="assembled";full.style.opacity="1";shell.style.opacity="0";startLift();
+});
+resetButton.addEventListener("click",e=>{e.stopPropagation();resetAll()});
+replay.addEventListener("click",e=>{e.stopPropagation();resetAll()});
+window.addEventListener("resize",()=>{if(ready&&phase==="assembled")full.style.opacity="1"});
+document.addEventListener("visibilitychange",()=>{
+ if(document.hidden){cancelAnimationFrame(frame);frame=0}
+ else if(!frame&&ready&&!opened)frame=requestAnimationFrame(drawLetters);
+});
+async function loadOriginal(){
+ const response=await fetch("./index.html?opening-source=comma-flow",{cache:"no-store"});
+ if(!response.ok)throw Error("Original masthead logo could not be retrieved");
+ const doc=new DOMParser().parseFromString(await response.text(),"text/html");
+ const src=doc.querySelector(".site-header .gt-brand-logo")?.getAttribute("src");
+ if(!src||!src.startsWith("data:image/"))throw Error("No original logo image");
+ const img=new Image();img.src=src;
+ if(img.decode)await img.decode();
+ else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+ full.src=src;
+ sliceRealLogo(img);
+ if(!glyphs.length||!commaRows.length)throw Error("Could not separate the original artwork");
+ ready=true;
+ if(reduced){
+  shell.style.opacity="0";full.style.opacity="1";hint.querySelector("strong").textContent="進入 GOOD THINGS,";
+ }else{
+  shell.style.opacity="1";full.style.opacity="0";
+ }
+ frame=requestAnimationFrame(drawLetters);
+}
+function loadHome(){
+ under.addEventListener("load",()=>loading.hidden=true,{once:true});
+ setTimeout(()=>loading.hidden=true,4500);
+ under.src="./index.html?intro=off&opening-study=comma-flow#/";
+}
+loadHome();
+loadOriginal().catch(e=>{
+ console.warn("Original logo extraction failed:",e);
+ $("logo-error").style.display="block";
+ stage.classList.add("is-releasing");resetButton.hidden=true;touch.disabled=false;
+ ready=true;phase="caged";
+ if(full.src)full.style.opacity="1";
+});
+})();
+</script>
+</body>
+</html>
