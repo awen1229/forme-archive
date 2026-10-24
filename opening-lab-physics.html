@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f1eb">
+<title>GOOD THINGS, | Physical Comma Study</title>
+<style>
+:root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Arial,"PingFang TC","Noto Sans TC",sans-serif}
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+button,a{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+a{text-decoration:none}
+header,footer{width:min(1120px,91vw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header{border-bottom:1px solid var(--line);padding:23px 0 16px}
+header .brand{font-weight:800;font-size:13px;letter-spacing:.06em}
+header .side,footer{font-size:10px;letter-spacing:.10em;color:var(--mute)}
+main{flex:1;width:min(1120px,96vw);margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:550px;padding:12px 0 6px}
+h1{font:400 clamp(15px,1.6vw,19px)/1.5 Georgia,serif;margin:0;color:#59705d;letter-spacing:.02em}
+.eyebrow{font-size:9px;letter-spacing:.24em;color:var(--mute);margin:2px 0 10px}
+.stage{width:100%;height:clamp(420px,66vh,680px);height:clamp(420px,66dvh,680px);position:relative}
+canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.controls{width:min(700px,92%);margin:0 auto 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding-top:16px}
+.controls .buttons{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.cta{border:1px solid var(--ink);padding:12px 15px;min-width:128px;font-size:11px;letter-spacing:.13em;transition:background .2s}
+.cta.primary{background:var(--ink);color:#f7f5ed}
+.cta:hover{background:#e5e9df}.cta.primary:hover{background:#405347}
+.note{font-size:10px;color:var(--mute);line-height:1.7;text-align:right;max-width:260px}
+.status{font-size:10px;letter-spacing:.12em;color:var(--mute);text-align:center;min-height:18px;margin:0 0 5px}
+#error{display:none;width:min(500px,90%);font-size:13px;color:#87584e;line-height:1.8;text-align:center;padding:20px}
+footer{border-top:1px solid var(--line);padding:17px 0 25px}
+.small-link{border-bottom:1px solid var(--line);padding-bottom:3px}
+@media(max-width:700px){
+ header{padding:18px 0 13px}
+ header .side{font-size:9px}
+ main{min-height:500px;width:100%;padding:15px 0 4px}
+ .stage{height:clamp(430px,64dvh,610px)}
+ .controls{flex-direction:column;align-items:stretch;gap:12px;padding-top:13px;margin-bottom:16px}
+ .controls .buttons{justify-content:center}
+ .cta{min-width:132px}
+ .note{text-align:center;max-width:none}
+ footer{font-size:9px;gap:7px;flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+ .stage{height:52dvh;min-height:260px}
+}
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+</head>
+<body>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 01</span></header>
+<main>
+<div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
+<h1>Things fall into place.</h1>
+<div id="stage" class="stage">
+ <canvas id="scene" aria-label="原始 GOOD THINGS, 字母在放大的逗號容器中受重力與碰撞影響，傾倒後再組合成原始 LOGO。"></canvas>
+</div>
+<p id="status" class="status" role="status">READING THE ORIGINAL LETTERFORMS…</p>
+<div id="error" role="alert">無法載入原始 LOGO 或物理引擎。這是獨立實驗頁，網站首頁沒有受到影響。</div>
+<div class="controls">
+  <div class="buttons">
+   <button id="start" class="cta primary" type="button" disabled>POUR / 開始傾倒</button>
+   <button id="replay" class="cta" type="button" disabled>REPLAY ↻</button>
+  </div>
+  <div class="note">原始字母圖像 · Matter.js 剛體碰撞<br>可反覆測試，不影響正式首頁</div>
+</div>
+</main>
+<footer><span>INDEPENDENT DESIGN STUDY · NOT RELEASED</span><a class="small-link" href="./index.html">BACK TO SITE ↗</a></footer>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('scene'),stage=document.getElementById('stage');
+const ctx=canvas.getContext('2d',{alpha:true});
+const startButton=document.getElementById('start'),replayButton=document.getElementById('replay');
+const status=document.getElementById('status'),errorBox=document.getElementById('error');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
+const rand=(n)=>{const f=Math.sin(n*78.233+25.126)*43758.5453;return f-Math.floor(f)};
+let model=null,world=null,engine=null,gate=[],bodies=[],raf=0,last=0,elapsed=0;
+let mode='loading',tilt=0,layout=null,assemblyPositions=[],assemblyStart=0;
+let logoImage=null;
+
+function fail(reason){
+ console.error('GOOD THINGS physics study:',reason);
+ mode='error';cancelAnimationFrame(raf);
+ errorBox.style.display='block';status.textContent='THE STUDY COULD NOT START';
+ startButton.disabled=true;replayButton.disabled=true;
+}
+function getBitmap(img){
+ const width=img.naturalWidth,height=img.naturalHeight;
+ if(width*height>2600000||width<100)return Promise.reject('Unexpected logo dimensions');
+ const base=document.createElement('canvas');base.width=width;base.height=height;
+ const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
+ const data=c.getImageData(0,0,width,height);
+ const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
+ const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
+ for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
+ let id=0;
+ for(let index=0;index<ink.length;index++){
+  if(!ink[index]||seen[index])continue;
+  let count=0,head=0,tail=1,left=width,top=height,right=0,bottom=0;
+  queue[0]=index;seen[index]=1;id++;
+  while(head<tail){
+   const n=queue[head++],x=n%width,y=Math.floor(n/width);count++;
+   labels[n]=id;left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+   const neighbors=[x? n-1:-1,x<width-1?n+1:-1,y?n-width:-1,y<height-1?n+width:-1];
+   for(const v of neighbors)if(v>=0&&ink[v]&&!seen[v]){
+    seen[v]=1;queue[tail++]=v;
+   }
+  }
+  if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
+ }
+ const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
+  const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
+  return rowA-rowB||a.x-b.x;
+ });
+ if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ function cropGlyph(c){
+  const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
+  const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const src=((c.y+y)*width+c.x+x),dest=((y+2)*o.width+x+2)*4;
+   const alpha=data.data[src*4+3];
+   let belonging=labels[src]===c.id;
+   if(!belonging&&alpha&&alpha<40){
+    for(let dy=-1;dy<=1&&!belonging;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=c.x+x+dx,yy=c.y+y+dy;
+     if(xx>=0&&yy>=0&&xx<width&&yy<height&&labels[yy*width+xx]===c.id){belonging=true;break;}
+    }
+   }
+   if(belonging){
+    for(let k=0;k<4;k++)im.data[dest+k]=data.data[src*4+k];
+   }
+  }
+  target.putImageData(im,0,0);return o;
+ }
+ const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
+ for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
+  const n=(comma.y+y)*width+comma.x+x;
+  if(labels[n]===comma.id)cmask[(y+1)*cw+x+1]=1;
+ }
+ const inside=(x,y)=>x>=0&&x<cw&&y>=0&&y<ch&&cmask[Math.floor(y)*cw+Math.floor(x)]===1;
+ // Oriented pixel-edge contours exactly follow the supplied comma's alpha.
+ const outgoing=new Map(),edges=[];
+ const key=(x,y)=>y*(cw+1)+x;
+ function add(ax,ay,bx,by){
+  const id=edges.length,k=key(ax,ay);
+  edges.push({ax,ay,bx,by,used:false});
+  if(!outgoing.has(k))outgoing.set(k,[]);
+  outgoing.get(k).push(id);
+ }
+ for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(inside(x,y)){
+  if(!inside(x,y-1))add(x,y,x+1,y);
+  if(!inside(x+1,y))add(x+1,y,x+1,y+1);
+  if(!inside(x,y+1))add(x+1,y+1,x,y+1);
+  if(!inside(x-1,y))add(x,y+1,x,y);
+ }
+ const loops=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const pts=[],first=key(edges[i].ax,edges[i].ay);
+  let current=i;
+  while(pts.length<edges.length){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push({x:e.ax,y:e.ay});
+   const k=key(e.bx,e.by);
+   if(k===first)break;
+   const next=(outgoing.get(k)||[]).find(i=>!edges[i].used);
+   if(next===undefined)break;current=next;
+  }
+  if(pts.length>20){
+   let area=0;
+   for(let n=0;n<pts.length;n++){
+    const p=pts[n],q=pts[(n+1)%pts.length];area+=p.x*q.y-p.y*q.x;
+   }
+   loops.push({area:Math.abs(area),pts});
+  }
+ }
+ loops.sort((a,b)=>b.area-a.area);
+ if(!loops.length)throw Error('Original comma contour missing');
+ // Cyclic gaussian then sample, preserving the recognisable comma tail.
+ const ring=loops[0].pts,smoothed=[];
+ const sig=2.9;
+ for(let i=0;i<ring.length;i++){
+  let sum=0,x=0,y=0;
+  for(let d=-9;d<=9;d++){
+   const weight=Math.exp(-d*d/(2*sig*sig)),p=ring[(i+d+ring.length)%ring.length];
+   x+=p.x*weight;y+=p.y*weight;sum+=weight;
+  }
+  smoothed.push({x:x/sum,y:y/sum});
+ }
+ const contour=[];
+ let lastPos=smoothed[0];
+ for(let i=0;i<smoothed.length;i++){
+  const pos=smoothed[i];
+  if(contour.length===0||Math.hypot(pos.x-lastPos.x,pos.y-lastPos.y)>=2.4){
+   contour.push(pos);lastPos=pos;
+  }
+ }
+ if(contour.length<30)throw Error('Insufficient original contour points');
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+}
+function fitLayout(){
+ const bounds=stage.getBoundingClientRect();
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ canvas.width=Math.max(1,Math.round(bounds.width*dpr));
+ canvas.height=Math.max(1,Math.round(bounds.height*dpr));
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ const w=bounds.width,h=bounds.height;
+ const vh=Math.min(h*.78,w<600?h*.64:h*.73,490);
+ const scale=vh/model.comma.h;
+ return {w,h,vw:model.comma.w*scale,vh,scale,cx:w*.5,cy:h*.47,
+  logoW:Math.min(w*.79,570),logoY:h*.47};
+}
+function strokeComma(pts,gap,cx,cy,scale){
+ if(!pts.length)return;
+ ctx.save();ctx.lineWidth=Math.max(2,3.0/scale);ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.strokeStyle='#29723b';ctx.fillStyle='rgba(41,114,59,.035)';
+ // Underlying silhouette is the genuine original comma. Only the outline
+ // presentation changes to turn its ink volume into a clear container.
+ ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+ for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+ ctx.closePath();ctx.fill();
+ ctx.beginPath();
+ for(let i=0;i<pts.length;i++){
+  const j=(i+1)%pts.length;
+  if(gap.has(i))continue;
+  const a=pts[i],b=pts[j];
+  ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+ }
+ ctx.stroke();ctx.restore();
+}
+function fitCircle(x,y,r){
+ for(let t=0;t<16;t++){
+  const a=2*Math.PI*t/16;
+  if(!model.inside(x+Math.cos(a)*r,y+Math.sin(a)*r))return false;
+ }
+ return model.inside(x,y);
+}
+function packTen(){
+ const W=model.comma.w,H=model.comma.h;
+ const positions=[];
+ let radius=Math.min(12.8,W*.084,H*.060);
+ for(let attempt=0;attempt<20;attempt++,radius*=.92){
+  positions.length=0;
+  const step=Math.max(2.4,radius*.53),candidates=[];
+  for(let y=H-radius*1.1;y>radius*1.1;y-=step){
+   for(let x=radius*1.1;x<W-radius*1.1;x+=step){
+    const px=x+step*(rand(x*11+y*7)-.5)*.15;
+    const py=y+step*(rand(x*3+y*17)-.5)*.15;
+    if(fitCircle(px,py,radius*1.11))
+     candidates.push({x:px,y:py,score:-py+Math.abs(px-W*.5)*.12});
+   }
+  }
+  candidates.sort((a,b)=>a.score-b.score);
+  for(const c of candidates){
+   if(positions.every(p=>Math.hypot(p.x-c.x,p.y-c.y)>radius*2.24)){
+    positions.push({x:c.x,y:c.y});
+    if(positions.length===10)break;
+   }
+  }
+  if(positions.length===10) return {positions,radius};
+ }
+ throw Error('The authentic comma is too narrow to pack ten glyphs safely');
+}
+function chooseGate(contour,r){
+ const H=model.comma.h,W=model.comma.w;
+ let target=-1,best=Infinity;
+ for(let i=0;i<contour.length;i++){
+  const p=contour[i];
+  if(p.y<H*.29||p.y>H*.72)continue;
+  // The left shoulder, near the comma's downhill side, is the outlet.
+  const score=p.x+(Math.abs(p.y-H*.51)*.43);
+  if(score<best){best=score;target=i;}
+ }
+ if(target<0)throw Error('No outlet on the original comma');
+ let circumference=0;
+ const distances=[];
+ for(let i=0;i<contour.length;i++){
+  const len=Math.hypot(contour[(i+1)%contour.length].x-contour[i].x,
+                       contour[(i+1)%contour.length].y-contour[i].y);
+  distances.push(len);circumference+=len;
+ }
+ const arc=Math.min(r*2.6,circumference*.15),gap=new Set();
+ for(const direction of [-1,1]){
+  let i=target,covered=0;
+  while(covered<arc){
+   const j=direction===1?i:(i-1+contour.length)%contour.length;
+   gap.add(j);covered+=distances[j];
+   i=(i+direction+contour.length)%contour.length;
+  }
+ }
+ return gap;
+}
+function initialize(){
+ if(engine){Matter.Composite.clear(engine.world,false);Matter.Engine.clear(engine);}
+ const {Engine,Bodies,Composite,Body}=Matter;
+ engine=Engine.create({positionIterations:10,velocityIterations:8,constraintIterations:4,enableSleeping:false});
+ engine.gravity.scale=.00155;
+ world=engine.world;
+ const {positions,radius}=packTen(),contour=model.contour;
+ const gapIndices=chooseGate(contour,radius);
+ gate=[];const walls=[];
+ for(let i=0;i<contour.length;i++){
+  const a=contour[i],b=contour[(i+1)%contour.length],len=Math.hypot(b.x-a.x,b.y-a.y);
+  if(len<.15)continue;
+  const segment=Bodies.rectangle((a.x+b.x)/2,(a.y+b.y)/2,len+2,4,{
+   isStatic:true,angle:Math.atan2(b.y-a.y,b.x-a.x),
+   friction:.8,restitution:.13,label:'original-comma-wall'
+  });
+  walls.push(segment);
+  if(gapIndices.has(i))gate.push({body:segment,i});
+ }
+ Composite.add(world,walls);
+ bodies=positions.map((p,i)=>{
+  const body=Bodies.circle(p.x,p.y,radius*.98,{
+   friction:.82,frictionStatic:1.4,frictionAir:.008,restitution:.10,
+   density:.0008,slop:.12,label:'original-letter-'+i
+  },24);
+  body.plugin.glyph=i;body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
+  return body;
+ });
+ Composite.add(world,bodies);
+ // Closed wall first: all ten pieces settle before the exit is opened.
+ model.gap=gapIndices;model.radius=radius;
+ mode='settle';elapsed=0;tilt=0;last=0;assemblyPositions=[];
+ startButton.disabled=false;replayButton.disabled=false;
+ status.textContent='10 ORIGINAL LETTERS / PHYSICALLY PACKED';
+ render();
+}
+function triggerPour(){
+ if(mode==='error'||mode==='loading')return;
+ if(mode==='assemble'||mode==='done'){initialize();}
+ mode='pour';elapsed=0;status.textContent='GRAVITY, COLLISION, AND A CHAIN REACTION';
+ startButton.textContent='POURING…';startButton.disabled=true;
+}
+function replay(){
+ initialize();startButton.textContent='POUR / 開始傾倒';
+}
+function setupAssembly(){
+ mode='assemble';elapsed=0;
+ assemblyPositions=bodies.map((b,i)=>{
+  const a=worldToScreen(b.position.x,b.position.y);
+  return {x:a.x,y:a.y,angle:b.angle+b.plugin.spriteAngle};
+ });
+ status.textContent='FINDING THEIR ORIGINAL PLACES';
+}
+function worldToScreen(x,y){
+ const dx=(x-model.comma.w*.5)*layout.scale,dy=(y-model.comma.h*.5)*layout.scale;
+ const s=Math.sin(tilt),c=Math.cos(tilt);
+ return {x:layout.cx+dx*c-dy*s,y:layout.cy+dx*s+dy*c};
+}
+function drawGlyph(img,x,y,angle,w,h,opacity=1){
+ ctx.save();ctx.globalAlpha=opacity;
+ ctx.translate(x,y);ctx.rotate(angle);ctx.drawImage(img,-w/2,-h/2,w,h);
+ ctx.restore();
+}
+function render(){
+ if(!model||!layout)return;
+ ctx.clearRect(0,0,layout.w,layout.h);
+ if(mode==='error')return;
+ const assembly=mode==='assemble'||mode==='done';
+ const assemblyProgress=mode==='done'?1:ease(elapsed/1.5);
+ const originalBlend=assembly?ease((assemblyProgress-.80)/.20):0;
+ const vesselOpacity=assembly?1-ease((assemblyProgress-.40)/.5):1;
+ const pts=model.contour;
+ ctx.save();
+ ctx.translate(layout.cx,layout.cy);ctx.rotate(tilt);
+ ctx.scale(layout.scale,layout.scale);
+ ctx.translate(-model.comma.w/2,-model.comma.h/2);
+ ctx.globalAlpha=vesselOpacity;
+ strokeComma(pts,mode==='pour'&&elapsed>1.15?model.gap:new Set());
+ ctx.restore();
+
+ const {radius}=model;
+ for(let i=0;i<bodies.length;i++){
+  const body=bodies[i],glyph=model.glyphs[i],pos=worldToScreen(body.position.x,body.position.y);
+  const originalW=radius*1.63*layout.scale*(glyph.w/Math.max(glyph.w,glyph.h));
+  const originalH=radius*1.63*layout.scale*(glyph.h/Math.max(glyph.w,glyph.h));
+  let x=pos.x,y=pos.y,angle=body.angle+body.plugin.spriteAngle,w=originalW,h=originalH;
+  if(assembly){
+   const start=assemblyPositions[i];
+   const logoLeft=(layout.w-layout.logoW)/2;
+   const logoHeight=layout.logoW*model.height/model.width;
+   const logoTop=layout.logoY-logoHeight/2;
+   const gx=logoLeft+(glyph.x+glyph.w*.5)/model.width*layout.logoW;
+   const gy=logoTop+(glyph.y+glyph.h*.5)/model.height*logoHeight;
+   const t=assemblyProgress;
+   x=lerp(start.x,gx,t);y=lerp(start.y,gy,t);
+   angle=lerp(start.angle,0,t);
+   w=lerp(originalW,glyph.w/model.width*layout.logoW,t);
+   h=lerp(originalH,glyph.h/model.height*logoHeight,t);
+  }
+  drawGlyph(glyph.img,x,y,angle,w,h,1-originalBlend);
+ }
+ if(originalBlend>0){
+  const lh=layout.logoW*model.height/model.width;
+  ctx.save();ctx.globalAlpha=originalBlend;
+  ctx.drawImage(model.source,(layout.w-layout.logoW)/2,layout.logoY-lh/2,layout.logoW,lh);
+  ctx.restore();
+ }
+}
+function frame(now){
+ raf=requestAnimationFrame(frame);
+ if(!last)last=now;
+ const dt=Math.min(35,now-last);last=now;
+ if(!model||!engine||!layout)return;
+ if(mode==='settle'||mode==='pour'){
+  if(mode==='pour'){
+   elapsed+=dt/1000;
+   const z=ease(elapsed/2.9);
+   tilt=(-47*Math.PI/180)*z;
+   if(elapsed>1.15&&gate.length){
+    for(const {body} of gate)Matter.Composite.remove(world,body);
+    gate=[];status.textContent='LET THE LETTERS MOVE ONE ANOTHER';
+   }
+   if(elapsed>6.2)setupAssembly();
+  }
+  engine.gravity.x=Math.sin(tilt);
+  engine.gravity.y=Math.cos(tilt);
+  // Fixed steps keep the collisions consistent under uneven mobile frames.
+  const steps=Math.max(1,Math.ceil(dt/16.667));
+  for(let j=0;j<steps;j++)Matter.Engine.update(engine,dt/steps);
+ }else if(mode==='assemble'){
+  elapsed+=dt/1000;
+  if(elapsed>=1.5){mode='done';elapsed=1.5;status.textContent='GOOD THINGS, / ORIGINAL LOGO';startButton.disabled=false;startButton.textContent='POUR AGAIN ↻';}
+ }
+ render();
+}
+async function load(){
+ try{
+  if(!window.Matter)throw Error('Matter.js could not load');
+  const response=await fetch('./index.html',{cache:'no-store'});
+  if(!response.ok)throw Error('Original website source '+response.status);
+  const text=await response.text(),documentSource=new DOMParser().parseFromString(text,'text/html');
+  const source=documentSource.querySelector('.site-header .gt-brand-logo');
+  const uri=source?.getAttribute('src');
+  if(!uri||!uri.startsWith('data:image/'))throw Error('Original logo source missing');
+  logoImage=new Image();logoImage.src=uri;
+  if(logoImage.decode)await logoImage.decode();
+  else await new Promise((resolve,reject)=>{logoImage.onload=resolve;logoImage.onerror=reject});
+  model=await getBitmap(logoImage);
+  layout=fitLayout();initialize();
+  if(reduce){setupAssembly();mode='done';elapsed=1.5;render();}
+  raf=requestAnimationFrame(frame);
+ }catch(e){fail(e)}
+}
+startButton.addEventListener('click',triggerPour);
+replayButton.addEventListener('click',replay);
+window.addEventListener('resize',()=>{
+ if(!model)return;
+ layout=fitLayout();initialize();
+ startButton.textContent='POUR / 開始傾倒';
+});
+window.addEventListener('pagehide',()=>cancelAnimationFrame(raf));
+window.addEventListener('load',load,{once:true});
+})();
+</script>
+</body>
+</html>
