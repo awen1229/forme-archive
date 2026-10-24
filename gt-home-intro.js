@@ -228,7 +228,9 @@ function extractOriginal(){
     left+=row.left*w;right+=row.right*w;n+=w;
    }
    const a=n?left/n:ww*.4,b=n?right/n:ww*.6;
-   return {x:(a+(b-a)*.50)/ww,width:Math.max(0,b-a)/ww,y:y/hh};
+   const span=Math.max(1,b-a),center=a+span*.77;
+   return {x:center/ww,width:span/ww,
+    clearance:2*Math.min(center-a,b-center)/ww,y:y/hh};
   });
     largeComma.dataset.originalComma='vector-trace';
 
@@ -241,95 +243,94 @@ function bezier(a,b,c,d,t){
 }
 function rail(t){
  t=clamp(t);
- // Follow the source PNG's actual comma silhouette. Stay inside the wide
- // upper and middle sections until the letter leaves at the tail.
- if(t<.17){
-  const k=smooth(t/.17);
-  const first=commaRail[Math.round(commaRail.length*.13)]||{x:.55,width:.28};
-  return {x:.50+(first.x-.50)*k,y:-.17+.30*k,width:first.width};
+ // Use the source image's real right-hand inner comma geometry.
+ const begin=commaRail[Math.round(commaRail.length*.12)]||{x:.67,width:.28,clearance:.12};
+ if(t<.12){
+  const q=smooth(t/.12);
+  return {x:.52+(begin.x-.52)*q,y:-.16+.28*q,
+   width:begin.width,clearance:begin.clearance};
  }
- const u=range(t,.17,1);
- const relY=.13+.68*smooth(u);
- const row=commaRail[Math.min(commaRail.length-1,Math.max(0,Math.round(relY*(commaRail.length-1))))];
- return row?{x:row.x,y:relY,width:row.width}:{x:.55,y:relY,width:.20};
+ const y=.12+.68*smooth(range(t,.12,1));
+ const row=commaRail[Math.round(y*(commaRail.length-1))];
+ return row?{...row,y}:{x:.68,y,width:.2,clearance:.08};
 }
 function paint(){
  frame=0;if(ended)return;
- const bounds=largeComma.getBoundingClientRect();
- const logoRect=stage.getBoundingClientRect();
- const sculptureRect=sculpture.getBoundingClientRect();
- const assembling=smooth(range(p,.79,.92));
- // Large original comma remains a clean outline while the letters slide.
- // At the end it collapses into the small comma of the untouched final LOGO.
- let deltaX=0,deltaY=0,logoScale=.12;
- if(commaBox){
-  const c=commaBox;
-  const targetX=logoRect.left+(c.x+c.w/2)/c.sourceW*logoRect.width;
-  const targetY=logoRect.top+(c.y+c.h/2)/c.sourceH*logoRect.height;
-  deltaX=targetX-(sculptureRect.left+sculptureRect.width*.5);
-  deltaY=targetY-(sculptureRect.top+sculptureRect.height*.47);
-  logoScale=clamp((c.w/c.sourceW*logoRect.width)/(largeComma.offsetWidth||180),.06,.40);
- }
- const scale=(1+.05*smooth(range(p,.03,.22)))*(1-assembling)+logoScale*assembling;
- largeComma.style.opacity=String(.90*(1-assembling));
- largeComma.style.transform='translate(calc(-50% + '+(deltaX*assembling)+'px),calc(-50% + '+(deltaY*assembling)+'px)) scale('+scale+')';
- // Use the comma's untransformed CSS geometry for absolute path points. Its
- // center and dimensions are stable while transforms move the outline.
- const cx=sculptureRect.left+sculptureRect.width*.5;
- const cy=sculptureRect.top+sculptureRect.height*.47;
- const boxW=largeComma.offsetWidth||Math.max(1,bounds.width);
- const boxH=largeComma.offsetHeight||Math.max(1,bounds.height);
- // Respect object-fit's transparent letterboxing if the source aspect ratio
- // is narrower than the viewport's image element box.
- const aspect=commaBox?commaBox.w/commaBox.h:boxW/boxH;
- const w=Math.min(boxW,boxH*aspect),h=Math.min(boxH,boxW/aspect);
+ const sr=sculpture.getBoundingClientRect(),lr=stage.getBoundingClientRect();
+ const original=commaBox||{w:1,h:1};
+ const iw=largeComma.offsetWidth||260,ih=largeComma.offsetHeight||440;
+ const aspect=original.w/original.h;
+ const w=Math.min(iw,ih*aspect),h=Math.min(ih,iw/aspect);
+ const cx=sr.left+sr.width*.5,cy=sr.top+sr.height*.47;
  const point=(u,v)=>({x:cx+(u-.5)*w,y:cy+(v-.5)*h});
- const tail=rail(1),tip=point(tail.x,tail.y);
+ const tip=rail(1),outlet=point(tip.x,tip.y);
+ const outsideLeft=-Math.max(110,innerWidth*.14);
+ const outsideRight=innerWidth+Math.max(110,innerWidth*.14);
+ // Keep the comma as the slide, then remove it before the separate LOGO scene.
+ const commaFade=smooth(range(p,.64,.78));
+ largeComma.style.opacity=String(.90*(1-commaFade));
+ largeComma.style.transform='translate(-50%,-50%) scale('+
+  (1+.04*smooth(range(p,.02,.28))-.05*commaFade)+')';
+ const finishLogo=smooth(range(p,.943,.978));
  parts.forEach((el,i)=>{
-  // Ten letters enter one-by-one. The last letter finishes before the full
-  // logo crossfade, so the actual letters always reach their real positions.
-  const t=range(p,.065+i*.034,.065+i*.034+.44);
-  // Calculate the untransformed component center from its layout metrics.
-  const homeX=logoRect.left+el.offsetLeft+el.offsetWidth/2;
-  const homeY=logoRect.top+el.offsetTop+el.offsetHeight/2;
-  let position,angle=0;
-  if(t<.77){
-   const q=rail(smooth(t/.77));
-   position=point(q.x,q.y);
-   const ahead=rail(clamp(smooth(t/.77)+.025));
-   const tangent=point(ahead.x,ahead.y);
-   angle=clamp(Math.atan2(tangent.y-position.y,tangent.x-position.x)*180/Math.PI-90, -14,14);
-  }else{
-   const q=smooth((t-.77)/.23);
-   // A short outbound curve releases each letter from the comma's tail,
-   // before it gently lands in its exact spot within the original LOGO.
-   position={
-    x:bezier(tip.x,tip.x-w*.32,homeX-w*.11,homeX,q),
-    y:bezier(tip.y,tip.y+h*.16,homeY+h*.20,homeY,q)
-   };
-   angle=(1-q)*-10;
-  }
-  const reveal=smooth(range(t,0,.11));
-  // Keep moving glyphs small enough for even the narrow right inner curve.
-  // Restore every original letter to 100% only when it lands in the LOGO.
-  const onRail=rail(smooth(Math.min(1,t/.77)));
-  // Respect both the glyph's width and rotation. The diagonal is a safe
-  // envelope for any orientation; generous margins keep it off the stroke.
-  const railWidth=Math.max(5,(onRail.width||.18)*w);
-  const safeGlyphDiameter=railWidth*.43;
+  const homeX=lr.left+el.offsetLeft+el.offsetWidth*.5;
+  const homeY=lr.top+el.offsetTop+el.offsetHeight*.5;
+  const slideA=.028+i*.0115;
+  const slideB=.420+i*.012;
+  const exitB=.545+i*.012;
+  const returnA=.680+i*.009;
+  const returnB=.846+i*.010;
   const diagonal=Math.max(1,Math.hypot(el.offsetWidth,el.offsetHeight));
-  const travellingScale=clamp(safeGlyphDiameter/diagonal,.035,.31);
-  const landing=smooth(range(t,.78,1));
-  const glyphScale=travellingScale+(1-travellingScale)*landing;
-  el.style.opacity=String(reveal*(1-assembling));
-  el.style.transform='translate3d('+(position.x-homeX).toFixed(2)+'px,'+(position.y-homeY).toFixed(2)+'px,0) rotate('+angle.toFixed(2)+'deg) scale('+glyphScale.toFixed(3)+')';
+  const fit=u=>{
+   const c=rail(u);
+   return clamp(Math.max(2,(c.clearance||.07)*w*.72)/diagonal,.035,.28);
+  };
+  const exitScale=fit(1);
+  let pos={x:homeX,y:homeY},rot=0,scale=1,opacity=0;
+  if(p<slideA){
+   const q=rail(0);pos=point(q.x,q.y);scale=fit(0);
+  }else if(p<=slideB){
+   // First act: fall down the right-hand inner curve of the giant comma.
+   const q=smooth(range(p,slideA,slideB));
+   const here=rail(q),next=rail(Math.min(1,q+.02));
+   pos=point(here.x,here.y);
+   const tangent=point(next.x,next.y);
+   rot=clamp(Math.atan2(tangent.y-pos.y,tangent.x-pos.x)*180/Math.PI-90,-11,11);
+   scale=fit(q);
+   opacity=smooth(range(p,slideA,slideA+.027));
+  }else if(p<exitB){
+   // Second act: slide completely off the LEFT side of the viewport.
+   const q=smooth(range(p,slideB,exitB));
+   pos={x:bezier(outlet.x,outlet.x-w*.24,outsideLeft+innerWidth*.08,outsideLeft,q),
+        y:bezier(outlet.y,outlet.y+h*.18,outlet.y-h*.12,outlet.y-h*.09,q)};
+   rot=-11*q;scale=exitScale;
+   opacity=1-smooth(range(q,.77,1));
+  }else if(p<returnA){
+   pos={x:outsideLeft,y:outlet.y-h*.09};scale=exitScale;
+  }else if(p<returnB){
+   // Third act: re-enter from the RIGHT and take the original letter slot.
+   const q=smooth(range(p,returnA,returnB));
+   pos={x:bezier(outsideRight,outsideRight-innerWidth*.12,
+          homeX+Math.min(90,innerWidth*.11),homeX,q),
+        y:bezier(homeY-h*.10,homeY+h*.03,homeY-h*.07,homeY,q)};
+   scale=exitScale+(1-exitScale)*q;
+   rot=9*(1-q);
+   opacity=smooth(range(p,returnA,returnA+.032));
+  }else{
+   pos={x:homeX,y:homeY};opacity=1;scale=1;
+  }
+  el.style.opacity=String(opacity*(1-finishLogo));
+  el.style.transform='translate3d('+(pos.x-homeX).toFixed(2)+'px,'+
+   (pos.y-homeY).toFixed(2)+'px,0) rotate('+rot.toFixed(2)+
+   'deg) scale('+scale.toFixed(3)+')';
  });
- if(full)full.style.opacity=String(assembling);
- caption.style.opacity=String(smooth(range(p,.78,.92)));
- const out=smooth(range(p,.92,1));
+ if(full)full.style.opacity=String(finishLogo);
+ caption.style.opacity=String(smooth(range(p,.86,.948)));
+ const out=smooth(range(p,.958,1));
  sculpture.style.opacity=String(1-.08*out);
- overlay.style.transform='translate3d(0,'+(-13*out)+'%,0)';
- bar.style.transform='scaleX('+p+')';pct.textContent=Math.round(p*100)+'%';
+ overlay.style.transform='translate3d(0,'+(-12*out)+'%,0)';
+ bar.style.transform='scaleX('+p+')';
+ pct.textContent=Math.round(p*100)+'%';
 }
 function request(){if(!frame)frame=requestAnimationFrame(paint)}
 function cleanup(){
@@ -343,7 +344,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v5','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v8','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
