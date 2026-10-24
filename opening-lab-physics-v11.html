@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f1eb">
+<title>GOOD THINGS, | Full-Exit Miniature Glyph Physics Spill & Fast Return Study V11</title>
+<style>
+:root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Arial,"PingFang TC","Noto Sans TC",sans-serif}
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+button,a{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+a{text-decoration:none}
+header,footer{width:min(1120px,91vw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header{border-bottom:1px solid var(--line);padding:23px 0 16px}
+header .brand{font-weight:800;font-size:13px;letter-spacing:.06em}
+header .side,footer{font-size:10px;letter-spacing:.10em;color:var(--mute)}
+main{flex:1;width:min(1120px,96vw);margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:550px;padding:12px 0 6px}
+h1{font:400 clamp(15px,1.6vw,19px)/1.5 Georgia,serif;margin:0;color:#59705d;letter-spacing:.02em}
+.eyebrow{font-size:9px;letter-spacing:.24em;color:var(--mute);margin:2px 0 10px}
+.stage{width:100%;height:clamp(420px,66vh,680px);height:clamp(420px,66dvh,680px);position:relative}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
+.controls{width:min(700px,92%);margin:0 auto 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding-top:16px}
+.controls .buttons{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.cta{border:1px solid var(--ink);padding:12px 15px;min-width:128px;font-size:11px;letter-spacing:.13em;transition:background .2s}
+.cta.primary{background:var(--ink);color:#f7f5ed}
+.cta:hover{background:#e5e9df}.cta.primary:hover{background:#405347}
+.note{font-size:10px;color:var(--mute);line-height:1.7;text-align:right;max-width:260px}
+.status{font-size:10px;letter-spacing:.12em;color:var(--mute);text-align:center;min-height:18px;margin:0 0 5px}
+.gesture-hint{font-size:9px;letter-spacing:.14em;color:#578260;margin:0 0 12px;text-align:center;line-height:1.4}
+#error{display:none;width:min(500px,90%);font-size:13px;color:#87584e;line-height:1.8;text-align:center;padding:20px}
+footer{border-top:1px solid var(--line);padding:17px 0 25px}
+.small-link{border-bottom:1px solid var(--line);padding-bottom:3px}
+@media(max-width:700px){
+ header{padding:18px 0 13px}
+ header .side{font-size:9px}
+ main{min-height:500px;width:100%;padding:15px 0 4px}
+ .stage{height:clamp(430px,64dvh,610px)}
+ .controls{flex-direction:column;align-items:stretch;gap:12px;padding-top:13px;margin-bottom:16px}
+ .controls .buttons{justify-content:center}
+ .cta{min-width:132px}
+ .note{text-align:center;max-width:none}
+ footer{font-size:9px;gap:7px;flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+ .stage{height:52dvh;min-height:260px}
+}
+
+/* Embedded HOME preview uses the very same Matter.js simulation as Study 03. */
+html.gt-physics-embedded, html.gt-physics-embedded body{height:100%;min-height:0;overflow:hidden}
+html.gt-physics-embedded header,html.gt-physics-embedded footer,
+html.gt-physics-embedded .eyebrow,html.gt-physics-embedded h1,
+html.gt-physics-embedded #status,html.gt-physics-embedded #gesture-hint,
+html.gt-physics-embedded .controls{display:none!important}
+html.gt-physics-embedded main{width:100%;height:100%;min-height:0;
+ margin:0;padding:0;display:block}
+html.gt-physics-embedded .stage{width:100%;height:100%;min-height:0}
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+</head>
+<body>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('gt-physics-embedded');</script>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 11</span></header>
+<main>
+<div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
+<h1>Things fall into place.</h1>
+<div id="stage" class="stage">
+ <canvas id="scene" aria-label="原始 GOOD THINGS, 字母在放大的逗號容器中受重力與碰撞影響，傾倒後再組合成原始 LOGO。"></canvas>
+</div>
+<p id="status" class="status" role="status">READING THE ORIGINAL LETTERFORMS…</p>
+<p id="gesture-hint" class="gesture-hint">↓&nbsp; SWIPE DOWN OR TAP THE COMMA TO TURN IT OVER</p>
+<div id="error" role="alert">無法載入原始 LOGO 或物理引擎。這是獨立實驗頁，網站首頁沒有受到影響。</div>
+<div class="controls">
+  <div class="buttons">
+   <button id="start" class="cta primary" type="button" disabled>TURN / 翻轉逗號</button>
+   <button id="replay" class="cta" type="button" disabled>REPLAY ↻</button>
+  </div>
+  <div class="note">Matter.js 真實重力與碰撞：順時針翻轉，字母經內側路徑吸向逗號尾端，<br>從左側流出，再從右側依序返回組成原始 LOGO</div>
+</div>
+</main>
+<footer><span>INDEPENDENT DESIGN STUDY · NOT RELEASED</span><a class="small-link" href="./index.html">BACK TO SITE ↗</a></footer>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('scene'),stage=document.getElementById('stage');
+const ctx=canvas.getContext('2d',{alpha:true});
+const startButton=document.getElementById('start'),replayButton=document.getElementById('replay');
+const status=document.getElementById('status'),errorBox=document.getElementById('error');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
+const rand=(n)=>{const f=Math.sin(n*78.233+25.126)*43758.5453;return f-Math.floor(f)};
+/* Small throughout the physical & conveyor stages; restore full-sized only
+   in the FINAL original logo. Never replace the supplied letterforms. */
+const MINI_DESKTOP=.62,MINI_MOBILE=.56;
+const miniature=()=>layout.w<700?MINI_MOBILE:MINI_DESKTOP;
+let model=null,world=null,engine=null,gate=[],bodies=[],raf=0,last=0,elapsed=0;
+let mode='loading',tilt=Math.PI,layout=null,assemblyPositions=[],assemblyStart=0,spillCount=0;
+let finishElapsed=0,lastReleasedAt=null,lastWrappedAt=null,wallBodies=[],outlet=null,springBodies=[],flowField=null,mouthEdges=[];
+const embed=new URLSearchParams(location.search).has('embed');
+const report=(type,details={})=>{if(embed&&window.parent!==window)window.parent.postMessage({type:'gt-physics-'+type,...details},location.origin);};
+let logoImage=null;
+
+function fail(reason){
+ console.error('GOOD THINGS physics study:',reason);
+ mode='error';cancelAnimationFrame(raf);
+ errorBox.style.display='block';status.textContent='THE STUDY COULD NOT START';
+ startButton.disabled=true;replayButton.disabled=true;
+ report('fail');
+}
+function getBitmap(img){
+ const width=img.naturalWidth,height=img.naturalHeight;
+ if(width*height>2600000||width<100)return Promise.reject('Unexpected logo dimensions');
+ const base=document.createElement('canvas');base.width=width;base.height=height;
+ const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
+ const data=c.getImageData(0,0,width,height);
+ const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
+ const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
+ for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
+ let id=0;
+ for(let index=0;index<ink.length;index++){
+  if(!ink[index]||seen[index])continue;
+  let count=0,head=0,tail=1,left=width,top=height,right=0,bottom=0;
+  queue[0]=index;seen[index]=1;id++;
+  while(head<tail){
+   const n=queue[head++],x=n%width,y=Math.floor(n/width);count++;
+   labels[n]=id;left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+   const neighbors=[x? n-1:-1,x<width-1?n+1:-1,y?n-width:-1,y<height-1?n+width:-1];
+   for(const v of neighbors)if(v>=0&&ink[v]&&!seen[v]){
+    seen[v]=1;queue[tail++]=v;
+   }
+  }
+  if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
+ }
+ const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
+  const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
+  return rowA-rowB||a.x-b.x;
+ });
+ if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ function cropGlyph(c){
+  const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
+  const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const src=((c.y+y)*width+c.x+x),dest=((y+2)*o.width+x+2)*4;
+   const alpha=data.data[src*4+3];
+   let belonging=labels[src]===c.id;
+   if(!belonging&&alpha&&alpha<40){
+    for(let dy=-1;dy<=1&&!belonging;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=c.x+x+dx,yy=c.y+y+dy;
+     if(xx>=0&&yy>=0&&xx<width&&yy<height&&labels[yy*width+xx]===c.id){belonging=true;break;}
+    }
+   }
+   if(belonging){
+    for(let k=0;k<4;k++)im.data[dest+k]=data.data[src*4+k];
+   }
+  }
+  target.putImageData(im,0,0);return o;
+ }
+ const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
+ for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
+  const n=(comma.y+y)*width+comma.x+x;
+  if(labels[n]===comma.id)cmask[(y+1)*cw+x+1]=1;
+ }
+ const inside=(x,y)=>x>=0&&x<cw&&y>=0&&y<ch&&cmask[Math.floor(y)*cw+Math.floor(x)]===1;
+ // Oriented pixel-edge contours exactly follow the supplied comma's alpha.
+ const outgoing=new Map(),edges=[];
+ const key=(x,y)=>y*(cw+1)+x;
+ function add(ax,ay,bx,by){
+  const id=edges.length,k=key(ax,ay);
+  edges.push({ax,ay,bx,by,used:false});
+  if(!outgoing.has(k))outgoing.set(k,[]);
+  outgoing.get(k).push(id);
+ }
+ for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(inside(x,y)){
+  if(!inside(x,y-1))add(x,y,x+1,y);
+  if(!inside(x+1,y))add(x+1,y,x+1,y+1);
+  if(!inside(x,y+1))add(x+1,y+1,x,y+1);
+  if(!inside(x-1,y))add(x,y+1,x,y);
+ }
+ const loops=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const pts=[],first=key(edges[i].ax,edges[i].ay);
+  let current=i;
+  while(pts.length<edges.length){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push({x:e.ax,y:e.ay});
+   const k=key(e.bx,e.by);
+   if(k===first)break;
+   const next=(outgoing.get(k)||[]).find(i=>!edges[i].used);
+   if(next===undefined)break;current=next;
+  }
+  if(pts.length>20){
+   let area=0;
+   for(let n=0;n<pts.length;n++){
+    const p=pts[n],q=pts[(n+1)%pts.length];area+=p.x*q.y-p.y*q.x;
+   }
+   loops.push({area:Math.abs(area),pts});
+  }
+ }
+ loops.sort((a,b)=>b.area-a.area);
+ if(!loops.length)throw Error('Original comma contour missing');
+ // Cyclic gaussian then sample, preserving the recognisable comma tail.
+ const ring=loops[0].pts,smoothed=[];
+ const sig=2.9;
+ for(let i=0;i<ring.length;i++){
+  let sum=0,x=0,y=0;
+  for(let d=-9;d<=9;d++){
+   const weight=Math.exp(-d*d/(2*sig*sig)),p=ring[(i+d+ring.length)%ring.length];
+   x+=p.x*weight;y+=p.y*weight;sum+=weight;
+  }
+  smoothed.push({x:x/sum,y:y/sum});
+ }
+ const contour=[];
+ let lastPos=smoothed[0];
+ for(let i=0;i<smoothed.length;i++){
+  const pos=smoothed[i];
+  if(contour.length===0||Math.hypot(pos.x-lastPos.x,pos.y-lastPos.y)>=2.4){
+   contour.push(pos);lastPos=pos;
+  }
+ }
+ if(contour.length<30)throw Error('Insufficient original contour points');
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+}
+function fitLayout(){
+ const bounds=stage.getBoundingClientRect();
+ const dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1,
+  Math.sqrt(8000000/Math.max(1,bounds.width*bounds.height))));
+ canvas.width=Math.max(1,Math.round(bounds.width*dpr));
+ canvas.height=Math.max(1,Math.round(bounds.height*dpr));
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.imageSmoothingEnabled=true;
+ ctx.imageSmoothingQuality='high';
+ const w=bounds.width,h=bounds.height;
+ const vh=Math.min(h*.78,w<600?h*.64:h*.73,490);
+ const scale=vh/model.comma.h;
+ return {w,h,vw:model.comma.w*scale,vh,scale,cx:w*.5,cy:h*.47,
+  logoW:Math.min(w*.79,570),logoY:h*.47};
+}
+function strokeComma(pts,gap,cx,cy,scale){
+ if(!pts.length)return;
+ ctx.save();ctx.lineWidth=Math.max(2,3.0/scale);ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.strokeStyle='#29723b';ctx.fillStyle='rgba(41,114,59,.035)';
+ // Only interpolation of the authentic raster contour. Physics remains
+ // locked to the original sampled outline and is NOT redrawn.
+ const n=pts.length,mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+ ctx.beginPath();const first=mid(pts[n-1],pts[0]);ctx.moveTo(first.x,first.y);
+ for(let i=0;i<n;i++){
+  const a=pts[i],b=pts[(i+1)%n],m=mid(a,b);
+  ctx.quadraticCurveTo(a.x,a.y,m.x,m.y);
+ }
+ ctx.closePath();ctx.fill();
+ ctx.beginPath();
+ for(let i=0;i<n;i++){
+  if(gap.has(i))continue;
+  const before=pts[(i+n-1)%n],a=pts[i],b=pts[(i+1)%n];
+  const start=gap.has((i+n-1)%n)?a:mid(before,a),m=mid(a,b);
+  ctx.moveTo(start.x,start.y);ctx.quadraticCurveTo(a.x,a.y,m.x,m.y);
+  if(gap.has((i+1)%n))ctx.lineTo(b.x,b.y);
+ }
+ ctx.stroke();ctx.restore();
+}
+function fitCircle(x,y,r){
+ for(let t=0;t<16;t++){
+  const a=2*Math.PI*t/16;
+  if(!model.inside(x+Math.cos(a)*r,y+Math.sin(a)*r))return false;
+ }
+ return model.inside(x,y);
+}
+function packTen(){
+ const W=model.comma.w,H=model.comma.h;
+ const positions=[];
+ let radius=Math.min(12.8,W*.084,H*.060);
+ for(let attempt=0;attempt<20;attempt++,radius*=.92){
+  positions.length=0;
+  const step=Math.max(2.4,radius*.53),candidates=[];
+  // Upright local geometry is initially shown upside-down. Fill the
+  // original TOP of the comma so letters settle in its inverted bowl.
+  for(let y=radius*1.1;y<H-radius*1.1;y+=step){
+   for(let x=radius*1.1;x<W-radius*1.1;x+=step){
+    const px=x+step*(rand(x*11+y*7)-.5)*.15;
+    const py=y+step*(rand(x*3+y*17)-.5)*.15;
+    if(fitCircle(px,py,radius*1.11))
+     candidates.push({x:px,y:py,score:py+Math.abs(px-W*.63)*.12});
+   }
+  }
+  candidates.sort((a,b)=>a.score-b.score);
+  for(const c of candidates){
+   if(positions.every(p=>Math.hypot(p.x-c.x,p.y-c.y)>radius*2.24)){
+    positions.push({x:c.x,y:c.y});
+    if(positions.length===10)break;
+   }
+  }
+  if(positions.length===10) return {positions,radius};
+ }
+ throw Error('The authentic comma is too narrow to pack ten glyphs safely');
+}
+function chooseGate(contour,r){
+ const H=model.comma.h,W=model.comma.w;
+ let target=-1,best=Infinity;
+ for(let i=0;i<contour.length;i++){
+  const p=contour[i];
+  if(p.y<H*.72||p.y>H*.99)continue;
+  // The mouth belongs to the original COMMA TAIL (lower-left narrow tip),
+  // never the rounded bowl or an arbitrary mid-side opening.
+  const score=p.x+Math.abs(p.y-H*.90)*.60;
+  if(score<best){best=score;target=i;}
+ }
+ if(target<0)throw Error('No outlet on the original comma');
+ let circumference=0;
+ const distances=[];
+ for(let i=0;i<contour.length;i++){
+  const len=Math.hypot(contour[(i+1)%contour.length].x-contour[i].x,
+                       contour[(i+1)%contour.length].y-contour[i].y);
+  distances.push(len);circumference+=len;
+ }
+ // Smooth multi-glyph mouth. A tiny aperture was pinching circular
+ // Matter.js bodies against the tapered tail and blocking the release.
+ const arc=Math.min(r*2.45,circumference*.13),gap=new Set();
+ for(const direction of [-1,1]){
+  let i=target,covered=0;
+  while(covered<arc){
+   const j=direction===1?i:(i-1+contour.length)%contour.length;
+   gap.add(j);covered+=distances[j];
+   i=(i+direction+contour.length)%contour.length;
+  }
+ }
+ return {gap,point:{...contour[target]}};
+}
+// Find a collision-safe route INSIDE the original comma's irregular painted
+// shape. This prevents a straight attraction line pulling letters into the N
+// recess and other solid portions of the original hand-drawn contour.
+function buildOutletFlow(){
+ const step=Math.max(2,Math.round(model.radius*.28));
+ const cols=Math.ceil(model.comma.w/step),rows=Math.ceil(model.comma.h/step);
+ const distance=new Int32Array(cols*rows).fill(-1);
+ const pass=new Uint8Array(distance.length);
+ const point=k=>({x:(k%cols+.5)*step,y:(Math.floor(k/cols)+.5)*step});
+ let seed=-1,best=Infinity;
+ for(let k=0;k<pass.length;k++){
+  const p=point(k);if(!model.inside(p.x,p.y))continue;
+  pass[k]=1;const d=Math.hypot(p.x-outlet.x,p.y-outlet.y);
+  if(d<best){best=d;seed=k;}
+ }
+ if(seed<0)return null;
+ const queue=new Int32Array(pass.length);let h=0,t=1;
+ queue[0]=seed;distance[seed]=0;
+ while(h<t){
+  const k=queue[h++],x=k%cols,y=Math.floor(k/cols);
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const nx=x+dx,ny=y+dy;
+   if(nx<0||ny<0||nx>=cols||ny>=rows)continue;
+   const n=ny*cols+nx;
+   if(!pass[n]||distance[n]>=0)continue;
+   distance[n]=distance[k]+1;queue[t++]=n;
+  }
+ }
+ return {step,cols,rows,distance,point};
+}
+function guidedDirection(body){
+ if(!flowField)return null;
+ const f=flowField,p=body.position;
+ const x0=Math.floor(p.x/f.step),y0=Math.floor(p.y/f.step);
+ let best=-1,score=Infinity;
+ for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
+  const x=x0+dx,y=y0+dy;
+  if(x<0||y<0||x>=f.cols||y>=f.rows)continue;
+  const k=y*f.cols+x;if(f.distance[k]<0)continue;
+  const point=f.point(k),d=Math.hypot(point.x-p.x,point.y-p.y);
+  if(d>f.step*4.3)continue;
+  let safe=true;
+  for(let n=1;n<=5;n++){
+   const a=n/6;
+   if(!model.inside(lerp(p.x,point.x,a),lerp(p.y,point.y,a))){safe=false;break}
+  }
+  if(!safe)continue;
+  const cost=d+f.distance[k]*f.step*.07;
+  if(cost<score){score=cost;best=k}
+ }
+ if(best<0)return null;
+ let next=best;
+ for(let n=0;n<Math.max(3,Math.round(model.radius/f.step));n++){
+  const x=next%f.cols,y=Math.floor(next/f.cols);let winner=next;
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const xx=x+dx,yy=y+dy;
+   if(xx<0||yy<0||xx>=f.cols||yy>=f.rows)continue;
+   const k=yy*f.cols+xx;
+   if(f.distance[k]>=0&&f.distance[k]<f.distance[winner])winner=k;
+  }
+  if(winner===next)break;next=winner;
+ }
+ const target=f.point(next),dx=target.x-p.x,dy=target.y-p.y,norm=Math.hypot(dx,dy);
+ return norm>.001?{x:dx/norm,y:dy/norm}:null;
+}
+function segmentIntersects(a,b,c,d){
+ if(!a)return false;
+ const rx=b.x-a.x,ry=b.y-a.y,sx=d.x-c.x,sy=d.y-c.y;
+ const den=rx*sy-ry*sx;if(Math.abs(den)<1e-7)return false;
+ const qx=c.x-a.x,qy=c.y-a.y;
+ const t=(qx*sy-qy*sx)/den,u=(qx*ry-qy*rx)/den;
+ return t>=-1e-4&&t<=1.0001&&u>=-1e-4&&u<=1.0001;
+}
+function crossedOriginalOpening(body){
+ // A release MUST geometrically cross an actually removed piece of the
+ // original tail boundary. Other collision walls cannot become doors.
+ return mouthEdges.some(e=>segmentIntersects(body.plugin.lastInside,body.position,e.a,e.b));
+}
+function initialize(){
+ flow=null;gateOpened=false;
+ if(engine){Matter.Composite.clear(engine.world,false);Matter.Engine.clear(engine);}
+ const {Engine,Bodies,Composite,Body}=Matter;
+ engine=Engine.create({positionIterations:12,velocityIterations:10,constraintIterations:6,enableSleeping:false});
+ engine.gravity.scale=.00155;
+ world=engine.world;
+ const {positions,radius}=packTen(),contour=model.contour;
+ const gateData=chooseGate(contour,radius),gapIndices=gateData.gap;
+ outlet=gateData.point;
+ mouthEdges=Array.from(gapIndices,i=>({a:contour[i],b:contour[(i+1)%contour.length]}));
+ flowField=buildOutletFlow();
+ gate=[];springBodies=[];
+ wallBodies=[];
+ for(let i=0;i<contour.length;i++){
+  const a=contour[i],b=contour[(i+1)%contour.length],len=Math.hypot(b.x-a.x,b.y-a.y);
+  if(len<.15)continue;
+  const segment=Bodies.rectangle((a.x+b.x)/2,(a.y+b.y)/2,len+2,4,{
+   isStatic:true,angle:Math.atan2(b.y-a.y,b.x-a.x),
+   friction:.21,restitution:.075,label:'original-comma-wall',
+   collisionFilter:{category:0x0002,mask:0x0001}
+  });
+  wallBodies.push(segment);
+  if(gapIndices.has(i))gate.push({body:segment,i});
+ }
+ Composite.add(world,wallBodies);
+ bodies=positions.map((pos,i)=>{
+  const body=Bodies.circle(pos.x,pos.y,radius*.97,{
+   friction:.27,frictionStatic:.28,frictionAir:.013,restitution:.12,
+   collisionFilter:{category:0x0001,mask:0x0003},
+   density:.0008,slop:.12,label:'original-letter-'+i
+  },24);
+  body.plugin.glyph=i;
+  body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
+  body.plugin.released=false;
+  body.plugin.passedGate=false;
+  body.plugin.outsideFrames=0;
+  body.plugin.colliderScale=1;
+  body.plugin.lastInside={x:pos.x,y:pos.y};
+  body.plugin.blockedLeaks=0;
+  body.plugin.releasedAt=null;
+  body.plugin.wrapped=false;
+  body.plugin.wrappedAt=null;
+  body.plugin.spring=null;
+  body.plugin.springAt=null;
+  body.plugin.jamAt=0;
+  body.plugin.recentPos={x:pos.x,y:pos.y};
+  Body.setAngle(body,-Math.PI);
+  return body;
+ });
+ Composite.add(world,bodies);
+ model.gap=gapIndices;model.radius=radius;
+ mode='settle';elapsed=0;tilt=Math.PI;last=0;
+ finishElapsed=0;lastReleasedAt=null;lastWrappedAt=null;assemblyPositions=[];spillCount=0;
+ engine.gravity.scale=.00155;
+ engine.gravity.x=0;engine.gravity.y=-1;
+ startButton.disabled=false;replayButton.disabled=false;
+ status.textContent='10 LETTERS INSIDE THE COMMA';
+ document.getElementById('gesture-hint').style.opacity='1';
+ report('progress',{progress:0});
+ render();
+}
+function triggerPour(){
+ if(mode==='error'||mode==='loading')return;
+ if(mode==='assemble'||mode==='done'){initialize();}
+ mode='pour';elapsed=0;spillCount=0;
+ status.textContent='TURNING THE COMMA';
+ document.getElementById('gesture-hint').style.opacity='0';
+ startButton.textContent='TURNING…';startButton.disabled=true;
+ report('progress',{progress:.1});
+}
+function replay(){
+ initialize();startButton.textContent='TURN / 翻轉逗號';
+}
+function logoTargetWorld(glyph){
+ const logoLeft=(layout.w-layout.logoW)/2;
+ const logoHeight=layout.logoW*model.height/model.width;
+ const logoTop=layout.logoY-logoHeight/2;
+ const px=logoLeft+(glyph.x+glyph.w*.5)/model.width*layout.logoW;
+ const py=logoTop+(glyph.y+glyph.h*.5)/model.height*logoHeight;
+ return {x:model.comma.w*.5+(px-layout.cx)/layout.scale,
+         y:model.comma.h*.5+(py-layout.cy)/layout.scale};
+}
+// Physical, size-aware channel. The original comma narrows toward its
+// true LOWER-LEFT tip, so the circular colliders must compress before
+// entering the neck. Never bypass a solid wall to solve a jam.
+function fitInTail(body){
+ if(body.plugin.released)return;
+ const y=body.position.y/model.comma.h;
+ const near=Math.hypot(body.position.x-outlet.x,body.position.y-outlet.y);
+ const progress=Math.max(ease((y-.53)/.33),ease(1-near/(model.radius*6.7)));
+ const target=1-.66*progress;
+ const current=body.plugin.colliderScale||1;
+ const next=Math.max(target,current*.94);
+ if(next<current-.001){
+  Matter.Body.scale(body,next/current,next/current);
+  body.plugin.colliderScale=next;
+ }
+}
+// Release through the measured, temporarily opened true tail only.
+function maintainClosedBoundary(body){
+ if(body.plugin.released)return;
+ if(body.plugin.passedGate){
+  body.plugin.outsideFrames=fullyOutsideComma(body)?body.plugin.outsideFrames+1:0;
+  if(body.plugin.outsideFrames>=3){
+   // Only now may this glyph leave physics for the editorial stream.
+   body.plugin.released=true;body.plugin.releasedAt=elapsed;
+   lastReleasedAt=elapsed;
+  }
+  return;
+ }
+ if(model.inside(body.position.x,body.position.y)){
+  body.plugin.lastInside={x:body.position.x,y:body.position.y};
+  return;
+ }
+ if(mode==='pour'&&gateOpened&&crossedOriginalOpening(body)){
+  body.plugin.passedGate=true;
+  body.collisionFilter.mask=0x0001;
+  Matter.Body.setVelocity(body,{x:Math.min(-3.8,body.velocity.x),y:clamp(body.velocity.y,-.55,.55)});
+  Matter.Body.setAngularVelocity(body,-.065+.035*rand(body.plugin.glyph+17));
+  return;
+ }
+ // Solver breach outside the true tail: return to last legitimate spot.
+ if(body.plugin.lastInside){
+  Matter.Body.setPosition(body,body.plugin.lastInside);
+  Matter.Body.setVelocity(body,{x:body.velocity.x*.22,y:body.velocity.y*.22});
+  body.plugin.blockedLeaks++;
+ }
+}
+function screenToWorld(x,y){
+ return {x:model.comma.w*.5+(x-layout.cx)/layout.scale,
+         y:model.comma.h*.5+(y-layout.cy)/layout.scale};
+}
+function wrapFromLeft(body,i){
+ // The wrap happens only after the whole glyph is already outside the
+ // LEFT viewport. It resumes outside the RIGHT viewport and keeps its
+ // actual Matter.js rolling velocity, with no visible cut or scene pause.
+ const pos=worldToScreen(body.position.x,body.position.y);
+ const margin=Math.max(45,model.radius*layout.scale*2.8);
+ const nextY=clamp(pos.y,layout.h*.34,layout.h*.68);
+ Matter.Body.setPosition(body,screenToWorld(layout.w+margin+7*(i%3),nextY));
+ Matter.Body.setVelocity(body,{x:-Math.max(3.7,Math.abs(body.velocity.x)),
+                               y:clamp(body.velocity.y,-.20,.20)});
+ Matter.Body.setAngularVelocity(body,-.075+.025*rand(i+15));
+ body.plugin.wrapped=true;
+ body.plugin.wrappedAt=elapsed;
+ lastWrappedAt=elapsed;
+}
+function attachSpring(body,i){
+ if(body.plugin.spring)return;
+ const target=logoTargetWorld(model.glyphs[i]);
+ const spring=Matter.Constraint.create({
+  pointA:target,bodyB:body,length:0,
+  stiffness:.016,damping:.34,label:'original-logo-spring-'+i
+ });
+ Matter.Composite.add(world,spring);
+ body.plugin.spring=spring;body.plugin.springAt=elapsed;
+ body.collisionFilter.mask=0x0001; // physical letter-letter collisions
+}
+function setupAssembly(){
+ if(mode==='assemble'||mode==='done')return;
+ mode='assemble';finishElapsed=0;
+ assemblyPositions=bodies.map(b=>{
+  const pos=worldToScreen(b.position.x,b.position.y);
+  const raw=b.angle+b.plugin.spriteAngle+tilt;
+  return {x:pos.x,y:pos.y,angle:Math.atan2(Math.sin(raw),Math.cos(raw))};
+ });
+ status.textContent='PHYSICAL LETTERS SETTLE INTO THE ORIGINAL LOGO';
+ report('progress',{progress:.92});
+}
+function worldToScreen(x,y){
+ const dx=(x-model.comma.w*.5)*layout.scale,dy=(y-model.comma.h*.5)*layout.scale;
+ const s=Math.sin(tilt),c=Math.cos(tilt);
+ return {x:layout.cx+dx*c-dy*s,y:layout.cy+dx*s+dy*c};
+}
+function drawGlyph(img,x,y,angle,w,h,opacity=1){
+ ctx.save();ctx.globalAlpha=opacity;
+ ctx.translate(x,y);ctx.rotate(angle);ctx.drawImage(img,-w/2,-h/2,w,h);
+ ctx.restore();
+}
+
+// V11: Matter.js governs the tumble and every entire glyph must exit. Once the bowl has turned, a measured
+// source-mask route transfers each letter into a collision-free editorial
+// conveyor. Both outside journeys advance by arc length, not spring forces.
+let flow=null,gateOpened=false;
+function fullyOutsideComma(body){
+ // Verify the ACTUAL visible letter bounds as well as its physics circle.
+ // A center crossing or a circle crossing alone can clip an original glyph.
+ const p=body.position,r=Math.max(body.circleRadius||0,model.radius*.32)*1.08;
+ if(model.inside(p.x,p.y))return false;
+ for(let k=0;k<20;k++){
+  const a=k*Math.PI*2/20;
+  if(model.inside(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r))return false;
+ }
+ const glyph=model.glyphs[body.plugin.glyph];
+ const mini=miniature();
+ const spriteScale=mini*(.76+.24*(body.plugin.colliderScale||1));
+ const hw=(glyph.w/model.width*layout.logoW*spriteScale)/layout.scale/2;
+ const hh=(glyph.h/model.width*layout.logoW*spriteScale)/layout.scale/2;
+ const angle=body.angle+body.plugin.spriteAngle;
+ const cosine=Math.cos(angle),sine=Math.sin(angle);
+ // Dense rotated-rectangle sampling covers the lettering itself, not
+ // merely the circular Matter.js collision body.
+ for(let y=0;y<=8;y++)for(let x=0;x<=8;x++){
+  const ox=(x/8*2-1)*hw,oy=(y/8*2-1)*hh;
+  const px=p.x+ox*cosine-oy*sine,py=p.y+ox*sine+oy*cosine;
+  if(model.inside(px,py))return false;
+ }
+ return true;
+}
+function lineInside(a,b){
+ const dist=Math.hypot(a.x-b.x,a.y-b.y),n=Math.max(2,Math.ceil(dist/1.7));
+ for(let j=1;j<n;j++){
+  const t=j/n;
+  if(!model.inside(lerp(a.x,b.x,t),lerp(a.y,b.y,t)))return false;
+ }
+ return true;
+}
+function routeToTail(body){
+ const f=flowField,origin={x:body.position.x,y:body.position.y};
+ if(!f)return [origin,outlet];
+ let seed=-1,nearest=Infinity;
+ for(let k=0;k<f.distance.length;k++){
+  if(f.distance[k]<0)continue;
+  const pt=f.point(k),d=Math.hypot(origin.x-pt.x,origin.y-pt.y);
+  if(d<nearest){seed=k;nearest=d;}
+ }
+ if(seed<0)return [origin,outlet];
+ const raw=[origin],limit=f.distance[seed]+8;
+ let current=seed;
+ raw.push(f.point(current));
+ for(let j=0;j<limit&&f.distance[current]>0;j++){
+  const x=current%f.cols,y=Math.floor(current/f.cols);
+  let best=current;
+  for(const [dx,dy] of [[-1,0],[0,1],[0,-1],[1,0]]){
+   const xx=x+dx,yy=y+dy;
+   if(xx<0||yy<0||xx>=f.cols||yy>=f.rows)continue;
+   const k=yy*f.cols+xx;
+   if(f.distance[k]>=0&&f.distance[k]<f.distance[best])best=k;
+  }
+  if(best===current)break;
+  current=best;raw.push(f.point(current));
+ }
+ raw.push(outlet);
+ // Remove the gridded zigzags only where the original painted comma
+ // confirms that the shortcut stays inside the real, unredrawn contour.
+ const path=[raw[0]];
+ let i=0;
+ while(i<raw.length-1){
+  let next=i+1;
+  for(let k=Math.min(raw.length-1,i+22);k>i+1;k--){
+   if(lineInside(raw[i],raw[k])){next=k;break;}
+  }
+  path.push(raw[next]);i=next;
+ }
+ return path;
+}
+function measuredPath(points){
+ const length=[0];
+ for(let i=1;i<points.length;i++)
+  length[i]=length[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y);
+ return {points,length,total:length[length.length-1]};
+}
+function atDistance(path,d){
+ const total=path.total;
+ if(d<=0)return path.points[0];
+ if(d>=total)return path.points[path.points.length-1];
+ let lo=1,hi=path.length.length-1;
+ while(lo<hi){const mid=(lo+hi)>>1;if(path.length[mid]<d)lo=mid+1;else hi=mid;}
+ const before=path.points[lo-1],after=path.points[lo],span=path.length[lo]-path.length[lo-1];
+ const t=span?clamp((d-path.length[lo-1])/span):0;
+ return {x:lerp(before.x,after.x,t),y:lerp(before.y,after.y,t)};
+}
+function logoTargetScreen(i){
+ const g=model.glyphs[i],W=layout.logoW,H=W*model.height/model.width;
+ return {x:(layout.w-W)/2+(g.x+g.w*.5)/model.width*W,
+         y:layout.logoY-H/2+(g.y+g.h*.5)/model.height*H};
+}
+/* V11: At the end of the clockwise physical tumble switch to a
+   guaranteed collision-free guided route INSIDE the original comma ink,
+   then through its real tail exit and off the left side. */
+function beginGuided(){
+ if(mode==='guided'||mode==='done')return;
+ tilt=2*Math.PI;mode='guided';
+ const speed=clamp(layout.w*.82,260,440),gap=layout.w<700?.16:.14;
+ const mouth=worldToScreen(outlet.x,outlet.y);
+ const farLeft=-Math.max(82,layout.logoW*.18);
+ const plans=bodies.map((body,i)=>{
+  const g=model.glyphs[i],goal=logoTargetScreen(i);
+  const route=routeToTail(body).map(p=>worldToScreen(p.x,p.y));
+  const start=route[0],inner=measuredPath(route);
+  const exit=measuredPath([mouth,
+   {x:Math.min(mouth.x-40,-12),y:mouth.y},
+   {x:farLeft,y:mouth.y}]);
+  const angle=Math.atan2(Math.sin(body.angle+body.plugin.spriteAngle+tilt),
+                         Math.cos(body.angle+body.plugin.spriteAngle+tilt));
+  body.plugin.released=true;body.plugin.releasedAt=elapsed;
+  body.collisionFilter.mask=0;body.isSensor=true;
+  return {i,body,start,inner,exit,angle,goal,
+   goalW:g.w/model.width*layout.logoW,
+   goalH:g.h/model.width*layout.logoW,
+   distance:inner.total};
+ });
+ const sequence=plans.slice().sort((a,b)=>a.distance-b.distance||a.i-b.i);
+ sequence.forEach((p,rank)=>{
+  p.order=rank;p.startAt=.045+rank*gap;
+  p.mouthAt=p.startAt+clamp(p.inner.total/(speed*1.55),.25,.72);
+  p.leftAt=p.mouthAt+Math.max(.28,p.exit.total/speed);
+ });
+ const firstRight=Math.max(...plans.map(p=>p.leftAt))+.18;
+ sequence.forEach((p,rank)=>{
+  p.rightAt=firstRight+rank*gap;
+  p.rightX=layout.w+Math.max(76,p.goalW*miniature()*.72);
+  p.rightLength=p.rightX-p.goal.x;
+  p.landAt=p.rightAt+p.rightLength/speed;
+ });
+ flow={plans,sequence,speed,gap,time:0,firstRight,
+  lastLand:Math.max(...plans.map(p=>p.landAt)),complete:false};
+ status.textContent='00 / 10 SUCTION TO LEFT';
+ report('progress',{progress:.26});
+}
+function render(){
+ if(!model||!layout)return;
+ ctx.clearRect(0,0,layout.w,layout.h);
+ if(mode==='error')return;
+ const guided=mode==='guided'||mode==='done';
+ const t=guided&&flow?flow.time:0;
+ const outCount=guided?flow.plans.filter(p=>t>=p.leftAt).length:0;
+ const landed=guided?flow.plans.filter(p=>t>=p.landAt).length:0;
+ const vOpacity=guided?(1-ease((outCount-5)/5)*.98):1;
+ if(vOpacity>.001){
+  ctx.save();ctx.translate(layout.cx,layout.cy);ctx.rotate(tilt);
+  ctx.scale(layout.scale,layout.scale);
+  ctx.translate(-model.comma.w/2,-model.comma.h/2);
+  ctx.globalAlpha=vOpacity;
+  strokeComma(model.contour,(guided||(mode==='pour'&&gateOpened))?model.gap:new Set());
+  ctx.restore();
+ }
+ // Moving pieces are consistently miniature, including while physically
+ // tumbling in the comma. The intact original final logo is never resized.
+ const small=miniature();
+ const gather=guided?ease((t-flow.lastLand)/.34):0;
+ const fade=guided?ease((t-flow.lastLand-.18)/.36):0;
+ for(let i=0;i<bodies.length;i++){
+  const body=bodies[i],g=model.glyphs[i];
+  const goalW=g.w/model.width*layout.logoW;
+  const goalH=g.h/model.width*layout.logoW;
+  let pos=worldToScreen(body.position.x,body.position.y);
+  let angle=body.angle+body.plugin.spriteAngle+tilt;
+  const physicsScale=small*(.76+.24*(body.plugin.colliderScale||1));
+  let scale=physicsScale,alpha=1;
+  if(guided){
+   const q=flow.plans[i];
+   // Match physical glyph size at the full-exit hand-off, then settle
+   // to the compact stream size without a one-frame visual pop.
+   const handoff=ease(t/.18);
+   scale=lerp(physicsScale,small,handoff);
+   if(t<q.startAt){
+     pos=q.start;angle=q.angle;
+    }else if(t<q.mouthAt){
+     const u=clamp((t-q.startAt)/(q.mouthAt-q.startAt));
+     pos=atDistance(q.inner,q.inner.total*ease(u));
+     angle=lerp(q.angle,-.14,ease(u));
+    }else if(t<q.leftAt){
+     const u=clamp((t-q.mouthAt)/(q.leftAt-q.mouthAt));
+     pos=atDistance(q.exit,q.exit.total*u);
+     angle=-.14;
+    }else if(t<q.rightAt){
+     alpha=0;
+    }else{
+    const travel=clamp((t-q.rightAt)*flow.speed,0,q.rightLength);
+    const slow=20,pre=Math.max(0,q.rightLength-slow);
+    const u=clamp((travel-pre)/slow);
+    // Unit velocity until the final 20px, then a subtle, smooth settle.
+    const eased=travel<pre?travel:pre+slow*(u+u*u-u*u*u);
+    pos={x:q.rightX-eased,y:q.goal.y};
+    const approach=travel/q.rightLength;
+    angle=-.09*(1-ease(approach));
+    scale=small; // remain miniature until the complete wordmark gathers
+    if(travel>=q.rightLength){pos=q.goal;angle=0;}
+   }
+   if(t>=flow.lastLand)scale=lerp(small,1,gather);
+   alpha*=1-fade;
+  }
+  if(alpha>.002)drawGlyph(g.img,pos.x,pos.y,angle,goalW*scale,goalH*scale,alpha);
+ }
+ if(fade>0||mode==='done'){
+  const H=layout.logoW*model.height/model.width;
+  ctx.save();ctx.globalAlpha=mode==='done'?1:fade;
+  ctx.drawImage(model.source,(layout.w-layout.logoW)/2,
+                layout.logoY-H/2,layout.logoW,H);
+  ctx.restore();
+ }
+}
+function frame(now){
+ raf=requestAnimationFrame(frame);
+ if(!last)last=now;
+ const dt=Math.min(35,now-last);last=now;
+ if(!model||!engine||!layout)return;
+ if(mode==='settle'||mode==='pour'){
+  if(mode==='pour'){
+   elapsed+=dt/1000;
+   // Positive canvas angle = clockwise; PI -> 2PI is a clockwise half-turn.
+   tilt=Math.PI*(1+ease(elapsed/1.95));
+   engine.gravity.x=-Math.sin(tilt);
+   engine.gravity.y=Math.cos(tilt);
+  }
+  // Real, normally colliding Matter.js bodies stay inside the bowl while it
+  // rotates. Never try to squeeze them through the tail's tiny collision gate.
+  const n=Math.max(1,Math.ceil(dt/16.667));
+  for(let j=0;j<n;j++)Matter.Engine.update(engine,dt/n);
+  if(mode==='pour'){
+   status.textContent='TURNING CLOCKWISE · '+Math.min(100,Math.round(elapsed/1.95*100))+'%';
+   report('progress',{progress:.10+.16*clamp(elapsed/1.95)});
+   if(elapsed>=1.95)beginGuided();
+  }
+ }else if(mode==='guided'){
+  flow.time+=dt/1000;
+  const t=flow.time;
+  const out=flow.plans.filter(q=>t>=q.leftAt).length;
+  const returning=flow.plans.filter(q=>t>=q.rightAt).length;
+  const landed=flow.plans.filter(q=>t>=q.landAt).length;
+  if(t<flow.firstRight){
+   status.textContent=String(out).padStart(2,'0')+' / 10 ABSORBED LEFT';
+   report('progress',{progress:.26+.36*out/10});
+  }else if(landed<10){
+   status.textContent=String(returning).padStart(2,'0')+' / 10 RETURNING';
+   report('progress',{progress:.62+.30*landed/10});
+  }else{
+   status.textContent='ASSEMBLING LOGO';
+   report('progress',{progress:.92+.08*ease((t-flow.lastLand)/.55)});
+  }
+  if(!flow.complete&&t>=flow.lastLand+.58){
+   flow.complete=true;mode='done';
+   status.textContent='GOOD THINGS, / ORIGINAL LOGO';
+   startButton.disabled=false;startButton.textContent='TURN AGAIN ↻';
+   report('progress',{progress:1});report('complete');
+  }
+ }
+ render();
+}
+async function load(){
+ try{
+  if(!window.Matter)throw Error('Matter.js could not load');
+  const response=await fetch('./index.html',{cache:'no-store'});
+  if(!response.ok)throw Error('Original website source '+response.status);
+  const text=await response.text(),documentSource=new DOMParser().parseFromString(text,'text/html');
+  const source=documentSource.querySelector('.site-header .gt-brand-logo');
+  const uri=source?.getAttribute('src');
+  if(!uri||!uri.startsWith('data:image/'))throw Error('Original logo source missing');
+  logoImage=new Image();logoImage.src=uri;
+  if(logoImage.decode)await logoImage.decode();
+  else await new Promise((resolve,reject)=>{logoImage.onload=resolve;logoImage.onerror=reject});
+  model=await getBitmap(logoImage);
+  layout=fitLayout();initialize();
+  if(reduce){setupAssembly();mode='done';finishElapsed=.78;render();}
+  raf=requestAnimationFrame(frame);
+ }catch(e){fail(e)}
+}
+// A tap or a deliberate DOWNWARD finger swipe turns the entire comma.
+let press=null;
+canvas.addEventListener('pointerdown',e=>{
+ if(mode!=='settle'&&mode!=='done')return;
+ press={y:e.clientY,x:e.clientX,at:performance.now(),id:e.pointerId};
+ try{canvas.setPointerCapture(e.pointerId)}catch{}
+});
+canvas.addEventListener('pointerup',e=>{
+ if(!press||press.id!==e.pointerId)return;
+ const dy=e.clientY-press.y,dx=e.clientX-press.x;
+ const tapped=Math.abs(dy)<18&&Math.abs(dx)<18&&(performance.now()-press.at)<650;
+ if((dy>36&&Math.abs(dy)>Math.abs(dx)*1.15)||tapped)triggerPour();
+ press=null;
+});
+canvas.addEventListener('pointercancel',()=>press=null);
+// Wheel / trackpad scrolling down over the animation works as well.
+canvas.addEventListener('wheel',e=>{
+ if(mode==='settle'&&e.deltaY>10){e.preventDefault();triggerPour();}
+},{passive:false});
+startButton.addEventListener('click',triggerPour);
+replayButton.addEventListener('click',replay);
+window.addEventListener('resize',()=>{
+ if(!model)return;
+ layout=fitLayout();initialize();
+ startButton.textContent='TURN / 翻轉逗號';
+});
+window.addEventListener('pagehide',()=>cancelAnimationFrame(raf));
+window.addEventListener('load',load,{once:true});
+})();
+</script>
+</body>
+</html>
