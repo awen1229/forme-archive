@@ -582,13 +582,27 @@ function drawGlyph(img,x,y,angle,w,h,opacity=1){
 // conveyor. Both outside journeys advance by arc length, not spring forces.
 let flow=null,gateOpened=false;
 function fullyOutsideComma(body){
- // Check the full collision silhouette, not just the center crossing
- // the mouth. Require clearance for three consecutive simulation frames.
+ // Verify the ACTUAL visible letter bounds as well as its physics circle.
+ // A center crossing or a circle crossing alone can clip an original glyph.
  const p=body.position,r=Math.max(body.circleRadius||0,model.radius*.32)*1.08;
  if(model.inside(p.x,p.y))return false;
  for(let k=0;k<20;k++){
   const a=k*Math.PI*2/20;
   if(model.inside(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r))return false;
+ }
+ const glyph=model.glyphs[body.plugin.glyph];
+ const mini=layout.w<700?.56:.62;
+ const spriteScale=mini*(.76+.24*(body.plugin.colliderScale||1));
+ const hw=(glyph.w/model.width*layout.logoW*spriteScale)/layout.scale/2;
+ const hh=(glyph.h/model.width*layout.logoW*spriteScale)/layout.scale/2;
+ const angle=body.angle+body.plugin.spriteAngle;
+ const cosine=Math.cos(angle),sine=Math.sin(angle);
+ // Dense rotated-rectangle sampling covers the lettering itself, not
+ // merely the circular Matter.js collision body.
+ for(let y=0;y<=8;y++)for(let x=0;x<=8;x++){
+  const ox=(x/8*2-1)*hw,oy=(y/8*2-1)*hh;
+  const px=p.x+ox*cosine-oy*sine,py=p.y+ox*sine+oy*cosine;
+  if(model.inside(px,py))return false;
  }
  return true;
 }
