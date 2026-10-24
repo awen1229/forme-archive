@@ -88,10 +88,15 @@ function onMessage(event){
    if(pendingStart&&!completed&&!skipped){pendingStart=false;send('start');}
    break;
   case 'gt-physics-started':
+   if(!skipped)completed=false;
    updateHint('LET THE LETTERS ROLL / 字母正在滾動');
    break;
   case 'gt-physics-reset':
-   if(!skipped)progress(0);
+   if(!skipped){
+    completed=false;
+    progress(0);
+    updateHint('SCROLL OR TAP / 上滑或輕觸開始');
+   }
    break;
   case 'gt-physics-progress':
    if(!skipped)progress(m.progress);
