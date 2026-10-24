@@ -228,7 +228,7 @@ function extractOriginal(){
     left+=row.left*w;right+=row.right*w;n+=w;
    }
    const a=n?left/n:ww*.4,b=n?right/n:ww*.6;
-   return {x:(a+(b-a)*.55)/ww,width:Math.max(0,b-a)/ww,y:y/hh};
+   return {x:(a+(b-a)*.50)/ww,width:Math.max(0,b-a)/ww,y:y/hh};
   });
     largeComma.dataset.originalComma='vector-trace';
 
@@ -310,15 +310,15 @@ function paint(){
    angle=(1-q)*-10;
   }
   const reveal=smooth(range(t,0,.11));
-  // Glyphs travel at 43% of their logo size to fit the comma track, then
-  // return to exactly 100% in the final clean logo composition.
+  // Keep moving glyphs small enough for even the narrow right inner curve.
+  // Restore every original letter to 100% only when it lands in the LOGO.
   const onRail=rail(smooth(Math.min(1,t/.77)));
   // Respect both the glyph's width and rotation. The diagonal is a safe
   // envelope for any orientation; generous margins keep it off the stroke.
   const railWidth=Math.max(5,(onRail.width||.18)*w);
   const safeGlyphDiameter=railWidth*.43;
   const diagonal=Math.max(1,Math.hypot(el.offsetWidth,el.offsetHeight));
-  const travellingScale=clamp(safeGlyphDiameter/diagonal,.08,.31);
+  const travellingScale=clamp(safeGlyphDiameter/diagonal,.035,.31);
   const landing=smooth(range(t,.78,1));
   const glyphScale=travellingScale+(1-travellingScale)*landing;
   el.style.opacity=String(reveal*(1-assembling));
