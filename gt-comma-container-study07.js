@@ -252,7 +252,7 @@ function extractOriginal(){
  });
 }
 
-// STUDY 07 / BOTTLE JAM, revision 3: jam, tilt, crowd pressure, direct pour
+// STUDY 07 / BOTTLE JAM, revision 4: separated original glyphs, independent settle, direct pour
 // Use the ORIGINAL logo glyph bitmaps and ACTUAL comma ink silhouette.
 // Packing tests the complete rotated glyph box against the silhouette and every other box.
 // There is deliberately no visual clipping used to conceal packing errors.
@@ -285,8 +285,10 @@ function bodyAt(y){
 }
 function rotatedInside(item,g,x,y,scale=1){
  const a=item.angle*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a);
- const rx=(item.pw*scale/2+1.5)*g.ww/g.w;
- const ry=(item.ph*scale/2+1.5)*g.hh/g.h;
+ // Keep a visible clear rim between the original glyph and original comma boundary.
+ const edgePad=clamp(g.h*.006,2.5,4.5);
+ const rx=(item.pw*scale/2+edgePad)*g.ww/g.w;
+ const ry=(item.ph*scale/2+edgePad)*g.hh/g.h;
  // Check 25 points of rotated painted bounds, not just its center/corners.
  for(let iy=-2;iy<=2;iy++)for(let ix=-2;ix<=2;ix++){
   const xx=x+(ix/2*rx)*cs-(iy/2*ry)*sn;
@@ -298,24 +300,26 @@ function rotatedInside(item,g,x,y,scale=1){
  return true;
 }
 function separate(a,b,g){
- // SAT rotated rectangular collision with ~2 px of breathing room.
+ // SAT collision with an explicit ~6-9 px optical gap, even when shapes tilt.
  const ar=a.angle*Math.PI/180,br=b.angle*Math.PI/180;
  const axes=[[Math.cos(ar),Math.sin(ar)],[-Math.sin(ar),Math.cos(ar)],
              [Math.cos(br),Math.sin(br)],[-Math.sin(br),Math.cos(br)]];
  const dx=(a.x-b.x)*g.w/g.ww,dy=(a.y-b.y)*g.h/g.hh;
+ const halfGap=clamp(g.h*.008,3.1,4.8);
  for(const axis of axes){
-  const pa=Math.abs(axis[0]*Math.cos(ar)+axis[1]*Math.sin(ar))*(a.pw*.5+1.3)
-          +Math.abs(-axis[0]*Math.sin(ar)+axis[1]*Math.cos(ar))*(a.ph*.5+1.3);
-  const pb=Math.abs(axis[0]*Math.cos(br)+axis[1]*Math.sin(br))*(b.pw*.5+1.3)
-          +Math.abs(-axis[0]*Math.sin(br)+axis[1]*Math.cos(br))*(b.ph*.5+1.3);
+  const pa=Math.abs(axis[0]*Math.cos(ar)+axis[1]*Math.sin(ar))*(a.pw*.5+halfGap)
+          +Math.abs(-axis[0]*Math.sin(ar)+axis[1]*Math.cos(ar))*(a.ph*.5+halfGap);
+  const pb=Math.abs(axis[0]*Math.cos(br)+axis[1]*Math.sin(br))*(b.pw*.5+halfGap)
+          +Math.abs(-axis[0]*Math.sin(br)+axis[1]*Math.cos(br))*(b.ph*.5+halfGap);
   if(Math.abs(dx*axis[0]+dy*axis[1])>=pa+pb)return true;
  }
  return false;
 }
 function attemptPack(g,nominal,seed){
- const random=rng(seed),angles=[-11,7,-8,10,-4,8,-10,5,-7,9];
+ const random=rng(seed),angles=[-16,9,-8,18,-5,13,-12,6,-19,11];
+ const scaleVariance=[1.04,.94,1.02,.96,1.06,.97,1.03,.95,1,.99];
  const info=parts.map((el,i)=>{
-  const scale=nominal/Math.max(1,el.offsetHeight);
+  const scale=nominal*scaleVariance[i]/Math.max(1,el.offsetHeight);
   return {i,angle:angles[i],scale,pw:el.offsetWidth*scale,ph:el.offsetHeight*scale};
  });
  // Place the widest glyphs first; otherwise the thin strokes consume the
@@ -338,9 +342,9 @@ function attemptPack(g,nominal,seed){
     const dist=Math.hypot(dx,dy)-(Math.max(item.pw,item.ph)+Math.max(c.pw,c.ph))*.43;
     nearest=Math.min(nearest,dist);
    }
-   // Seek the compact shoulder around the neck, not evenly scattered dots.
-   const wantedY=.62*g.hh;
-   const closeness=settled.length?(-Math.abs(nearest-1.9)*.68):0;
+   // Maintain a natural, asymmetrical arrangement without forming a dense word-shaped clump.
+   const wantedY=.60*g.hh;
+   const closeness=settled.length?(-Math.abs(nearest-8)*.58):0;
    const score=closeness-Math.abs(y-wantedY)*g.h/g.hh*.08
      -Math.abs(x-row.x)*g.w/g.ww*.025+random()*3;
    if(score>bestScore){bestScore=score;best=probe;}
@@ -375,7 +379,8 @@ function pack(){
   homeX:homes[i].x,homeY:homes[i].y,start:point(g,item.x,item.y),
   releaseIndex:-1
  }));
- live=winner.map(c=>({x:c.x,y:c.y}));
+ // Every letter retains its own position AND angle. They are not glued to one plane.
+ live=winner.map(c=>({x:c.x,y:c.y,angle:c.angle}));
  departures=new Array(glyphs.length).fill(null);
  const mouth=bodyAt(.87);
  const leftMouth=mouth.x-mouth.width*.46;
@@ -387,8 +392,9 @@ function pack(){
  layout=g;lastPhysicalTime=0;ready=true;
  overlay.dataset.packing='verified';
  overlay.dataset.glyphHeight=Math.round(winner[0].ph).toString();
- overlay.dataset.motion='direct-pressure-pour';
- if(hint&&!running)hint.textContent='LETTERS ARE JAMMED / 點擊，讓字母從左下傾倒';
+ overlay.dataset.motion='separated-letters-pressure-pour';
+ overlay.dataset.letterSpacing='individual-clearance';
+ if(hint&&!running)hint.textContent='SEPARATE LETTERS / 點擊逗號，讓字母滑出來';
  if(prompt)prompt.textContent='TAP TO TILT / 點擊逗號';
 }
 function tilt(t){
@@ -398,8 +404,8 @@ function tilt(t){
     (1-smooth(range(t,4650,5260)));
  return early+pouring;
 }
-function allowMove(i,x,y){
- const g=layout,c=glyphs[i],candidate={...c,x,y};
+function allowMove(i,x,y,angle=live[i].angle){
+ const g=layout,c=glyphs[i],candidate={...c,x,y,angle};
  if(!rotatedInside(candidate,g,x,y))return false;
  for(let j=0;j<glyphs.length;j++){
   if(j===i||departures[j])continue;
@@ -413,14 +419,29 @@ function pressCrowd(t){
  if(t<PRESS_START||t>POUR_START+POUR_GAP*9+200)return;
  const g=layout,dt=clamp((t-lastPhysicalTime)/16,0,2.3);
  const strength=dt*(.42+.58*smooth(range(t,850,1500)));
- const dx=-1.00*strength*g.ww/g.w,dy=1.20*strength*g.hh/g.h;
- // Lower-left pieces move first; back pieces follow freed space.
+ // Slightly different weight, drift and spin for EACH letter.
+ // All candidates must satisfy boundary and pairwise separation checks.
  for(const i of order){
   if(departures[i])continue;
   const c=live[i];
-  for(const [vx,vy] of [[dx,dy],[dx*.6,dy],[dx,dy*.5],[dx*.38,dy*.42]]){
-   if(allowMove(i,c.x+vx,c.y+vy)){
-    c.x+=vx;c.y+=vy;break;
+  const weight=.70+(i*7%6)*.105;
+  const drift=.22*Math.sin(t*.005+i*2.4);
+  const dx=(-1.08*weight+drift)*strength*g.ww/g.w;
+  const dy=(1.24/weight)*strength*g.hh/g.h;
+  const target=glyphs[i].angle+(2.4+((i*3)%4)) * Math.sin(t*.0041+i*1.67);
+  const angleDelta=clamp(target-c.angle,-.55,.55)*dt;
+  const candidateAngle=c.angle+angleDelta;
+  let shifted=false;
+  for(const [vx,vy] of [[dx,dy],[dx*.66,dy],[dx,dy*.65],[dx*.32,dy*.42],[0,0]]){
+   if(allowMove(i,c.x+vx,c.y+vy,candidateAngle)){
+    c.x+=vx;c.y+=vy;c.angle=candidateAngle;shifted=true;break;
+   }
+  }
+  if(!shifted){
+   for(const [vx,vy] of [[dx*.5,dy*.5],[dx*.25,0],[0,dy*.25]]){
+    if(allowMove(i,c.x+vx,c.y+vy,c.angle)){
+     c.x+=vx;c.y+=vy;break;
+    }
    }
   }
  }
@@ -431,8 +452,8 @@ function animateGlyph(i,t){
  const releaseAt=POUR_START+turn*POUR_GAP;
  const returnAt=RETURN_START+turn*RETURN_GAP;
  let x=point(g,pos.x,pos.y).x,y=point(g,pos.x,pos.y).y;
- let rotation=c.angle,scale=c.scale,alpha=1;
- if(t>=releaseAt&&!departures[i])departures[i]={x:pos.x,y:pos.y};
+ let rotation=pos.angle,scale=c.scale,alpha=1;
+ if(t>=releaseAt&&!departures[i])departures[i]={x:pos.x,y:pos.y,angle:pos.angle};
  if(t>=releaseAt&&t<returnAt){
   const dep=departures[i],origin=point(g,dep.x,dep.y);
   const mouthRow=bodyAt(.87);
@@ -443,8 +464,9 @@ function animateGlyph(i,t){
   const u=q*q*(3-2*q);
   const slope=clamp((exit.y-origin.y)/Math.max(45,origin.x-exit.x),.24,.69);
   x=origin.x+(farLeft-origin.x)*u;
-  y=origin.y+(origin.x-x)*slope+g.h*.065*u*u;
-  rotation=c.angle-14*smooth(q);
+  y=origin.y+(origin.x-x)*slope+g.h*.065*u*u+((i%3)-1)*g.h*.012*smooth(q);
+  // Individual tumbling with small, different spins instead of a linked strip.
+  rotation=dep.angle-(9+i%4*3.5)*smooth(q)+3*Math.sin(q*Math.PI*1.6+i)*Math.sin(Math.PI*q);
   if(q>=1)alpha=0;
  }else if(t>=returnAt){
   const u=smooth(range(t,returnAt,returnAt+RETURN_LENGTH));
@@ -453,7 +475,7 @@ function animateGlyph(i,t){
   x=cubic(offRight,offRight-g.w*.06,c.homeX+g.w*.05,c.homeX,u);
   y=cubic(c.homeY+g.h*.07,c.homeY+g.h*.035,c.homeY,c.homeY,u);
   scale=blend(c.scale,1,u);
-  rotation=blend(c.angle-9,0,u);
+  rotation=blend(pos.angle-9,0,u);
   alpha=smooth(range(t,returnAt,returnAt+180));
  }
  alpha*=1-smooth(range(t,7410,7650));
