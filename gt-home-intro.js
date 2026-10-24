@@ -228,7 +228,7 @@ function extractOriginal(){
     left+=row.left*w;right+=row.right*w;n+=w;
    }
    const a=n?left/n:ww*.4,b=n?right/n:ww*.6;
-   return {x:(a+(b-a)*.60)/ww,width:Math.max(0,b-a)/ww,y:y/hh};
+   return {x:(a+(b-a)*.55)/ww,width:Math.max(0,b-a)/ww,y:y/hh};
   });
     largeComma.dataset.originalComma='vector-trace';
 
@@ -298,7 +298,7 @@ function paint(){
    position=point(q.x,q.y);
    const ahead=rail(clamp(smooth(t/.77)+.025));
    const tangent=point(ahead.x,ahead.y);
-   angle=clamp(Math.atan2(tangent.y-position.y,tangent.x-position.x)*180/Math.PI-90,-24,24);
+   angle=clamp(Math.atan2(tangent.y-position.y,tangent.x-position.x)*180/Math.PI-90, -14,14);
   }else{
    const q=smooth((t-.77)/.23);
    // A short outbound curve releases each letter from the comma's tail,
@@ -313,8 +313,12 @@ function paint(){
   // Glyphs travel at 43% of their logo size to fit the comma track, then
   // return to exactly 100% in the final clean logo composition.
   const onRail=rail(smooth(Math.min(1,t/.77)));
-  const availableWidth=Math.max(6,(onRail.width||.18)*w*.65);
-  const travellingScale=clamp(availableWidth/Math.max(el.offsetWidth,1),.14,.43);
+  // Respect both the glyph's width and rotation. The diagonal is a safe
+  // envelope for any orientation; generous margins keep it off the stroke.
+  const railWidth=Math.max(5,(onRail.width||.18)*w);
+  const safeGlyphDiameter=railWidth*.43;
+  const diagonal=Math.max(1,Math.hypot(el.offsetWidth,el.offsetHeight));
+  const travellingScale=clamp(safeGlyphDiameter/diagonal,.08,.31);
   const landing=smooth(range(t,.78,1));
   const glyphScale=travellingScale+(1-travellingScale)*landing;
   el.style.opacity=String(reveal*(1-assembling));
