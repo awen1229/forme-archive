@@ -245,7 +245,6 @@ function paint(){
   // Ten letters enter one-by-one. The last letter finishes before the full
   // logo crossfade, so the actual letters always reach their real positions.
   const t=range(p,.065+i*.034,.065+i*.034+.44);
-  const target=el.getBoundingClientRect();
   // Calculate the untransformed component center from its layout metrics.
   const homeX=logoRect.left+el.offsetLeft+el.offsetWidth/2;
   const homeY=logoRect.top+el.offsetTop+el.offsetHeight/2;
@@ -289,7 +288,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v3','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v5','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
