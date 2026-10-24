@@ -264,7 +264,7 @@ const totalMs=8150;
 const SHAKE_END=1350, POUR_START=1230, POUR_GAP=215, POUR_LENGTH=1580;
 const RETURN_START=4930, RETURN_GAP=135, RETURN_LENGTH=1100;
 const startSeed=4379085;
-let order=[],ready=false,hasFallback=false;
+let order=[],ready=false,hasFallback=false,shakeSlots=[];
 function rng(seed){return ()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}}
 function cubic(a,b,c,d,t){const v=1-t;return v*v*v*a+3*v*v*t*b+3*v*t*t*c+t*t*t*d}
 function blend(a,b,t){return a+(b-a)*t}
@@ -400,9 +400,11 @@ function wiggle(i,t,g){
  const x=c.x+(Math.sin(t*.019+i*2.47)*amp)*g.ww/g.w;
  const y=c.y+(Math.cos(t*.024+i*3.13)*amp)*g.hh/g.h;
  const proposal={...c,x,y};
- if(rotatedInside(proposal,g,x,y)&&glyphs.every((other,j)=>i===j||separate(proposal,other,g))){
+ if(rotatedInside(proposal,g,x,y)&&glyphs.every((other,j)=>i===j||separate(proposal,shakeSlots[j]||other,g))){
+  shakeSlots[i]=proposal;
   return point(g,x,y);
  }
+ shakeSlots[i]=c;
  return c.start;
 }
 function animateGlyph(i,t){
@@ -457,6 +459,7 @@ function render(now){
   return;
  }
  sculpture.style.transform='rotate('+shake(t).toFixed(2)+'deg)';
+ shakeSlots=[];
  glyphs.forEach((_,i)=>animateGlyph(i,t));
  const fading=smooth(range(t,6760,7160));
  largeComma.style.opacity=String(.95*(1-fading));
