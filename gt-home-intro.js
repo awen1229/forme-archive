@@ -13,7 +13,7 @@ const caption=overlay.querySelector('.gt-scroll-entry-caption');
 const bar=overlay.querySelector('.gt-scroll-entry-progress i'),pct=overlay.querySelector('.gt-scroll-entry-percent');
 const source=document.querySelector('.site-header .gt-brand-logo');
 if(!stage||!largeComma||!source){root.classList.remove('gt-scroll-entry-ready');overlay.remove();return}
-let parts=[],full=null,commaBox=null,p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
+let parts=[],full=null,commaBox=null,commaRail=[],p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
 const range=(v,a,b)=>clamp((v-a)/(b-a));
@@ -159,39 +159,78 @@ function extractOriginal(){
   contours.sort((a,b)=>b.area-a.area);
   const outline=contours[0]?.points;
   if(!outline||contours[0].area<ww*hh*.03)throw Error('No usable comma outline');
-  // Smooth one-pixel stair steps without changing the comma's recognizable
-  // contours. Coordinates remain in the ORIGINAL PNG's pixel space.
-  let simplified=outline.slice();
-  const distance=(p,a,b)=>{
-   const vx=b[0]-a[0],vy=b[1]-a[1],len=Math.hypot(vx,vy)||1;
-   return Math.abs(vy*p[0]-vx*p[1]+b[0]*a[1]-b[1]*a[0])/len;
-  };
-  for(let pass=0;pass<5;pass++){
-   const next=[];
-   for(let j=0;j<simplified.length;j++){
-    const prev=simplified[(j+simplified.length-1)%simplified.length];
-    const cur=simplified[j],after=simplified[(j+1)%simplified.length];
-    if(simplified.length>24&&distance(cur,prev,after)<.73)continue;
-    next.push(cur);
+  // Smooth the original comma silhouette at the source-image scale.
+  // Previous midpoint quads still traced every one-pixel stair step.
+  // A closed Gaussian filter followed by coarse sampling and Catmull–Rom
+  // cubics gives flowing curves while keeping the logo's broad silhouette.
+  const ring=outline.slice();
+  const gaussian=[];
+  for(let k=-8;k<=8;k++)gaussian.push(Math.exp(-.5*Math.pow(k/3.25,2)));
+  const weight=gaussian.reduce((a,b)=>a+b,0);
+  const softened=ring.map((_,i)=>{
+   let x=0,y=0;
+   for(let k=-8;k<=8;k++){
+    const p=ring[(i+k+ring.length)%ring.length],w=gaussian[k+8];
+    x+=p[0]*w;y+=p[1]*w;
    }
-   if(next.length<20||next.length===simplified.length)break;
-   simplified=next;
+   return [x/weight,y/weight];
+  });
+  const sampled=[];
+  const step=Math.max(3,Math.round(softened.length/155));
+  for(let i=0;i<softened.length;i+=step)sampled.push(softened[i]);
+  if(sampled.length<14)throw Error('Not enough points for smooth comma outline');
+  const crisp=n=>Number(n.toFixed(2));
+  let d='M'+crisp(sampled[0][0])+' '+crisp(sampled[0][1]);
+  for(let i=0;i<sampled.length;i++){
+   const p0=sampled[(i+sampled.length-1)%sampled.length];
+   const p1=sampled[i],p2=sampled[(i+1)%sampled.length];
+   const p3=sampled[(i+2)%sampled.length];
+   // Lower tangent tension deliberately removes the sawtooth effect.
+   const tension=.115;
+   const c1x=p1[0]+(p2[0]-p0[0])*tension;
+   const c1y=p1[1]+(p2[1]-p0[1])*tension;
+   const c2x=p2[0]-(p3[0]-p1[0])*tension;
+   const c2y=p2[1]-(p3[1]-p1[1])*tension;
+   d+=' C'+crisp(c1x)+' '+crisp(c1y)+' '+crisp(c2x)+' '+crisp(c2y)+' '+crisp(p2[0])+' '+crisp(p2[1]);
   }
-  const mid=(a,b)=>[((a[0]+b[0])/2).toFixed(1),((a[1]+b[1])/2).toFixed(1)];
-  let d='';
-  if(simplified.length){
-   const firstMid=mid(simplified[simplified.length-1],simplified[0]);
-   d='M'+firstMid.join(' ');
-   for(let i=0;i<simplified.length;i++){
-    const p=simplified[i],next=simplified[(i+1)%simplified.length];
-    d+=' Q'+p[0]+' '+p[1]+' '+mid(p,next).join(' ');
-   }
-   d+=' Z';
-  }
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+ww+' '+hh+'" width="'+ww+'" height="'+hh+'">'+
-   '<path d="'+d+'" fill="none" stroke="#397541" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+  d+=' Z';
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+ww+' '+hh+'" width="'+ww+'" height="'+hh+'" shape-rendering="geometricPrecision">'+
+   '<path d="'+d+'" fill="none" stroke="#397541" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
   largeComma.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-  largeComma.dataset.originalComma='vector-trace';
+  largeComma.dataset.originalComma='smooth-vector';
+  
+  // Measure the connected ink in each source-image row. The letters can
+  // follow the ACTUAL inside-right curve, instead of a rectangle-relative
+  // guessed Bezier that escapes the comma.
+  const rows=Array.from({length:hh},()=>({left:ww,right:-1}));
+  for(let y=0;y<hh;y++)for(let x=0;x<ww;x++){
+   if(!ink[y*ww+x])continue;
+   const row=rows[y];if(x<row.left)row.left=x;if(x>row.right)row.right=x;
+  }
+  // Fill sparse rows without jumping across gaps.
+  for(let y=0;y<hh;y++)if(rows[y].right<0){
+   let before=y-1,after=y+1;
+   while(before>=0&&rows[before].right<0)before--;
+   while(after<hh&&rows[after].right<0)after++;
+   if(before>=0&&after<hh){
+    const t=(y-before)/(after-before);
+    rows[y]={left:rows[before].left*(1-t)+rows[after].left*t,
+             right:rows[before].right*(1-t)+rows[after].right*t};
+   }else if(before>=0)rows[y]={...rows[before]};
+   else if(after<hh)rows[y]={...rows[after]};
+  }
+  commaRail=rows.map((_,y)=>{
+   let left=0,right=0,n=0;
+   for(let dy=-5;dy<=5;dy++){
+    const row=rows[Math.max(0,Math.min(hh-1,y+dy))];
+    if(row.right<0)continue;
+    const w=1+5-Math.abs(dy);
+    left+=row.left*w;right+=row.right*w;n+=w;
+   }
+   const a=n?left/n:ww*.4,b=n?right/n:ww*.6;
+   return {x:(a+(b-a)*.60)/ww,width:Math.max(0,b-a)/ww,y:y/hh};
+  });
+    largeComma.dataset.originalComma='vector-trace';
 
  });
 }
