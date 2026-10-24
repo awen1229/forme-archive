@@ -1168,7 +1168,7 @@ async function gtCloudPublishBrand(row){
 }
 
 function gtCloudEditorialNotice(){return gtCloudEditorEnabled
- ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS、ARTICLES、HOMEPAGE、SITE CONTENT 可儲存 Sanity 雲端草稿。確認發布後才會更新公開網站。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
+ ? '<b>GOOD THINGS, 雲端編輯模式</b>：BRANDS、ARTICLES、HOMEPAGE、SITE CONTENT 均可儲存 Sanity 雲端草稿。正式發布功能目前仍鎖定，請先完成上線檢查。<br><a href="/api/editor/session" class="outline-btn" style="margin-top:10px">登入編輯管理</a>'
  : '<b>GOOD THINGS, 1.6 網站編輯預覽</b>：維持原本編輯介面。目前這個網址尚未連接安全寫入服務，儲存仍只在目前瀏覽器。請匯出 JSON 備份，不要把 Sanity Token 放進網頁。'}
 async function gtSaveBrandCloud(record){
  const response=await fetch('/api/editor/brand',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});
