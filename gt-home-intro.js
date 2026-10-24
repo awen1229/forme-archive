@@ -1,5 +1,5 @@
-/* GOOD THINGS, / Matter.js tumble followed by a measured constant-speed glyph stream.
-   Embeds the same standalone V8 study instead of
+/* GOOD THINGS, / Matter.js miniature tumble followed by a faster glyph stream.
+   Embeds the same standalone V10 study instead of
    replacing the authentic original letterforms or comma outline. */
 (()=>{'use strict';
 const root=document.documentElement;
@@ -24,7 +24,7 @@ let completed=false,timeout=0;
 function finish(){
  if(completed)return;
  completed=true;
- try{sessionStorage.setItem('gt-scroll-entry-physics9','done')}catch(e){}
+ try{sessionStorage.setItem('gt-scroll-entry-physics10','done')}catch(e){}
  overlay.classList.add('is-completing');
  const cleanup=()=>{
   root.classList.remove('gt-scroll-entry-ready');
@@ -58,5 +58,5 @@ window.addEventListener('keydown',onKey);
 window.addEventListener('hashchange',onRoute);
 skip.addEventListener('click',finish);
 frame.addEventListener('error',finish);
-frame.src='./opening-lab-physics-v9.html?embed=1&build=physics09';
+frame.src='./opening-lab-physics-v10.html?embed=1&build=physics10';
 })();
