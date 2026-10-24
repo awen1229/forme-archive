@@ -25,9 +25,9 @@ function finish(){
  if(completed)return;
  completed=true;
  try{sessionStorage.setItem('gt-scroll-entry-physics3','done')}catch(e){}
- root.classList.remove('gt-scroll-entry-ready');
  overlay.classList.add('is-completing');
  const cleanup=()=>{
+  root.classList.remove('gt-scroll-entry-ready');
   if(overlay.isConnected)overlay.remove();
   window.removeEventListener('message',onMessage);
   window.removeEventListener('keydown',onKey);
