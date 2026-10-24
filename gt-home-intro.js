@@ -165,18 +165,18 @@ function extractOriginal(){
   // cubics gives flowing curves while keeping the logo's broad silhouette.
   const ring=outline.slice();
   const gaussian=[];
-  for(let k=-15;k<=15;k++)gaussian.push(Math.exp(-.5*Math.pow(k/5.5,2)));
+  for(let k=-19;k<=19;k++)gaussian.push(Math.exp(-.5*Math.pow(k/6.8,2)));
   const weight=gaussian.reduce((a,b)=>a+b,0);
   const softened=ring.map((_,i)=>{
    let x=0,y=0;
-   for(let k=-15;k<=15;k++){
-    const p=ring[(i+k+ring.length)%ring.length],w=gaussian[k+15];
+   for(let k=-19;k<=19;k++){
+    const p=ring[(i+k+ring.length)%ring.length],w=gaussian[k+19];
     x+=p[0]*w;y+=p[1]*w;
    }
    return [x/weight,y/weight];
   });
   const sampled=[];
-  const step=Math.max(4,Math.round(softened.length/115));
+  const step=Math.max(4,Math.round(softened.length/90));
   for(let i=0;i<softened.length;i+=step)sampled.push(softened[i]);
   if(sampled.length<14)throw Error('Not enough points for smooth comma outline');
   const crisp=n=>Number(n.toFixed(2));
@@ -186,7 +186,7 @@ function extractOriginal(){
    const p1=sampled[i],p2=sampled[(i+1)%sampled.length];
    const p3=sampled[(i+2)%sampled.length];
    // Lower tangent tension deliberately removes the sawtooth effect.
-   const tension=.115;
+   const tension=.16;
    const c1x=p1[0]+(p2[0]-p0[0])*tension;
    const c1y=p1[1]+(p2[1]-p0[1])*tension;
    const c2x=p2[0]-(p3[0]-p1[0])*tension;
