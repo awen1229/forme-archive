@@ -86,6 +86,7 @@ const renderEditor=()=>{
  '<label>專題系列<select name="series">'+series.map(s=>'<option value="'+s[0]+'" '+(a.series===s[0]?'selected':'')+'>'+s[1]+'</option>').join('')+'</select></label>'+
  '<label>專題介紹 *<textarea name="summary" rows="4" maxlength="3000" required>'+escText(a.summary)+'</textarea></label>'+
  '<label>封面圖片（JPG / PNG / WEBP，會自動壓縮）<input name="coverUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>'+ '<p id="gt-issue-cover-status" class="cms-hint" role="status">選擇圖片後會自動壓縮，再儲存雲端草稿。</p>'+
+ '<div class="gt-issue-free-crop-tools"><button type="button" data-issue-free-crop>自由裁切目前封面</button><small>可拖曳裁切框，獨立調整寬度與高度。裁切完成後仍需儲存草稿。</small></div>'+ 
  '<label><input type="checkbox" name="clearCover"> 移除封面</label>'+
  '<fieldset class="gt-issue-cover-controls"><legend>DESKTOP / 電腦版</legend>'+
  '<div class="gt-issue-crop-stage" style="'+gtCropStyle(a)+'"><img class="gt-issue-preview-image" '+(a.cover?'src="'+escText(a.cover)+'"':'hidden')+' alt="電腦封面預覽"></div>'+
@@ -119,7 +120,40 @@ const publish=async slug=>{
 document.addEventListener('click',e=>{
  const k=e.target.closest('[data-kind="features"]');
  if(k){e.preventDefault();e.stopImmediatePropagation();editorKind='features';active=initial();issueDirty=false;articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render();refresh();return}
- const btn=e.target.closest('[data-issue-act]');if(!btn){const shift=e.target.closest('[data-order-shift]');if(shift){e.preventDefault();const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];issueDirty=true;renderOrder()}}return;}
+ const freeCrop=e.target.closest('[data-issue-free-crop]');
+  if(freeCrop){
+   e.preventDefault();e.stopImmediatePropagation();
+   if(coverPending||issueSaving)return;
+   const form=freeCrop.closest('#gt-issue-form');
+   const source=coverData||active?.cover;
+   if(!source){alert('請先選擇一張專題封面圖片。');return}
+   if(!window.GTImageCrop?.openExisting){alert('自由裁切工具尚未載入，請重新整理測試頁面。');return}
+   freeCrop.disabled=true;
+   window.GTImageCrop.openExisting(source,async file=>{
+    const formNow=document.getElementById('gt-issue-form');
+    if(formNow!==form)return;
+    const status=form.querySelector('#gt-issue-cover-status');
+    const save=form.querySelector('button[type="submit"]');
+    if(save)save.disabled=true;
+    try{
+     coverPending=(async()=>{
+      const processed=await gtCompressImage(file,'cover');
+      if(formNow!==document.getElementById('gt-issue-form'))return;
+      coverData=processed.data;
+      coverUploadError='';
+      const remove=form.querySelector('input[name="clearCover"]');
+      if(remove)remove.checked=false;
+      form.querySelectorAll('.gt-issue-preview-image').forEach(img=>{img.src=coverData;img.hidden=false});
+      issueDirty=true;
+      if(status)status.textContent='已完成自由裁切。請儲存雲端草稿，變更不會自動發布。';
+     })();
+     await coverPending;
+    }catch(err){coverUploadError=err.message||'裁切處理失敗';if(status)status.textContent=coverUploadError;}
+    finally{coverPending=null;if(save)save.disabled=false;}
+   }).catch(err=>alert('無法開啟既有封面自由裁切：'+err.message)).finally(()=>{if(freeCrop.isConnected)freeCrop.disabled=false});
+   return;
+  }
+  const btn=e.target.closest('[data-issue-act]');if(!btn){const shift=e.target.closest('[data-order-shift]');if(shift){e.preventDefault();const [i,d]=shift.dataset.orderShift.split(',').map(Number),j=i+d;if(j>=0&&j<articleOrder.length){[articleOrder[i],articleOrder[j]]=[articleOrder[j],articleOrder[i]];issueDirty=true;renderOrder()}}return;}
  e.preventDefault();e.stopImmediatePropagation();
  if(btn.dataset.issueAct==='reload')refresh();
  if(btn.dataset.issueAct==='new'){active=initial();issueDirty=false;articleOrder=[];coverData='';coverUploadError='';coverChoiceId++;render()}
@@ -215,7 +249,7 @@ style.textContent=`
 .gt-issue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.gt-issue-card{display:block;text-decoration:none;color:inherit;min-width:0}.gt-issue-cover-frame{width:100%;aspect-ratio:3/2;overflow:hidden;background:#e4e4dc}.gt-issue-cover-frame img,.gt-issue-crop-stage img{display:block;width:100%;height:100%;object-fit:var(--gt-issue-fit,cover);object-position:var(--gt-issue-x,50%) var(--gt-issue-y,50%);transform:scale(var(--gt-issue-zoom,1));transform-origin:var(--gt-issue-x,50%) var(--gt-issue-y,50%)}.gt-issue-placeholder{width:100%;aspect-ratio:3/2;display:block;background:#e4e4dc}.gt-issue-placeholder{display:grid;place-items:center;letter-spacing:.18em;font-size:12px;color:#657064}
 .gt-issue-card small{display:block;margin-top:18px;font-size:10px;letter-spacing:.13em}.gt-issue-card h3{font-size:clamp(20px,3vw,30px);line-height:1.3;font-weight:500;margin:8px 0}.gt-issue-card p{font-size:13px;line-height:1.8;color:#6a7169}.gt-issue-card span{font-size:11px;letter-spacing:.08em}
 .gt-issue-detail h1{font-size:clamp(36px,6vw,72px);font-weight:500;line-height:1.1;max-width:900px}.gt-issue-intro{max-width:680px;line-height:1.9;color:#626d63}.gt-issue-hero{width:100%;height:auto;aspect-ratio:3/2;margin:28px 0 38px}.gt-issue-heading{font-weight:500;margin:50px 0 20px;font-size:19px}.gt-issue-brand-links{display:flex;gap:18px;flex-wrap:wrap}.gt-issue-brand-links a{text-decoration:none;border-bottom:1px solid #80867d;color:inherit;padding-bottom:5px}
-.gt-issue-crop-stage{width:100%;aspect-ratio:3/2;background:#e4e4dc;overflow:hidden}.gt-issue-crop-stage.mobile{aspect-ratio:4/5;max-width:360px}.gt-issue-crop-stage img[hidden]{display:none}.gt-issue-cover-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0;border:1px solid #c8ccc1;padding:16px;margin:8px 0}.gt-issue-cover-controls legend{padding:0 8px;font-size:12px;letter-spacing:.05em}.gt-issue-cover-controls label{min-width:0}.gt-issue-cover-controls input[type=range]{width:100%;accent-color:#526b50}.gt-issue-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.gt-issue-choice label{display:flex;gap:8px;align-items:center;font-size:13px}.gt-issue-choice input{width:18px;height:18px;flex:0 0 18px}
+.gt-issue-crop-stage{width:100%;aspect-ratio:3/2;background:#e4e4dc;overflow:hidden}.gt-issue-crop-stage.mobile{aspect-ratio:4/5;max-width:360px}.gt-issue-crop-stage img[hidden]{display:none}.gt-issue-cover-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0;border:1px solid #c8ccc1;padding:16px;margin:8px 0}.gt-issue-cover-controls legend{padding:0 8px;font-size:12px;letter-spacing:.05em}.gt-issue-cover-controls label{min-width:0}.gt-issue-free-crop-tools{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:12px 0}.gt-issue-free-crop-tools button{border:1px solid #8b9d88;background:#e8ede4;color:#263e2c;padding:10px 15px;cursor:pointer}.gt-issue-free-crop-tools small{font-size:11px;color:#607263;line-height:1.6}.gt-issue-cover-controls input[type=range]{width:100%;accent-color:#526b50}.gt-issue-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.gt-issue-choice label{display:flex;gap:8px;align-items:center;font-size:13px}.gt-issue-choice input{width:18px;height:18px;flex:0 0 18px}
 @media(max-width:700px){.gt-issue-grid,.gt-issue-choice{grid-template-columns:1fr}.gt-issue-series{margin:35px 0 50px}.gt-issue-cover-frame,.gt-issue-cover-frame.gt-issue-hero{aspect-ratio:4/5;height:auto}.gt-issue-cover-controls{padding:14px 10px}.gt-issue-cover-controls input,.gt-issue-cover-controls select{min-width:0}.gt-issue-crop-stage.mobile{max-width:340px}}
 `;
 document.head.append(style);
