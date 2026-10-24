@@ -13,7 +13,7 @@ const caption=overlay.querySelector('.gt-scroll-entry-caption');
 const bar=overlay.querySelector('.gt-scroll-entry-progress i'),pct=overlay.querySelector('.gt-scroll-entry-percent');
 const source=document.querySelector('.site-header .gt-brand-logo');
 if(!stage||!largeComma||!source){root.classList.remove('gt-scroll-entry-ready');overlay.remove();return}
-let parts=[],full=null,commaBox=null,commaRail=[],p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
+let parts=[],full=null,commaBox=null,commaRail=[],commaOuterRail=[],p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
 const range=(v,a,b)=>clamp((v-a)/(b-a));
@@ -232,51 +232,76 @@ function extractOriginal(){
    return {x:center/ww,width:span/ww,
     clearance:2*Math.min(center-a,b-center)/ww,y:y/hh};
   });
-    largeComma.dataset.originalComma='vector-trace';
+  // Derive the outside-right edge from the ORIGINAL comma ink, not a
+  // hand-drawn approximation. Smooth source pixels without altering its form.
+  commaOuterRail=rows.map((_,y)=>{
+   let right=0,total=0;
+   for(let dy=-9;dy<=9;dy++){
+    const index=clamp(y+dy,0,hh-1),row=rows[index];
+    if(row.right<0)continue;
+    const weight=Math.exp(-.5*Math.pow(dy/4.3,2));
+    right+=row.right*weight;total+=weight;
+   }
+   return {x:clamp((total?right/total:ww*.78)/ww),y:y/Math.max(1,hh-1)};
+  });
+  largeComma.dataset.originalComma='vector-trace';
 
  });
 }
-// GOOD THINGS, / V15 NOTCH-SCALE LETTERS / COMPACT TRACK
-// Letter movement is based on distance along ONE sampled arc-length track,
-// not individually eased segments. This prevents bunching at tight bends.
-// The user's red guideline is a motion reference, never a visible element.
+// GOOD THINGS, / V16 CENTER-TO-OUTER-RIM COMMA GLIDE
+// Original raster logo preserved. Letters emerge in the comma's center,
+// flow outward onto its ACTUAL outer-right contour, follow the lower bend,
+// then slide through the lower-left tail and out of the viewport.
+// No visible guide path is drawn.
 const trackCache={key:'',points:null,length:0};
 function bezier(a,b,c,d,t){
  const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
 }
 function buildTrack(cx,cy,w,h,bounds){
- const key=[cx,cy,w,h,bounds.left,bounds.right].map(v=>Math.round(v)).join(':');
+ const key=[cx,cy,w,h,bounds.left,bounds.right,commaOuterRail.length]
+  .map(v=>Math.round(v)).join(':');
  if(trackCache.key===key&&trackCache.points)return trackCache;
- // From upper-left, glide through the upper-right interior, sweep down
- // the comma's RIGHT bowl and smoothly leave beyond the LEFT viewport.
- // These points scale with the unchanged original comma's bounding box.
- const outside=bounds.left-100;
- const C=(x,y)=>({x:cx+x*w,y:cy+y*h});
- const p0={x:outside,y:cy-h*.91};
- const p1=C(-.61,-.74);
- const p2=C(.245,-.35);
- const p3=C(.345,.025);
- const p4=C(.055,.315);
- const p5={x:outside,y:cy+h*.54};
- const curves=[
-  [p0,{x:bounds.left+Math.min(48,w*.23),y:cy-h*.89},
-      C(-.82,-.83),p1],
-  [p1,C(-.32,-.64),C(.135,-.49),p2],
-  [p2,C(.355,-.25),C(.385,-.105),p3],
-  [p3,C(.295,.18),C(.18,.25),p4],
-  [p4,C(-.24,.44),{x:bounds.left+Math.min(77,w*.39),y:cy+h*.55},p5]
- ];
  const points=[];let length=0,prev=null;
- for(const seg of curves){
-  for(let j=0;j<=48;j++){
-   if(points.length&&j===0)continue;
-   const t=j/48;
-   const x=bezier(seg[0].x,seg[1].x,seg[2].x,seg[3].x,t);
-   const y=bezier(seg[0].y,seg[1].y,seg[2].y,seg[3].y,t);
-   if(prev)length+=Math.hypot(x-prev.x,y-prev.y);
-   const item={x,y,d:length};points.push(item);prev=item;
+ function add(x,y){
+  if(prev)length+=Math.hypot(x-prev.x,y-prev.y);
+  const item={x,y,d:length};points.push(item);prev=item;
+ }
+ function cubic(a,b,c,d,steps=54){
+  for(let i=0;i<=steps;i++){
+   if(points.length&&i===0)continue;
+   const t=i/steps;
+   add(bezier(a.x,b.x,c.x,d.x,t),
+       bezier(a.y,b.y,c.y,d.y,t));
   }
  }
+ const center={x:cx-w*.12,y:cy-h*.02};
+ const inset=Math.max(8,Math.min(22,w*.038));
+ function rimAt(t){
+  const y=clamp(t);
+  const row=commaOuterRail[Math.round(y*(commaOuterRail.length-1))];
+  const fallbackX=.91-.65*Math.pow(range(y,.39,.97),1.7);
+  const x=row?row.x:fallbackX;
+  return {x:cx+(x-.5)*w-inset,y:cy+(y-.5)*h};
+ }
+ const rimStart=.39,rimFinish=.955;
+ const join=rimAt(rimStart);
+ cubic(center,
+  {x:cx+w*.06,y:cy-h*.11},
+  {x:join.x-w*.012,y:join.y-h*.085},
+  join,68);
+ // Sample the actual outer contour by height, not the old inner Bezier.
+ for(let i=1;i<=118;i++){
+  const q=i/118,t=rimStart+(rimFinish-rimStart)*q;
+  const pt=rimAt(t);
+  add(pt.x,pt.y);
+ }
+ const tail=rimAt(rimFinish);
+ const exit={x:bounds.left-Math.max(115,w*.24),
+             y:tail.y+Math.min(h*.07,70)};
+ cubic(tail,
+  {x:tail.x-w*.19,y:tail.y+h*.018},
+  {x:bounds.left+Math.min(w*.13,53),y:tail.y+h*.06},
+  exit,70);
  Object.assign(trackCache,{key,points,length});
  return trackCache;
 }
@@ -368,7 +393,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v15','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v16','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
