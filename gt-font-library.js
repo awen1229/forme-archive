@@ -7,6 +7,7 @@ const $=id=>document.getElementById(id);
 const ROLES=['headlines','body','navigation'];
 const initial={headlines:'',body:'',navigation:''};
 let fonts=[],roles={...initial},saved={...initial},revision='',loading=false,saving=false,uploading=false,deleting=false,loaded=false,limit=150,visibleCount=35,search='',previewCounter=0;
+let activeObserver=null;
 const fontById=id=>fonts.find(f=>f._id===id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const stateMessage=(message,error=false)=>{const el=$(ids.status);if(!el)return;el.textContent=message;el.classList.toggle('error',!!error)};
@@ -79,7 +80,10 @@ function rowMarkup(font){
  return '<div class="gt-font-list-row" data-font-id="'+esc(font._id)+'">'+
   '<div class="gt-font-row-top"><b>'+esc(font.name)+'</b><span>'+esc(font.format.toUpperCase())+'</span></div>'+
   '<div class="gt-font-row-sample">Aa Bb 服裝 日本 &amp; GOOD THINGS,</div>'+
-  '<div class="gt-font-row-meta">'+esc(font.originalName||font.name)+'</div><div class="gt-font-controls"><button type="button" class="gt-font-delete" data-delete-font="'+esc(font._id)+'" '+(deleting?'disabled':'')+'>刪除字型</button></div></div>';
+  '<div class="gt-font-row-meta">'+esc(font.originalName||font.name)+'</div>'+
+  '<div class="gt-font-row-error" role="status" aria-live="polite" hidden></div>'+
+  '<div class="gt-font-controls"><button type="button" data-test-font="'+esc(font._id)+'">測試預覽</button>'+
+  '<button type="button" class="gt-font-delete" data-delete-font="'+esc(font._id)+'" '+(deleting?'disabled':'')+'>刪除字型</button></div></div>';
 }
 function renderList(){
  const filter=search.toLocaleLowerCase();
@@ -89,21 +93,32 @@ function renderList(){
  $(ids.list).innerHTML=subset.map(rowMarkup).join('')+(matches.length>visibleCount?
   '<button type="button" id="gt-font-show-more" style="width:100%;margin-top:12px">顯示更多（剩餘 '+(matches.length-visibleCount)+' 款）</button>':
   (!matches.length?'<p class="muted">目前沒有符合的字型。可以上傳自己的字型檔案。</p>':''));
- // The previews are lazily loaded only when cards enter view to avoid
- // fetching an entire Chinese/Japanese typeface library on page load.
- const observer=new IntersectionObserver(entries=>{
+ // Only visible cards fetch font bytes, so even large type libraries stay responsive.
+ if(activeObserver)activeObserver.disconnect();
+ activeObserver=new IntersectionObserver(entries=>{
   for(const entry of entries){
    if(!entry.isIntersecting)continue;
-   observer.unobserve(entry.target);
-   const id=entry.target.dataset.fontId,font=fontById(id);
-   if(!font)continue;
-   const sample=entry.target.querySelector('.gt-font-row-sample');
-   window.GTFontPreview.ensureFont(font).then(family=>{if(sample?.isConnected)sample.style.fontFamily='"'+family+'",Arial,"Noto Sans TC",sans-serif'}).catch(()=>{
-    if(sample?.isConnected)sample.textContent='無法顯示預覽：請確認字型檔可供網頁使用';
-   });
+   activeObserver?.unobserve(entry.target);
+   const f=fontById(entry.target.dataset.fontId);
+   if(f)loadRowSample(f,entry.target);
   }
  },{root:$(ids.list),rootMargin:'160px 0px'});
- $(ids.list).querySelectorAll('[data-font-id]').forEach(el=>observer.observe(el));
+ $(ids.list).querySelectorAll('[data-font-id]').forEach(el=>activeObserver.observe(el));
+}
+async function loadRowSample(font,element){
+ const target=element||$(ids.list).querySelector('[data-font-id="'+font._id+'"]');
+ if(!target)return;
+ const sample=target.querySelector('.gt-font-row-sample'),note=target.querySelector('.gt-font-row-error');
+ if(!sample||!note)return;
+ note.hidden=true;note.textContent='';
+ try{
+  const family=await window.GTFontPreview.ensureFont(font);
+  if(sample.isConnected){sample.style.fontFamily='"'+family+'",Arial,"Noto Sans TC",sans-serif'}
+ }catch(error){
+  if(!note.isConnected)return;
+  note.hidden=false;
+  note.textContent='字型預覽失敗：'+(error?.message||'無法讀取字型')+'。可以點「測試預覽」重試。';
+ }
 }
 function render(){
  renderRoleSelections();renderList();refreshPreviewLink();buttons();
@@ -173,7 +188,7 @@ if(location.hostname!==HOST||!window.GTFontPreview){
 $('gt-font-test-line').addEventListener('input',updateTestSamples);
 $('gt-font-search').addEventListener('input',e=>{search=e.target.value;visibleCount=35;renderList()});
 // Event delegation for controls added dynamically
-$(ids.list).addEventListener('click',e=>{if(e.target.closest('#gt-font-show-more')){visibleCount+=35;renderList();return}const btn=e.target.closest('[data-delete-font]');if(btn)removeFont(btn.dataset.deleteFont)});
+$(ids.list).addEventListener('click',e=>{if(e.target.closest('#gt-font-show-more')){visibleCount+=35;renderList();return}const test=e.target.closest('[data-test-font]');if(test){const font=fontById(test.dataset.testFont);if(font)loadRowSample(font,test.closest('[data-font-id]'));return}const btn=e.target.closest('[data-delete-font]');if(btn)removeFont(btn.dataset.deleteFont)});
 for(const role of ROLES){
  $('gt-font-'+role).addEventListener('change',e=>{
   roles[role]=e.target.value;buttons();applyPreview().catch(error=>stateMessage(error.message,true));
