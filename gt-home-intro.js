@@ -13,7 +13,7 @@ const caption=overlay.querySelector('.gt-scroll-entry-caption');
 const bar=overlay.querySelector('.gt-scroll-entry-progress i'),pct=overlay.querySelector('.gt-scroll-entry-percent');
 const source=document.querySelector('.site-header .gt-brand-logo');
 if(!stage||!largeComma||!source){root.classList.remove('gt-scroll-entry-ready');overlay.remove();return}
-let parts=[],full=null,p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
+let parts=[],full=null,commaBox=null,p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
 const range=(v,a,b)=>clamp((v-a)/(b-a));
@@ -28,15 +28,18 @@ function extractOriginal(){
   ctx.drawImage(img,0,0);const rgba=ctx.getImageData(0,0,W,H).data;
   // Connected ink components are the real painted glyphs. Use a low alpha
   // threshold so antialiased edges are retained in each extracted crop.
-  const mask=new Uint8Array(W*H),seen=new Uint8Array(W*H),stack=new Int32Array(W*H);
+  const mask=new Uint8Array(W*H),seen=new Uint8Array(W*H),labels=new Uint16Array(W*H),stack=new Int32Array(W*H);
+  let nextId=0;
   for(let i=0;i<mask.length;i++)mask[i]=rgba[i*4+3]>24?1:0;
   const comps=[];
   for(let start=0;start<mask.length;start++){
    if(!mask[start]||seen[start])continue;
+   const id=++nextId;
    let head=0,tail=1,minX=W,minY=H,maxX=0,maxY=0;
    stack[0]=start;seen[start]=1;
    while(head<tail){
     const n=stack[head++],x=n%W,y=(n/W)|0;
+    labels[n]=id;
     if(x<minX)minX=x;if(x>maxX)maxX=x;
     if(y<minY)minY=y;if(y>maxY)maxY=y;
     const neighbors=[n-1,n+1,n-W,n+W];
@@ -49,7 +52,7 @@ function extractOriginal(){
    if(tail>150){
     const padding=3,x=Math.max(0,minX-padding),y=Math.max(0,minY-padding);
     const right=Math.min(W,maxX+padding+1),bottom=Math.min(H,maxY+padding+1);
-    comps.push({x,y,w:right-x,h:bottom-y,area:tail,seed:start});
+    comps.push({x,y,w:right-x,h:bottom-y,area:tail,seed:start,id});
    }
   }
   // The separate comma at the bottom-right has the greatest horizontal
@@ -61,8 +64,26 @@ function extractOriginal(){
    return rowA-rowB||a.x-b.x;
   });
   if(letterComps.length!==10)throw Error('unexpected glyph segmentation '+letterComps.length);
+  // Include only pixels belonging to this original glyph component.
+  // A rectangular crop alone can carry slivers of adjacent letters.
   function bitmap(c){
-   const canvas=makeCanvas(c.w,c.h);canvas.getContext('2d').drawImage(original,c.x,c.y,c.w,c.h,0,0,c.w,c.h);
+   const canvas=makeCanvas(c.w,c.h),cc=canvas.getContext('2d');
+   cc.drawImage(original,c.x,c.y,c.w,c.h,0,0,c.w,c.h);
+   const data=cc.getImageData(0,0,c.w,c.h);
+   for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+    const k=(y*c.w+x)*4,g=(y+c.y)*W+x+c.x;
+    if(labels[g]===c.id)continue;
+    // Preserve antialiasing only adjacent to the same glyph's hard edge.
+    let edge=false;
+    if(rgba[g*4+3]<28){
+     for(let dy=-1;dy<=1&&!edge;dy++)for(let dx=-1;dx<=1;dx++){
+      const yy=y+c.y+dy,xx=x+c.x+dx;
+      if(xx>=0&&xx<W&&yy>=0&&yy<H&&labels[yy*W+xx]===c.id){edge=true;break}
+     }
+    }
+    if(!edge)data.data[k+3]=0;
+   }
+   cc.putImageData(data,0,0);
    return canvas.toDataURL('image/png');
   }
   full=document.createElement('img');full.src=source.src;full.alt='GOOD THINGS,';
@@ -77,6 +98,7 @@ function extractOriginal(){
   // Isolate ONLY the connected component belonging to the original comma.
   // The previous rectangular raster crop could contain nearby S pixels and
   // was enlarged 5x, causing dirty edges and visible blur.
+  commaBox={...comma,sourceW:W,sourceH:H};
   const ww=comma.w,hh=comma.h,ink=new Uint8Array(ww*hh);
   const visited=new Uint8Array(W*H),q=new Int32Array(comma.area+20);
   let front=0,back=1;
@@ -173,27 +195,85 @@ function extractOriginal(){
 
  });
 }
+// A two-bend inner-right slide: vertical drop, then a long accelerating
+// curve following the comma's right inner wall and its descending tail.
+function bezier(a,b,c,d,t){
+ const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
+}
+function rail(t){
+ const enter=.22,bend=.65;
+ if(t<enter){
+  const k=smooth(t/enter);
+  return {x:bezier(.44,.47,.64,.72,k),y:bezier(-.42,-.24,-.02,.13,k)};
+ }
+ if(t<bend){
+  const k=(t-enter)/(bend-enter);
+  return {x:bezier(.72,.96,.94,.76,k),y:bezier(.13,.16,.38,.57,k)};
+ }
+ const k=(t-bend)/(1-bend);
+ return {x:bezier(.76,.66,.31,.06,k),y:bezier(.57,.76,.89,1.03,k)};
+}
 function paint(){
  frame=0;if(ended)return;
- const enter=smooth(range(p,.04,.26));
- largeComma.style.opacity=String(.78+.17*enter);
- largeComma.style.transform='translate(-50%,-50%) scale('+(1+.05*enter)+')';
- const bw=stage.offsetWidth||500,bh=stage.offsetHeight||226;
+ const bounds=largeComma.getBoundingClientRect();
+ const logoRect=stage.getBoundingClientRect();
+ const sculptureRect=sculpture.getBoundingClientRect();
+ const assembling=smooth(range(p,.79,.92));
+ // Large original comma remains a clean outline while the letters slide.
+ // At the end it collapses into the small comma of the untouched final LOGO.
+ let deltaX=0,deltaY=0,logoScale=.12;
+ if(commaBox){
+  const c=commaBox;
+  const targetX=logoRect.left+(c.x+c.w/2)/c.sourceW*logoRect.width;
+  const targetY=logoRect.top+(c.y+c.h/2)/c.sourceH*logoRect.height;
+  deltaX=targetX-(sculptureRect.left+sculptureRect.width*.5);
+  deltaY=targetY-(sculptureRect.top+sculptureRect.height*.47);
+  logoScale=clamp((c.w/c.sourceW*logoRect.width)/(largeComma.offsetWidth||180),.06,.40);
+ }
+ const scale=(1+.05*smooth(range(p,.03,.22)))*(1-assembling)+logoScale*assembling;
+ largeComma.style.opacity=String(.90*(1-assembling));
+ largeComma.style.transform='translate(calc(-50% + '+(deltaX*assembling)+'px),calc(-50% + '+(deltaY*assembling)+'px)) scale('+scale+')';
+ // Use the comma's untransformed CSS geometry for absolute path points. Its
+ // center and dimensions are stable while transforms move the outline.
+ const cx=sculptureRect.left+sculptureRect.width*.5;
+ const cy=sculptureRect.top+sculptureRect.height*.47;
+ const w=largeComma.offsetWidth||Math.max(1,bounds.width);
+ const h=largeComma.offsetHeight||Math.max(1,bounds.height);
+ const point=(u,v)=>({x:cx+(u-.5)*w,y:cy+(v-.5)*h});
+ const tip=point(.06,1.03);
  parts.forEach((el,i)=>{
-  const t=smooth(range(p,.11+i*.046,.41+i*.046));
-  const dir=i%2?1:-1;
-  const shift=dir*bw*(.48+(i%3)*.085)*(1-t);
-  const y=(-bh*(2+(i%4)*.32))*(1-t)+Math.sin(Math.PI*t)*bh*.16;
-  const rot=dir*(12+i%4*3)*(1-t);
-  el.style.opacity=String(smooth(range(t,0,.14))*(1-smooth(range(p,.76,.87))));
-  el.style.transform='translate3d('+shift+'px,'+y+'px,0) rotate('+rot+'deg)';
+  // Ten letters enter one-by-one. The last letter finishes before the full
+  // logo crossfade, so the actual letters always reach their real positions.
+  const t=range(p,.065+i*.034,.065+i*.034+.44);
+  const target=el.getBoundingClientRect();
+  // Calculate the untransformed component center from its layout metrics.
+  const homeX=logoRect.left+el.offsetLeft+el.offsetWidth/2;
+  const homeY=logoRect.top+el.offsetTop+el.offsetHeight/2;
+  let position,angle=0;
+  if(t<.77){
+   const q=rail(smooth(t/.77));
+   position=point(q.x,q.y);
+   const ahead=rail(clamp(smooth(t/.77)+.025));
+   const tangent=point(ahead.x,ahead.y);
+   angle=clamp(Math.atan2(tangent.y-position.y,tangent.x-position.x)*180/Math.PI-90,-24,24);
+  }else{
+   const q=smooth((t-.77)/.23);
+   // A short outbound curve releases each letter from the comma's tail,
+   // before it gently lands in its exact spot within the original LOGO.
+   position={
+    x:bezier(tip.x,tip.x-w*.32,homeX-w*.11,homeX,q),
+    y:bezier(tip.y,tip.y+h*.16,homeY+h*.20,homeY,q)
+   };
+   angle=(1-q)*-10;
+  }
+  const reveal=smooth(range(t,0,.11));
+  el.style.opacity=String(reveal*(1-assembling));
+  el.style.transform='translate3d('+(position.x-homeX).toFixed(2)+'px,'+(position.y-homeY).toFixed(2)+'px,0) rotate('+angle.toFixed(2)+'deg)';
  });
- const settle=smooth(range(p,.76,.87));
- if(full)full.style.opacity=String(settle);
-
- caption.style.opacity=String(smooth(range(p,.79,.9)));
- const out=smooth(range(p,.89,1));
- sculpture.style.opacity=String(1-.1*out);
+ if(full)full.style.opacity=String(assembling);
+ caption.style.opacity=String(smooth(range(p,.78,.92)));
+ const out=smooth(range(p,.92,1));
+ sculpture.style.opacity=String(1-.08*out);
  overlay.style.transform='translate3d(0,'+(-13*out)+'%,0)';
  bar.style.transform='scaleX('+p+')';pct.textContent=Math.round(p*100)+'%';
 }
