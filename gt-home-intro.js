@@ -236,7 +236,7 @@ function extractOriginal(){
 
  });
 }
-// A two-bend inner-right slide: vertical drop, then a long accelerating
+// A continuous three-beat inner-right slide: soft drop, extended rail, then
 // curve following the comma's right inner wall and its descending tail.
 function bezier(a,b,c,d,t){
  const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
@@ -265,50 +265,50 @@ function paint(){
  const point=(u,v)=>({x:cx+(u-.5)*w,y:cy+(v-.5)*h});
  // Keep the comma present while letters are dropping and moving, then let
  // it quietly recede once the original wordmark is almost assembled.
- const commaFade=smooth(range(p,.76,.92));
+ const commaFade=smooth(range(p,.77,.945));
  largeComma.style.opacity=String(.88*(1-commaFade));
  largeComma.style.transform='translate(-50%,-50%) scale('+(1+.025*smooth(range(p,.02,.28))-.025*commaFade)+')';
- const intact=smooth(range(p,.92,.975));
+ const intact=smooth(range(p,.958,.998));
  parts.forEach((el,i)=>{
   const homeX=lr.left+el.offsetLeft+el.offsetWidth*.5;
   const homeY=lr.top+el.offsetTop+el.offsetHeight*.5;
-  // Small stagger creates a continuous stream, not ten sequential scenes.
-  const start=.065+i*.027;
-  const t=range(p,start,start+.57);
-  const a=smooth(range(t,0,.18));
-  const b=smooth(range(t,.18,.66));
-  const land=smooth(range(t,.66,1));
-  const travelEnd=rail(.70);
+  // Overlapping stagger keeps ten original glyphs in one continuous stream.
+  const start=.045+i*.022;
+  const t=range(p,start,start+.72);
+  const a=smooth(range(t,0,.20));
+  const b=smooth(range(t,.20,.73));
+  const land=smooth(range(t,.73,1));
+  const travelEnd=rail(.78);
   let pos,rotation=0;
   const diagonal=Math.max(1,Math.hypot(el.offsetWidth,el.offsetHeight));
   function fit(u){
    const r=rail(u);
-   return clamp(((r.clearance||.1)*w*.59)/diagonal,.19,.39);
+   return clamp(((r.clearance||.1)*w*.52)/diagonal,.16,.34);
   }
-  const scaleOnRail=fit(.45);
-  if(t<.18){
+  const scaleOnRail=Math.min(fit(.28),fit(.55),fit(.76));
+  if(t<.20){
    // The opening is a short vertical fall from above the comma bowl.
    const entrance=rail(0);
-   const meet=rail(.16);
+   const meet=rail(.18);
    pos={
     x:bezier(cx, cx, point(entrance.x,entrance.y).x,point(meet.x,meet.y).x,a),
     y:bezier(cy-h*.73,cy-h*.55,cy-h*.22,point(meet.x,meet.y).y,a)
    };
-   rotation=3*(1-a)*(i%2===0?-1:1);
-  }else if(t<.66){
+   rotation=1.3*(1-a)*(i%2===0?-1:1);
+  }else if(t<.73){
    // Follow the original comma's right inner boundary with no large spins.
-   const r=rail(.16+(.70-.16)*b);
+   const r=rail(.18+(.78-.18)*b);
    pos=point(r.x,r.y);
-   rotation=(i%2===0?-1:1)*2*Math.sin(Math.PI*b);
+   rotation=(i%2===0?-1:1)*1.2*Math.sin(Math.PI*b);
   }else{
    // Exit the bottom curve and land directly in the letter's exact
    // original slot. No off-screen exit, pause or re-entry.
    const from=point(travelEnd.x,travelEnd.y);
    pos={
-    x:bezier(from.x,from.x-w*.13,homeX+w*.085,homeX,land),
-    y:bezier(from.y,from.y+h*.07,homeY-h*.07,homeY,land)
+    x:bezier(from.x,from.x-w*.055,homeX+w*.025,homeX,land),
+    y:bezier(from.y,from.y+h*.025,homeY-h*.025,homeY,land)
    };
-   rotation=(i%2===0?-1:1)*2*(1-land);
+   rotation=(i%2===0?-1:1)*1.2*(1-land);
   }
   // Restore full size gradually while each glyph is landing. The complete
   // untouched PNG replaces components at the end for pixel-perfect identity.
@@ -320,8 +320,8 @@ function paint(){
    'deg) scale('+scale.toFixed(3)+')';
  });
  if(full)full.style.opacity=String(intact);
- caption.style.opacity=String(smooth(range(p,.78,.91)));
- const out=smooth(range(p,.956,1));
+ caption.style.opacity=String(smooth(range(p,.82,.955)));
+ const out=smooth(range(p,.976,1));
  sculpture.style.opacity=String(1-.08*out);
  overlay.style.transform='translate3d(0,'+(-12*out)+'%,0)';
  bar.style.transform='scaleX('+p+')';
@@ -339,7 +339,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v9','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v10','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
