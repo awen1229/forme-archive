@@ -7,7 +7,8 @@ const $=id=>document.getElementById(id);
 const ROLES=['headlines','body','navigation'];
 const initial={headlines:'',body:'',navigation:''};
 let fonts=[],roles={...initial},saved={...initial},revision='',loading=false,saving=false,uploading=false,deleting=false,loaded=false,limit=150,visibleCount=35,search='',previewCounter=0;
-let activeObserver=null;
+let activeObserver=null,categoryFilter='all',editingFont=null,editingBusy=false;
+const CATEGORIES={uncategorized:'未分類',serif:'Serif 襯線',sans:'Sans 無襯線',display:'Display 展示',handwriting:'Handwriting 手寫',other:'其他'};
 const fontById=id=>fonts.find(f=>f._id===id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const stateMessage=(message,error=false)=>{const el=$(ids.status);if(!el)return;el.textContent=message;el.classList.toggle('error',!!error)};
@@ -80,14 +81,14 @@ function rowMarkup(font){
  return '<div class="gt-font-list-row" data-font-id="'+esc(font._id)+'">'+
   '<div class="gt-font-row-top"><b>'+esc(font.name)+'</b><span>'+esc(font.format.toUpperCase())+'</span></div>'+
   '<div class="gt-font-row-sample">Aa Bb 服裝 日本 &amp; GOOD THINGS,</div>'+
-  '<div class="gt-font-row-meta">'+esc(font.originalName||font.name)+'</div>'+
+  '<div class="gt-font-row-meta">'+esc(font.originalName||font.name)+'</div><span class="gt-font-row-category">'+esc(CATEGORIES[font.category]||CATEGORIES.uncategorized)+'</span>'+
   '<div class="gt-font-row-error" role="status" aria-live="polite" hidden></div>'+
-  '<div class="gt-font-controls"><button type="button" data-test-font="'+esc(font._id)+'">測試預覽</button>'+
+  '<div class="gt-font-controls"><button type="button" data-edit-font="'+esc(font._id)+'">名稱／分類</button><button type="button" data-test-font="'+esc(font._id)+'">測試預覽</button>'+
   '<button type="button" class="gt-font-delete" data-delete-font="'+esc(font._id)+'" '+(deleting?'disabled':'')+'>刪除字型</button></div></div>';
 }
 function renderList(){
  const filter=search.toLocaleLowerCase();
- const matches=fonts.filter(x=>(x.name+' '+(x.originalName||'')).toLocaleLowerCase().includes(filter));
+ const matches=fonts.filter(x=>(categoryFilter==='all'||(x.category||'uncategorized')===categoryFilter)&&(x.name+' '+(x.originalName||'')).toLocaleLowerCase().includes(filter));
  const subset=matches.slice(0,visibleCount);
  $(ids.count).textContent=matches.length+' 款符合 / 字型庫 '+fonts.length+' / '+limit+' 款';
  $(ids.list).innerHTML=subset.map(rowMarkup).join('')+(matches.length>visibleCount?
@@ -153,6 +154,30 @@ async function upload(){
  try{await fetchLibrary();render()}catch(error){stateMessage('上傳後重新讀取失敗：'+error.message,true);return}
  stateMessage(errors.length?label+'\n'+errors.slice(0,6).join('\n'):label,!done);
 }
+function beginFontEdit(id){
+ const font=fontById(id);if(!font||editingBusy)return;
+ editingFont=id;
+ const panel=document.getElementById('gt-font-edit-panel');
+ if(!panel)return;
+ document.getElementById('gt-font-edit-name').value=font.name;
+ document.getElementById('gt-font-edit-category').value=CATEGORIES[font.category]?font.category:'uncategorized';
+ document.getElementById('gt-font-edit-title').textContent='編輯字型：'+font.name;
+ panel.hidden=false;panel.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+async function saveFontMetadata(){
+ const font=fontById(editingFont);if(!font||editingBusy)return;
+ const name=document.getElementById('gt-font-edit-name').value.trim();
+ const category=document.getElementById('gt-font-edit-category').value;
+ if(!name||name.length>80){stateMessage('字型名稱請輸入 1–80 個字。',true);return}
+ editingBusy=true;document.getElementById('gt-font-edit-save').disabled=true;
+ try{
+  const data=await api('/api/editor/font-metadata',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:font._id,revision:font._rev,name,category})});
+  font.name=data.font.name;font.category=data.font.category;font._rev=data.font._rev;
+  document.getElementById('gt-font-edit-panel').hidden=true;editingFont=null;
+  render();stateMessage('字型名稱與分類已更新，不會影響正在使用的字型檔。');
+ }catch(error){stateMessage('字型資料更新失敗：'+error.message,true)}
+ finally{editingBusy=false;document.getElementById('gt-font-edit-save').disabled=false}
+}
 async function removeFont(id){
  if(deleting||uploading||saving||loading)return;
  const font=fontById(id);if(!font)return;
@@ -186,9 +211,12 @@ if(location.hostname!==HOST||!window.GTFontPreview){
  $('gt-font-upload').disabled=true;$('gt-font-save').disabled=true;return;
 }
 $('gt-font-test-line').addEventListener('input',updateTestSamples);
+document.getElementById('gt-font-category-filter')?.addEventListener('change',e=>{categoryFilter=e.target.value;visibleCount=35;renderList()});
+document.getElementById('gt-font-edit-save')?.addEventListener('click',saveFontMetadata);
+document.getElementById('gt-font-edit-cancel')?.addEventListener('click',()=>{editingFont=null;document.getElementById('gt-font-edit-panel').hidden=true});
 $('gt-font-search').addEventListener('input',e=>{search=e.target.value;visibleCount=35;renderList()});
 // Event delegation for controls added dynamically
-$(ids.list).addEventListener('click',e=>{if(e.target.closest('#gt-font-show-more')){visibleCount+=35;renderList();return}const test=e.target.closest('[data-test-font]');if(test){const font=fontById(test.dataset.testFont);if(font)loadRowSample(font,test.closest('[data-font-id]'));return}const btn=e.target.closest('[data-delete-font]');if(btn)removeFont(btn.dataset.deleteFont)});
+$(ids.list).addEventListener('click',e=>{if(e.target.closest('#gt-font-show-more')){visibleCount+=35;renderList();return}const edit=e.target.closest('[data-edit-font]');if(edit){beginFontEdit(edit.dataset.editFont);return}const test=e.target.closest('[data-test-font]');if(test){const font=fontById(test.dataset.testFont);if(font)loadRowSample(font,test.closest('[data-font-id]'));return}const btn=e.target.closest('[data-delete-font]');if(btn)removeFont(btn.dataset.deleteFont)});
 for(const role of ROLES){
  $('gt-font-'+role).addEventListener('change',e=>{
   roles[role]=e.target.value;buttons();applyPreview().catch(error=>stateMessage(error.message,true));
