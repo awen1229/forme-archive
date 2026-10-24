@@ -240,17 +240,16 @@ function bezier(a,b,c,d,t){
  const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
 }
 function rail(t){
- const enter=.22,bend=.65;
- if(t<enter){
-  const k=smooth(t/enter);
-  return {x:bezier(.44,.47,.64,.72,k),y:bezier(-.42,-.24,-.02,.13,k)};
+ t=clamp(t);
+ // Start above the mark, join the right interior and glide toward the tail.
+ if(t<.16){
+  const k=smooth(t/.16);
+  return {x:.52+.10*k,y:-.18+.24*k};
  }
- if(t<bend){
-  const k=(t-enter)/(bend-enter);
-  return {x:bezier(.72,.96,.94,.76,k),y:bezier(.13,.16,.38,.57,k)};
- }
- const k=(t-bend)/(1-bend);
- return {x:bezier(.76,.66,.31,.06,k),y:bezier(.57,.76,.89,1.03,k)};
+ const u=range(t,.16,1);
+ const row=commaRail[Math.min(commaRail.length-1,Math.max(0,Math.round(u*(commaRail.length-1))))];
+ // Never place the small glyph at the outermost edge.
+ return row?{x:clamp(row.x,.27,.77),y:row.y}:{x:.58,y:u};
 }
 function paint(){
  frame=0;if(ended)return;
@@ -279,7 +278,7 @@ function paint(){
  const w=largeComma.offsetWidth||Math.max(1,bounds.width);
  const h=largeComma.offsetHeight||Math.max(1,bounds.height);
  const point=(u,v)=>({x:cx+(u-.5)*w,y:cy+(v-.5)*h});
- const tip=point(.06,1.03);
+ const tail=rail(1),tip=point(tail.x,tail.y);
  parts.forEach((el,i)=>{
   // Ten letters enter one-by-one. The last letter finishes before the full
   // logo crossfade, so the actual letters always reach their real positions.
@@ -305,6 +304,11 @@ function paint(){
    angle=(1-q)*-10;
   }
   const reveal=smooth(range(t,0,.11));
+  // Glyphs travel at 43% of their logo size to fit the comma track, then
+  // return to exactly 100% in the final clean logo composition.
+  const travellingScale=.43;
+  const landing=smooth(range(t,.78,1));
+  const glyphScale=travellingScale+(1-travellingScale)*landing;
   el.style.opacity=String(reveal*(1-assembling));
   el.style.transform='translate3d('+(position.x-homeX).toFixed(2)+'px,'+(position.y-homeY).toFixed(2)+'px,0) rotate('+angle.toFixed(2)+'deg)';
  });
