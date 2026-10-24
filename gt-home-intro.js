@@ -263,70 +263,65 @@ function paint(){
  const w=Math.min(iw,ih*aspect),h=Math.min(ih,iw/aspect);
  const cx=sr.left+sr.width*.5,cy=sr.top+sr.height*.47;
  const point=(u,v)=>({x:cx+(u-.5)*w,y:cy+(v-.5)*h});
- const tip=rail(1),outlet=point(tip.x,tip.y);
- const outsideLeft=-Math.max(110,innerWidth*.14);
- const outsideRight=innerWidth+Math.max(110,innerWidth*.14);
- // Keep the comma as the slide, then remove it before the separate LOGO scene.
- const commaFade=smooth(range(p,.64,.78));
- largeComma.style.opacity=String(.90*(1-commaFade));
- largeComma.style.transform='translate(-50%,-50%) scale('+
-  (1+.04*smooth(range(p,.02,.28))-.05*commaFade)+')';
- const finishLogo=smooth(range(p,.943,.978));
+ // Keep the comma present while letters are dropping and moving, then let
+ // it quietly recede once the original wordmark is almost assembled.
+ const commaFade=smooth(range(p,.76,.92));
+ largeComma.style.opacity=String(.88*(1-commaFade));
+ largeComma.style.transform='translate(-50%,-50%) scale('+(1+.025*smooth(range(p,.02,.28))-.025*commaFade)+')';
+ const intact=smooth(range(p,.92,.975));
  parts.forEach((el,i)=>{
   const homeX=lr.left+el.offsetLeft+el.offsetWidth*.5;
   const homeY=lr.top+el.offsetTop+el.offsetHeight*.5;
-  const slideA=.028+i*.0115;
-  const slideB=.420+i*.012;
-  const exitB=.545+i*.012;
-  const returnA=.680+i*.009;
-  const returnB=.846+i*.010;
+  // Small stagger creates a continuous stream, not ten sequential scenes.
+  const start=.065+i*.027;
+  const t=range(p,start,start+.57);
+  const a=smooth(range(t,0,.18));
+  const b=smooth(range(t,.18,.66));
+  const land=smooth(range(t,.66,1));
+  const travelEnd=rail(.70);
+  let pos,rotation=0;
   const diagonal=Math.max(1,Math.hypot(el.offsetWidth,el.offsetHeight));
-  const fit=u=>{
-   const c=rail(u);
-   return clamp(Math.max(2,(c.clearance||.07)*w*.72)/diagonal,.035,.28);
-  };
-  const exitScale=fit(1);
-  let pos={x:homeX,y:homeY},rot=0,scale=1,opacity=0;
-  if(p<slideA){
-   const q=rail(0);pos=point(q.x,q.y);scale=fit(0);
-  }else if(p<=slideB){
-   // First act: fall down the right-hand inner curve of the giant comma.
-   const q=smooth(range(p,slideA,slideB));
-   const here=rail(q),next=rail(Math.min(1,q+.02));
-   pos=point(here.x,here.y);
-   const tangent=point(next.x,next.y);
-   rot=clamp(Math.atan2(tangent.y-pos.y,tangent.x-pos.x)*180/Math.PI-90,-11,11);
-   scale=fit(q);
-   opacity=smooth(range(p,slideA,slideA+.027));
-  }else if(p<exitB){
-   // Second act: slide completely off the LEFT side of the viewport.
-   const q=smooth(range(p,slideB,exitB));
-   pos={x:bezier(outlet.x,outlet.x-w*.24,outsideLeft+innerWidth*.08,outsideLeft,q),
-        y:bezier(outlet.y,outlet.y+h*.18,outlet.y-h*.12,outlet.y-h*.09,q)};
-   rot=-11*q;scale=exitScale;
-   opacity=1-smooth(range(q,.77,1));
-  }else if(p<returnA){
-   pos={x:outsideLeft,y:outlet.y-h*.09};scale=exitScale;
-  }else if(p<returnB){
-   // Third act: re-enter from the RIGHT and take the original letter slot.
-   const q=smooth(range(p,returnA,returnB));
-   pos={x:bezier(outsideRight,outsideRight-innerWidth*.12,
-          homeX+Math.min(90,innerWidth*.11),homeX,q),
-        y:bezier(homeY-h*.10,homeY+h*.03,homeY-h*.07,homeY,q)};
-   scale=exitScale+(1-exitScale)*q;
-   rot=9*(1-q);
-   opacity=smooth(range(p,returnA,returnA+.032));
-  }else{
-   pos={x:homeX,y:homeY};opacity=1;scale=1;
+  function fit(u){
+   const r=rail(u);
+   return clamp(((r.clearance||.1)*w*.59)/diagonal,.19,.39);
   }
-  el.style.opacity=String(opacity*(1-finishLogo));
+  const scaleOnRail=fit(.45);
+  if(t<.18){
+   // The opening is a short vertical fall from above the comma bowl.
+   const entrance=rail(0);
+   const meet=rail(.16);
+   pos={
+    x:bezier(cx, cx, point(entrance.x,entrance.y).x,point(meet.x,meet.y).x,a),
+    y:bezier(cy-h*.73,cy-h*.55,cy-h*.22,point(meet.x,meet.y).y,a)
+   };
+   rotation=3*(1-a)*(i%2===0?-1:1);
+  }else if(t<.66){
+   // Follow the original comma's right inner boundary with no large spins.
+   const r=rail(.16+(.70-.16)*b);
+   pos=point(r.x,r.y);
+   rotation=(i%2===0?-1:1)*2*Math.sin(Math.PI*b);
+  }else{
+   // Exit the bottom curve and land directly in the letter's exact
+   // original slot. No off-screen exit, pause or re-entry.
+   const from=point(travelEnd.x,travelEnd.y);
+   pos={
+    x:bezier(from.x,from.x-w*.13,homeX+w*.085,homeX,land),
+    y:bezier(from.y,from.y+h*.07,homeY-h*.07,homeY,land)
+   };
+   rotation=(i%2===0?-1:1)*2*(1-land);
+  }
+  // Restore full size gradually while each glyph is landing. The complete
+  // untouched PNG replaces components at the end for pixel-perfect identity.
+  const scale=scaleOnRail+(1-scaleOnRail)*land;
+  const visible=smooth(range(t,0,.09))*(1-intact);
+  el.style.opacity=String(visible);
   el.style.transform='translate3d('+(pos.x-homeX).toFixed(2)+'px,'+
-   (pos.y-homeY).toFixed(2)+'px,0) rotate('+rot.toFixed(2)+
+   (pos.y-homeY).toFixed(2)+'px,0) rotate('+rotation.toFixed(2)+
    'deg) scale('+scale.toFixed(3)+')';
  });
- if(full)full.style.opacity=String(finishLogo);
- caption.style.opacity=String(smooth(range(p,.86,.948)));
- const out=smooth(range(p,.958,1));
+ if(full)full.style.opacity=String(intact);
+ caption.style.opacity=String(smooth(range(p,.78,.91)));
+ const out=smooth(range(p,.956,1));
  sculpture.style.opacity=String(1-.08*out);
  overlay.style.transform='translate3d(0,'+(-12*out)+'%,0)';
  bar.style.transform='scaleX('+p+')';
@@ -344,7 +339,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v8','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v9','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
