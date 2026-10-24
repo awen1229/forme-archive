@@ -174,7 +174,7 @@ const replay=$("reopen"),motionReplay=$("motion-replay");
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
 const easeOut=t=>1-Math.pow(1-clamp(t),3);
-const back=t=>{t=clamp(t);const c=1.22;return 1+c*Math.pow(t-1,3)+(c+1)*Math.pow(t-1,2)};
+const back=t=>{t=clamp(t);const c=1.22;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 let glyphs=[],originalImage=null,introStart=0,introDone=false,raf=0,coverRaf=0;
 let dragging=null,lift=0,hover=null,hoverStrength=0,pulse=null;
@@ -323,14 +323,14 @@ function paintMotion(now){
    }
   }
   const introBlend=reduce?1:smooth((sec-2.40)/.34);
-  const interaction=clamp(Math.max(hoverStrength,pulseActive?.92:0),0,1);
+  const interaction=clamp(Math.max(hoverStrength,pulseActive ? .92 : 0),0,1);
   const fullAlpha=introBlend*(1-interaction);
   const pieceAlpha=reveal*(1-fullAlpha);
   g.el.style.opacity=String(pieceAlpha);
   g.el.style.transform="translate3d("+dx.toFixed(2)+"px,"+dy.toFixed(2)+"px,0) rotate("+rot.toFixed(2)+"deg) scale("+scale.toFixed(3)+")";
  });
  const blend=reduce?1:smooth((sec-2.40)/.34);
- const interaction=clamp(Math.max(hoverStrength,pulseActive?.92:0),0,1);
+ const interaction=clamp(Math.max(hoverStrength,pulseActive ? .92 : 0),0,1);
  full.style.opacity=String(blend*(1-interaction));
  raf=requestAnimationFrame(paintMotion);
 }
