@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f1eb">
-<title>GOOD THINGS, | Physical Comma Study</title>
+<title>GOOD THINGS, | Inverted Comma Study V2</title>
 <style>
 :root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
 *{box-sizing:border-box}
@@ -20,7 +20,7 @@ main{flex:1;width:min(1120px,96vw);margin:auto;display:flex;flex-direction:colum
 h1{font:400 clamp(15px,1.6vw,19px)/1.5 Georgia,serif;margin:0;color:#59705d;letter-spacing:.02em}
 .eyebrow{font-size:9px;letter-spacing:.24em;color:var(--mute);margin:2px 0 10px}
 .stage{width:100%;height:clamp(420px,66vh,680px);height:clamp(420px,66dvh,680px);position:relative}
-canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
 .controls{width:min(700px,92%);margin:0 auto 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding-top:16px}
 .controls .buttons{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .cta{border:1px solid var(--ink);padding:12px 15px;min-width:128px;font-size:11px;letter-spacing:.13em;transition:background .2s}
@@ -28,6 +28,7 @@ canvas{display:block;width:100%;height:100%;touch-action:pan-y}
 .cta:hover{background:#e5e9df}.cta.primary:hover{background:#405347}
 .note{font-size:10px;color:var(--mute);line-height:1.7;text-align:right;max-width:260px}
 .status{font-size:10px;letter-spacing:.12em;color:var(--mute);text-align:center;min-height:18px;margin:0 0 5px}
+.gesture-hint{font-size:9px;letter-spacing:.14em;color:#578260;margin:0 0 12px;text-align:center;line-height:1.4}
 #error{display:none;width:min(500px,90%);font-size:13px;color:#87584e;line-height:1.8;text-align:center;padding:20px}
 footer{border-top:1px solid var(--line);padding:17px 0 25px}
 .small-link{border-bottom:1px solid var(--line);padding-bottom:3px}
@@ -49,7 +50,7 @@ footer{border-top:1px solid var(--line);padding:17px 0 25px}
 <script defer src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
 </head>
 <body>
-<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 01</span></header>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 02</span></header>
 <main>
 <div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
 <h1>Things fall into place.</h1>
@@ -57,13 +58,14 @@ footer{border-top:1px solid var(--line);padding:17px 0 25px}
  <canvas id="scene" aria-label="原始 GOOD THINGS, 字母在放大的逗號容器中受重力與碰撞影響，傾倒後再組合成原始 LOGO。"></canvas>
 </div>
 <p id="status" class="status" role="status">READING THE ORIGINAL LETTERFORMS…</p>
+<p id="gesture-hint" class="gesture-hint">↓&nbsp; SWIPE DOWN OR TAP THE COMMA TO TURN IT OVER</p>
 <div id="error" role="alert">無法載入原始 LOGO 或物理引擎。這是獨立實驗頁，網站首頁沒有受到影響。</div>
 <div class="controls">
   <div class="buttons">
-   <button id="start" class="cta primary" type="button" disabled>POUR / 開始傾倒</button>
+   <button id="start" class="cta primary" type="button" disabled>TURN / 翻轉逗號</button>
    <button id="replay" class="cta" type="button" disabled>REPLAY ↻</button>
   </div>
-  <div class="note">原始字母圖像 · Matter.js 剛體碰撞<br>可反覆測試，不影響正式首頁</div>
+  <div class="note">倒置逗號裝入原始字母，翻轉 180° 後<br>從左下細長尾端逐顆滾出 · 獨立測試</div>
 </div>
 </main>
 <footer><span>INDEPENDENT DESIGN STUDY · NOT RELEASED</span><a class="small-link" href="./index.html">BACK TO SITE ↗</a></footer>
@@ -78,7 +80,7 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
 const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
 const rand=(n)=>{const f=Math.sin(n*78.233+25.126)*43758.5453;return f-Math.floor(f)};
 let model=null,world=null,engine=null,gate=[],bodies=[],raf=0,last=0,elapsed=0;
-let mode='loading',tilt=0,layout=null,assemblyPositions=[],assemblyStart=0;
+let mode='loading',tilt=Math.PI,layout=null,assemblyPositions=[],assemblyStart=0,spillCount=0;
 let logoImage=null;
 
 function fail(reason){
@@ -248,12 +250,14 @@ function packTen(){
  for(let attempt=0;attempt<20;attempt++,radius*=.92){
   positions.length=0;
   const step=Math.max(2.4,radius*.53),candidates=[];
-  for(let y=H-radius*1.1;y>radius*1.1;y-=step){
+  // Upright local geometry is initially shown upside-down. Fill the
+  // original TOP of the comma so letters settle in its inverted bowl.
+  for(let y=radius*1.1;y<H-radius*1.1;y+=step){
    for(let x=radius*1.1;x<W-radius*1.1;x+=step){
     const px=x+step*(rand(x*11+y*7)-.5)*.15;
     const py=y+step*(rand(x*3+y*17)-.5)*.15;
     if(fitCircle(px,py,radius*1.11))
-     candidates.push({x:px,y:py,score:-py+Math.abs(px-W*.5)*.12});
+     candidates.push({x:px,y:py,score:py+Math.abs(px-W*.63)*.12});
    }
   }
   candidates.sort((a,b)=>a.score-b.score);
@@ -272,9 +276,10 @@ function chooseGate(contour,r){
  let target=-1,best=Infinity;
  for(let i=0;i<contour.length;i++){
   const p=contour[i];
-  if(p.y<H*.29||p.y>H*.72)continue;
-  // The left shoulder, near the comma's downhill side, is the outlet.
-  const score=p.x+(Math.abs(p.y-H*.51)*.43);
+  if(p.y<H*.72||p.y>H*.99)continue;
+  // The mouth belongs to the original COMMA TAIL (lower-left narrow tip),
+  // never the rounded bowl or an arbitrary mid-side opening.
+  const score=p.x+Math.abs(p.y-H*.90)*.60;
   if(score<best){best=score;target=i;}
  }
  if(target<0)throw Error('No outlet on the original comma');
@@ -285,7 +290,8 @@ function chooseGate(contour,r){
                        contour[(i+1)%contour.length].y-contour[i].y);
   distances.push(len);circumference+=len;
  }
- const arc=Math.min(r*2.6,circumference*.15),gap=new Set();
+ // Keep the aperture close to one glyph wide, so the flow queues up.
+ const arc=Math.min(r*1.20,circumference*.10),gap=new Set();
  for(const direction of [-1,1]){
   let i=target,covered=0;
   while(covered<arc){
@@ -322,30 +328,34 @@ function initialize(){
    density:.0008,slop:.12,label:'original-letter-'+i
   },24);
   body.plugin.glyph=i;body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
+  Body.setAngle(body,-Math.PI); // Letters begin legible inside inverted comma.
   return body;
  });
  Composite.add(world,bodies);
  // Closed wall first: all ten pieces settle before the exit is opened.
  model.gap=gapIndices;model.radius=radius;
- mode='settle';elapsed=0;tilt=0;last=0;assemblyPositions=[];
+ mode='settle';elapsed=0;tilt=Math.PI;last=0;assemblyPositions=[];spillCount=0;
+ engine.gravity.x=0;engine.gravity.y=-1;
  startButton.disabled=false;replayButton.disabled=false;
- status.textContent='10 ORIGINAL LETTERS / PHYSICALLY PACKED';
+ status.textContent='10 ORIGINAL LETTERS / INSIDE THE INVERTED COMMA';
+ document.getElementById('gesture-hint').style.opacity='1';
  render();
 }
 function triggerPour(){
  if(mode==='error'||mode==='loading')return;
  if(mode==='assemble'||mode==='done'){initialize();}
- mode='pour';elapsed=0;status.textContent='GRAVITY, COLLISION, AND A CHAIN REACTION';
- startButton.textContent='POURING…';startButton.disabled=true;
+ mode='pour';elapsed=0;spillCount=0;status.textContent='TURNING THE COMMA / 180°';
+ document.getElementById('gesture-hint').style.opacity='0';
+ startButton.textContent='TURNING…';startButton.disabled=true;
 }
 function replay(){
- initialize();startButton.textContent='POUR / 開始傾倒';
+ initialize();startButton.textContent='TURN / 翻轉逗號';
 }
 function setupAssembly(){
  mode='assemble';elapsed=0;
  assemblyPositions=bodies.map((b,i)=>{
   const a=worldToScreen(b.position.x,b.position.y);
-  return {x:a.x,y:a.y,angle:b.angle+b.plugin.spriteAngle};
+  return {x:a.x,y:a.y,angle:b.angle+b.plugin.spriteAngle+tilt};
  });
  status.textContent='FINDING THEIR ORIGINAL PLACES';
 }
@@ -373,7 +383,7 @@ function render(){
  ctx.scale(layout.scale,layout.scale);
  ctx.translate(-model.comma.w/2,-model.comma.h/2);
  ctx.globalAlpha=vesselOpacity;
- strokeComma(pts,mode==='pour'&&elapsed>1.15?model.gap:new Set());
+ strokeComma(pts,mode==='pour'&&elapsed>2.30?model.gap:new Set());
  ctx.restore();
 
  const {radius}=model;
@@ -381,7 +391,7 @@ function render(){
   const body=bodies[i],glyph=model.glyphs[i],pos=worldToScreen(body.position.x,body.position.y);
   const originalW=radius*1.63*layout.scale*(glyph.w/Math.max(glyph.w,glyph.h));
   const originalH=radius*1.63*layout.scale*(glyph.h/Math.max(glyph.w,glyph.h));
-  let x=pos.x,y=pos.y,angle=body.angle+body.plugin.spriteAngle,w=originalW,h=originalH;
+  let x=pos.x,y=pos.y,angle=body.angle+body.plugin.spriteAngle+tilt,w=originalW,h=originalH;
   if(assembly){
    const start=assemblyPositions[i];
    const logoLeft=(layout.w-layout.logoW)/2;
@@ -412,22 +422,33 @@ function frame(now){
  if(mode==='settle'||mode==='pour'){
   if(mode==='pour'){
    elapsed+=dt/1000;
-   const z=ease(elapsed/2.9);
-   tilt=(-47*Math.PI/180)*z;
-   if(elapsed>1.15&&gate.length){
+   // Actual vessel turns through HALF A REVOLUTION: upside-down -> upright.
+   // Engine runs in the vessel's local coordinates. Gravity remains fixed
+   // in screen space by transforming it into those local coordinates below.
+   const z=ease(elapsed/2.25);
+   tilt=Math.PI*(1-z);
+   if(elapsed>2.30&&gate.length){
     for(const {body} of gate)Matter.Composite.remove(world,body);
-    gate=[];status.textContent='LET THE LETTERS MOVE ONE ANOTHER';
+    gate=[];status.textContent='OPENING THE LOWER-LEFT COMMA TAIL';
    }
-   if(elapsed>6.2)setupAssembly();
+   if(elapsed>2.4&&!gate.length){
+    // Bodies still collide freely. Count actual exits through the open tail,
+    // rather than pretending a scripted row of letters has flowed out.
+    spillCount=bodies.reduce((n,b)=>n+(!model.inside(b.position.x,b.position.y)?1:0),0);
+    status.textContent=String(spillCount).padStart(2,'0')+' / 10 ORIGINAL LETTERS RELEASED';
+    if((spillCount>=10&&elapsed>3.5)||elapsed>12.5)setupAssembly();
+   }
   }
-  engine.gravity.x=Math.sin(tilt);
+  // Rotate gravity opposite to the drawn comma's angle, preserving a
+  // physically vertical pull throughout the 180-degree overturn.
+  engine.gravity.x=-Math.sin(tilt);
   engine.gravity.y=Math.cos(tilt);
   // Fixed steps keep the collisions consistent under uneven mobile frames.
   const steps=Math.max(1,Math.ceil(dt/16.667));
   for(let j=0;j<steps;j++)Matter.Engine.update(engine,dt/steps);
  }else if(mode==='assemble'){
   elapsed+=dt/1000;
-  if(elapsed>=1.5){mode='done';elapsed=1.5;status.textContent='GOOD THINGS, / ORIGINAL LOGO';startButton.disabled=false;startButton.textContent='POUR AGAIN ↻';}
+  if(elapsed>=1.5){mode='done';elapsed=1.5;status.textContent='GOOD THINGS, / ORIGINAL LOGO';startButton.disabled=false;startButton.textContent='TURN AGAIN ↻';}
  }
  render();
 }
@@ -449,12 +470,31 @@ async function load(){
   raf=requestAnimationFrame(frame);
  }catch(e){fail(e)}
 }
+// A tap or a deliberate DOWNWARD finger swipe turns the entire comma.
+let press=null;
+canvas.addEventListener('pointerdown',e=>{
+ if(mode!=='settle'&&mode!=='done')return;
+ press={y:e.clientY,x:e.clientX,at:performance.now(),id:e.pointerId};
+ try{canvas.setPointerCapture(e.pointerId)}catch{}
+});
+canvas.addEventListener('pointerup',e=>{
+ if(!press||press.id!==e.pointerId)return;
+ const dy=e.clientY-press.y,dx=e.clientX-press.x;
+ const tapped=Math.abs(dy)<18&&Math.abs(dx)<18&&(performance.now()-press.at)<650;
+ if((dy>36&&Math.abs(dy)>Math.abs(dx)*1.15)||tapped)triggerPour();
+ press=null;
+});
+canvas.addEventListener('pointercancel',()=>press=null);
+// Wheel / trackpad scrolling down over the animation works as well.
+canvas.addEventListener('wheel',e=>{
+ if(mode==='settle'&&e.deltaY>10){e.preventDefault();triggerPour();}
+},{passive:false});
 startButton.addEventListener('click',triggerPour);
 replayButton.addEventListener('click',replay);
 window.addEventListener('resize',()=>{
  if(!model)return;
  layout=fitLayout();initialize();
- startButton.textContent='POUR / 開始傾倒';
+ startButton.textContent='TURN / 翻轉逗號';
 });
 window.addEventListener('pagehide',()=>cancelAnimationFrame(raf));
 window.addEventListener('load',load,{once:true});
