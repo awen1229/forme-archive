@@ -14,12 +14,12 @@ function normalizeSlides(raw){
   if(!slugPattern.test(slug)||slugs.has(slug))throw new AuthError(400,'精選文章無效或重複')
   slugs.add(slug)
   const title=str(slide?.title,220),excerpt=str(slide?.excerpt,1200)
-  const cover=str(slide?.cover||slide?.coverUrl,1_500_000)
+  const cover=str(slide?.cover||slide?.coverUrl,3_100_000)
   if(cover && !/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(cover) &&
      !/^https:\/\/cdn\.sanity\.io\/images\/8nqupq9u\/production\/[a-z0-9-]+(?:\.[a-z0-9]+)?(?:\?[^<>"'\s]*)?$/i.test(cover)){
    throw new AuthError(400,'首頁封面必須為上傳圖片或此 Sanity 專案圖片網址')
   }
-  if(cover.length>1_400_000)throw new AuthError(413,'單張首頁封面壓縮後仍過大')
+  if(cover.length>3_000_000)throw new AuthError(413,'單張首頁封面壓縮後仍過大')
   return {_key:'featured-'+slug,_type:'featuredSlide',slug,title,excerpt,coverUrl:cover,coverFit:slide.coverFit==='contain'?'contain':'cover',coverMobileFit:slide.coverMobileFit==='contain'?'contain':'cover',
    coverZoom:Math.max(100,Math.min(250,Number(slide.coverZoom??100)||100)),
    coverMobileZoom:Math.max(100,Math.min(200,Number(slide.coverMobileZoom??100)||100)),
@@ -46,7 +46,7 @@ function serialize(doc){
 }
 async function imageAsset(data,token){
  const match=/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(data)
- if(!match||match[2].length>1_400_000)throw new AuthError(413,'首頁封面必須先完成圖片壓縮')
+ if(!match||match[2].length>3_000_000)throw new AuthError(413,'首頁封面必須先完成圖片壓縮')
  let raw
  try{raw=Uint8Array.from(atob(match[2]),c=>c.charCodeAt(0))}catch{throw new AuthError(400,'封面資料無法解析')}
  const resp=await fetch(API+'/assets/images/'+DATASET+'?filename=good-things-home-cover',{
