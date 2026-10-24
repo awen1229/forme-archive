@@ -63,10 +63,10 @@ function key(e){
  else if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();advance(-.25)}
  else if(e.key==='Escape'){e.preventDefault();complete()}
 }
-overlay.addEventListener('wheel',wheel,{passive:false});
-overlay.addEventListener('touchstart',touchStart,{passive:true});
-overlay.addEventListener('touchmove',touchMove,{passive:false});
-overlay.addEventListener('touchend',()=>downTouch=null,{passive:true});
+window.addEventListener('wheel',wheel,{passive:false,capture:true});
+window.addEventListener('touchstart',touchStart,{passive:true,capture:true});
+window.addEventListener('touchmove',touchMove,{passive:false,capture:true});
+window.addEventListener('touchend',()=>downTouch=null,{passive:true,capture:true});
 window.addEventListener('keydown',key);
 overlay.querySelector('.gt-scroll-entry-skip')?.addEventListener('click',complete);
 window.addEventListener('hashchange',()=>{if(!home())complete()});
