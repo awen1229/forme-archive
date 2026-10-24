@@ -6,7 +6,7 @@ const ids={list:'gt-font-list',count:'gt-font-count',upload:'gt-font-upload',fil
 const $=id=>document.getElementById(id);
 const ROLES=['headlines','body','navigation'];
 const initial={headlines:'',body:'',navigation:''};
-let fonts=[],roles={...initial},saved={...initial},revision='',loading=false,saving=false,uploading=false,loaded=false,limit=150,visibleCount=35,search='',previewCounter=0;
+let fonts=[],roles={...initial},saved={...initial},revision='',loading=false,saving=false,uploading=false,deleting=false,loaded=false,limit=150,visibleCount=35,search='',previewCounter=0;
 const fontById=id=>fonts.find(f=>f._id===id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const stateMessage=(message,error=false)=>{const el=$(ids.status);if(!el)return;el.textContent=message;el.classList.toggle('error',!!error)};
@@ -18,9 +18,9 @@ function available(){
 }
 function buttons(){
  const f=$(ids.files),lic=$(ids.license);
- $(ids.upload).disabled=loading||uploading||!lic.checked||!f.files?.length;
- $(ids.save).disabled=loading||saving||uploading||!loaded||!available()||!isDirty();
- $('gt-font-reload').disabled=loading||uploading||saving;
+ $(ids.upload).disabled=loading||uploading||deleting||!lic.checked||!f.files?.length;
+ $(ids.save).disabled=loading||saving||uploading||deleting||!loaded||!available()||!isDirty();
+ $('gt-font-reload').disabled=loading||uploading||saving||deleting;
 }
 async function api(url,init={}){
  const response=await fetch(url,{credentials:'same-origin',cache:'no-store',...init});
@@ -79,7 +79,7 @@ function rowMarkup(font){
  return '<div class="gt-font-list-row" data-font-id="'+esc(font._id)+'">'+
   '<div class="gt-font-row-top"><b>'+esc(font.name)+'</b><span>'+esc(font.format.toUpperCase())+'</span></div>'+
   '<div class="gt-font-row-sample">Aa Bb 服裝 日本 &amp; GOOD THINGS,</div>'+
-  '<div class="gt-font-row-meta">'+esc(font.originalName||font.name)+'</div></div>';
+  '<div class="gt-font-row-meta">'+esc(font.originalName||font.name)+'</div><div class="gt-font-controls"><button type="button" class="gt-font-delete" data-delete-font="'+esc(font._id)+'" '+(deleting?'disabled':'')+'>刪除字型</button></div></div>';
 }
 function renderList(){
  const filter=search.toLocaleLowerCase();
@@ -138,6 +138,21 @@ async function upload(){
  try{await fetchLibrary();render()}catch(error){stateMessage('上傳後重新讀取失敗：'+error.message,true);return}
  stateMessage(errors.length?label+'\n'+errors.slice(0,6).join('\n'):label,!done);
 }
+async function removeFont(id){
+ if(deleting||uploading||saving||loading)return;
+ const font=fontById(id);if(!font)return;
+ if(Object.values(roles).includes(id)){
+  stateMessage('「'+font.name+'」目前被標題／內文／導覽選用。請先取消套用並儲存草稿，再刪除。',true);return;
+ }
+ if(!confirm('確定從字型庫移除「'+font.name+'」？這不會更動正式網站，但從字型庫移除後需要重新上傳才能使用。'))return;
+ deleting=true;buttons();stateMessage('正在移除字型：'+font.name);
+ try{
+  const data=await api('/api/editor/delete-font',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,confirmation:'DELETE'})});
+  await fetchLibrary();render();
+  stateMessage('已從字型庫移除「'+font.name+'」。字型檔案仍保留在雲端儲存空間，可避免誤刪其他資料。');
+ }catch(error){stateMessage('刪除失敗：'+error.message,true)}
+ finally{deleting=false;buttons()}
+}
 async function save(){
  if(saving||uploading||!loaded||!available())return;
  saving=true;buttons();stateMessage('正在儲存字型配置草稿…');
@@ -158,7 +173,7 @@ if(location.hostname!==HOST||!window.GTFontPreview){
 $('gt-font-test-line').addEventListener('input',updateTestSamples);
 $('gt-font-search').addEventListener('input',e=>{search=e.target.value;visibleCount=35;renderList()});
 // Event delegation for controls added dynamically
-$(ids.list).addEventListener('click',e=>{if(e.target.closest('#gt-font-show-more')){visibleCount+=35;renderList()}});
+$(ids.list).addEventListener('click',e=>{if(e.target.closest('#gt-font-show-more')){visibleCount+=35;renderList();return}const btn=e.target.closest('[data-delete-font]');if(btn)removeFont(btn.dataset.deleteFont)});
 for(const role of ROLES){
  $('gt-font-'+role).addEventListener('change',e=>{
   roles[role]=e.target.value;buttons();applyPreview().catch(error=>stateMessage(error.message,true));
