@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f1eb">
-<title>GOOD THINGS, | Protected Tail Physics Spill & Return Study V6</title>
+<title>GOOD THINGS, | Protected Tail Physics Spill & Return Study V7</title>
 <style>
 :root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
 *{box-sizing:border-box}
@@ -61,7 +61,7 @@ html.gt-physics-embedded .stage{width:100%;height:100%;min-height:0}
 </head>
 <body>
 <script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('gt-physics-embedded');</script>
-<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 06</span></header>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 07</span></header>
 <main>
 <div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
 <h1>Things fall into place.</h1>
@@ -92,7 +92,7 @@ const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
 const rand=(n)=>{const f=Math.sin(n*78.233+25.126)*43758.5453;return f-Math.floor(f)};
 let model=null,world=null,engine=null,gate=[],bodies=[],raf=0,last=0,elapsed=0;
 let mode='loading',tilt=Math.PI,layout=null,assemblyPositions=[],assemblyStart=0,spillCount=0;
-let finishElapsed=0,lastReleasedAt=null,lastWrappedAt=null,wallBodies=[],outlet=null,springBodies=[];
+let finishElapsed=0,lastReleasedAt=null,lastWrappedAt=null,wallBodies=[],outlet=null,springBodies=[],flowField=null,mouthEdges=[];
 const embed=new URLSearchParams(location.search).has('embed');
 const report=(type,details={})=>{if(embed&&window.parent!==window)window.parent.postMessage({type:'gt-physics-'+type,...details},location.origin);};
 let logoImage=null;
@@ -307,7 +307,7 @@ function chooseGate(contour,r){
  }
  // Smooth multi-glyph mouth. A tiny aperture was pinching circular
  // Matter.js bodies against the tapered tail and blocking the release.
- const arc=Math.min(r*2.75,circumference*.15),gap=new Set();
+ const arc=Math.min(r*2.45,circumference*.13),gap=new Set();
  for(const direction of [-1,1]){
   let i=target,covered=0;
   while(covered<arc){
@@ -318,6 +318,84 @@ function chooseGate(contour,r){
  }
  return {gap,point:{...contour[target]}};
 }
+// Find a collision-safe route INSIDE the original comma's irregular painted
+// shape. This prevents a straight attraction line pulling letters into the N
+// recess and other solid portions of the original hand-drawn contour.
+function buildOutletFlow(){
+ const step=Math.max(2,Math.round(model.radius*.28));
+ const cols=Math.ceil(model.comma.w/step),rows=Math.ceil(model.comma.h/step);
+ const distance=new Int32Array(cols*rows).fill(-1);
+ const pass=new Uint8Array(distance.length);
+ const point=k=>({x:(k%cols+.5)*step,y:(Math.floor(k/cols)+.5)*step});
+ let seed=-1,best=Infinity;
+ for(let k=0;k<pass.length;k++){
+  const p=point(k);if(!model.inside(p.x,p.y))continue;
+  pass[k]=1;const d=Math.hypot(p.x-outlet.x,p.y-outlet.y);
+  if(d<best){best=d;seed=k;}
+ }
+ if(seed<0)return null;
+ const queue=new Int32Array(pass.length);let h=0,t=1;
+ queue[0]=seed;distance[seed]=0;
+ while(h<t){
+  const k=queue[h++],x=k%cols,y=Math.floor(k/cols);
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const nx=x+dx,ny=y+dy;
+   if(nx<0||ny<0||nx>=cols||ny>=rows)continue;
+   const n=ny*cols+nx;
+   if(!pass[n]||distance[n]>=0)continue;
+   distance[n]=distance[k]+1;queue[t++]=n;
+  }
+ }
+ return {step,cols,rows,distance,point};
+}
+function guidedDirection(body){
+ if(!flowField)return null;
+ const f=flowField,p=body.position;
+ const x0=Math.floor(p.x/f.step),y0=Math.floor(p.y/f.step);
+ let best=-1,score=Infinity;
+ for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
+  const x=x0+dx,y=y0+dy;
+  if(x<0||y<0||x>=f.cols||y>=f.rows)continue;
+  const k=y*f.cols+x;if(f.distance[k]<0)continue;
+  const point=f.point(k),d=Math.hypot(point.x-p.x,point.y-p.y);
+  if(d>f.step*4.3)continue;
+  let safe=true;
+  for(let n=1;n<=5;n++){
+   const a=n/6;
+   if(!model.inside(lerp(p.x,point.x,a),lerp(p.y,point.y,a))){safe=false;break}
+  }
+  if(!safe)continue;
+  const cost=d+f.distance[k]*f.step*.07;
+  if(cost<score){score=cost;best=k}
+ }
+ if(best<0)return null;
+ let next=best;
+ for(let n=0;n<Math.max(3,Math.round(model.radius/f.step));n++){
+  const x=next%f.cols,y=Math.floor(next/f.cols);let winner=next;
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const xx=x+dx,yy=y+dy;
+   if(xx<0||yy<0||xx>=f.cols||yy>=f.rows)continue;
+   const k=yy*f.cols+xx;
+   if(f.distance[k]>=0&&f.distance[k]<f.distance[winner])winner=k;
+  }
+  if(winner===next)break;next=winner;
+ }
+ const target=f.point(next),dx=target.x-p.x,dy=target.y-p.y,norm=Math.hypot(dx,dy);
+ return norm>.001?{x:dx/norm,y:dy/norm}:null;
+}
+function segmentIntersects(a,b,c,d){
+ if(!a)return false;
+ const rx=b.x-a.x,ry=b.y-a.y,sx=d.x-c.x,sy=d.y-c.y;
+ const den=rx*sy-ry*sx;if(Math.abs(den)<1e-7)return false;
+ const qx=c.x-a.x,qy=c.y-a.y;
+ const t=(qx*sy-qy*sx)/den,u=(qx*ry-qy*rx)/den;
+ return t>=-1e-4&&t<=1.0001&&u>=-1e-4&&u<=1.0001;
+}
+function crossedOriginalOpening(body){
+ // A release MUST geometrically cross an actually removed piece of the
+ // original tail boundary. Other collision walls cannot become doors.
+ return mouthEdges.some(e=>segmentIntersects(body.plugin.lastInside,body.position,e.a,e.b));
+}
 function initialize(){
  if(engine){Matter.Composite.clear(engine.world,false);Matter.Engine.clear(engine);}
  const {Engine,Bodies,Composite,Body}=Matter;
@@ -327,6 +405,8 @@ function initialize(){
  const {positions,radius}=packTen(),contour=model.contour;
  const gateData=chooseGate(contour,radius),gapIndices=gateData.gap;
  outlet=gateData.point;
+ mouthEdges=Array.from(gapIndices,i=>({a:contour[i],b:contour[(i+1)%contour.length]}));
+ flowField=buildOutletFlow();
  gate=[];springBodies=[];
  wallBodies=[];
  for(let i=0;i<contour.length;i++){
@@ -358,6 +438,8 @@ function initialize(){
   body.plugin.wrappedAt=null;
   body.plugin.spring=null;
   body.plugin.springAt=null;
+  body.plugin.jamAt=0;
+  body.plugin.recentPos={x:pos.x,y:pos.y};
   Body.setAngle(body,-Math.PI);
   return body;
  });
@@ -401,8 +483,8 @@ function fitInTail(body){
  if(body.plugin.released)return;
  const y=body.position.y/model.comma.h;
  const near=Math.hypot(body.position.x-outlet.x,body.position.y-outlet.y);
- const progress=Math.max(ease((y-.46)/.36),ease(1-near/(model.radius*8)));
- const target=1-.63*progress;
+ const progress=Math.max(ease((y-.53)/.33),ease(1-near/(model.radius*6.7)));
+ const target=1-.66*progress;
  const current=body.plugin.colliderScale||1;
  const next=Math.max(target,current*.94);
  if(next<current-.001){
@@ -410,22 +492,14 @@ function fitInTail(body){
   body.plugin.colliderScale=next;
  }
 }
-// The only valid aperture is at the measured lower-left tip. A solid
-// upper or side wall must never become permeable simply because a glyph
-// happens to approach the tail while the vessel is turning.
-function atActualMouth(body){
- const r=model.radius;
- return body.position.y>model.comma.h*.70 &&
-  body.position.x<outlet.x+r*2.1 &&
-  Math.hypot(body.position.x-outlet.x,body.position.y-outlet.y)<r*5.2;
-}
+// Release through the measured, temporarily opened true tail only.
 function maintainClosedBoundary(body){
  if(body.plugin.released)return;
  if(model.inside(body.position.x,body.position.y)){
   body.plugin.lastInside={x:body.position.x,y:body.position.y};
   return;
  }
- if(mode==='pour'&&elapsed>.48&&atActualMouth(body)){
+ if(mode==='pour'&&elapsed>1.12&&crossedOriginalOpening(body)){
   body.plugin.released=true;body.plugin.releasedAt=elapsed;
   body.collisionFilter.mask=0x0001;
   const vx=Math.min(-2.8,body.velocity.x);
@@ -466,7 +540,7 @@ function attachSpring(body,i){
  const target=logoTargetWorld(model.glyphs[i]);
  const spring=Matter.Constraint.create({
   pointA:target,bodyB:body,length:0,
-  stiffness:.012,damping:.23,label:'original-logo-spring-'+i
+  stiffness:.016,damping:.34,label:'original-logo-spring-'+i
  });
  Matter.Composite.add(world,spring);
  body.plugin.spring=spring;body.plugin.springAt=elapsed;
@@ -512,28 +586,18 @@ function render(){
   ctx.scale(layout.scale,layout.scale);
   ctx.translate(-model.comma.w/2,-model.comma.h/2);
   ctx.globalAlpha=vesselOpacity;
-  strokeComma(pts,mode==='pour'&&elapsed>2.13?model.gap:new Set());
+  strokeComma(pts,mode==='pour'&&elapsed>1.12?model.gap:new Set());
   ctx.restore();
  }
- const {radius}=model;
  for(let i=0;i<bodies.length;i++){
   const body=bodies[i],glyph=model.glyphs[i],
         pos=worldToScreen(body.position.x,body.position.y);
-  const passage=body.plugin.released
-    ?ease((elapsed-body.plugin.releasedAt)/.44):0;
-  const visibleSize=lerp(body.plugin.colliderScale||1,1,passage);
-  const ballW=radius*1.63*layout.scale*(glyph.w/Math.max(glyph.w,glyph.h))*visibleSize;
-  const ballH=radius*1.63*layout.scale*(glyph.h/Math.max(glyph.w,glyph.h))*visibleSize;
+  // Locked visual dimensions, independent of any Matter.js collider shrink.
+  // Each cut-out glyph keeps its authentic final LOGO bitmap proportions.
   const goalW=glyph.w/model.width*layout.logoW;
-  const goalH=glyph.h/model.height*(layout.logoW*model.height/model.width);
-  // Each glyph grows naturally into its final width as its live spring
-  // distance shrinks; actual center and spin remain driven by Matter.js.
-  const target=logoTargetWorld(glyph);
-  const dist=Math.hypot(body.position.x-target.x,body.position.y-target.y)*layout.scale;
-  const springAge=body.plugin.springAt===null?0:Math.max(0,elapsed-body.plugin.springAt);
-  const align=body.plugin.spring?ease(springAge/1.15)*ease(1-dist/Math.max(layout.logoW*.4,80)):0;
+  const goalH=glyph.h/model.width*layout.logoW;
   let x=pos.x,y=pos.y,angle=body.angle+body.plugin.spriteAngle+tilt;
-  let w=lerp(ballW,goalW,align),h=lerp(ballH,goalH,align);
+  const w=goalW,h=goalH;
   if(assembly){
    const start=assemblyPositions[i],t=assemblyProgress;
    const gx=(layout.w-layout.logoW)/2+(glyph.x+glyph.w*.5)/model.width*layout.logoW;
@@ -541,7 +605,7 @@ function render(){
     (glyph.y+glyph.h*.5)/model.height*(layout.logoW*model.height/model.width);
    x=lerp(start.x,gx,t);y=lerp(start.y,gy,t);
    angle=lerp(start.angle,0,t);
-   w=lerp(w,goalW,t);h=lerp(h,goalH,t);
+   // No glyph resizing during the final alignment.
   }
   if(originalBlend<1)drawGlyph(glyph.img,x,y,angle,w,h,1-originalBlend);
  }
@@ -563,9 +627,9 @@ function frame(now){
    elapsed+=dt/1000;
    // Faster, genuine 180° vessel turn. Release begins DURING the turn,
    // not after waiting for the complete animation.
-   const z=ease(elapsed/1.12);
+   const z=ease(elapsed/1.95);
    tilt=Math.PI*(1-z);
-   if(elapsed>.48&&gate.length){
+   if(elapsed>1.12&&gate.length){
     for(const {body} of gate)Matter.Composite.remove(world,body);
     gate=[];
     status.textContent='LETTERS POUR THROUGH THE ORIGINAL COMMA TAIL';
@@ -575,23 +639,29 @@ function frame(now){
    engine.gravity.y=Math.cos(tilt);
    // There is only ONE simulation from pour to the final logo. No
    // intermediate keyframed "exit" or "right-entry" scene is used.
-   if(elapsed>.51){
+   if(elapsed>1.15){
     const r=model.radius;
-    const escape={x:outlet.x-r*3.8,y:outlet.y+r*.25};
-    const ramp=ease((elapsed-.51)/.42);
+    const escape={x:outlet.x-r*2.3,y:outlet.y+r*.18};
+    const ramp=ease((elapsed-1.15)/.65);
     bodies.forEach((b,i)=>{
      if(!b.plugin.released){
+      if(elapsed-b.plugin.jamAt>.46){
+       const drift=Math.hypot(b.position.x-b.plugin.recentPos.x,b.position.y-b.plugin.recentPos.y);
+       if(drift>r*.43){b.plugin.recentPos={...b.position};b.plugin.jamAt=elapsed}
+      }
+      const jammed=elapsed-b.plugin.jamAt>1.4;
       const dx=escape.x-b.position.x,dy=escape.y-b.position.y;
       const norm=Math.max(r*1.5,Math.hypot(dx,dy));
-      const boost=elapsed>4.5?1.65:1;
-      // A physical force guides a stream through the outlet. The
-      // independent bodies still collide, rotate, tumble and roll.
+      const nearMouth=Math.hypot(b.position.x-outlet.x,b.position.y-outlet.y)<r*4.1;
+      const direction=nearMouth?{x:dx/norm,y:dy/norm}:guidedDirection(b)||{x:dx/norm,y:dy/norm};
+      const boost=elapsed>9?2.4:elapsed>5?1.75:1;
+      // Physical recovery follows reachable inner cells, never a wall shortcut.
       Matter.Body.applyForce(b,b.position,{
-       x:dx/norm*b.mass*.00039*ramp*boost,
-       y:dy/norm*b.mass*.00039*ramp*boost
+       x:direction.x*b.mass*.00031*ramp*boost*(jammed?1.6:1),
+       y:direction.y*b.mass*.00031*ramp*boost*(jammed?1.6:1)
       });
-      // Preserve collision with EVERY solid contour edge. The real
-      // aperture is opened only by removing its own wall segments.
+      if(jammed&&elapsed>3.5)
+       Matter.Body.setAngularVelocity(b,b.angularVelocity*.84+(i%2?.024:-.024));
       fitInTail(b);
      }else if(!b.plugin.wrapped){
       // Natural off-left travel with angular momentum and light gravity
@@ -611,7 +681,12 @@ function frame(now){
        if(px<layout.w*.84)attachSpring(b,i);
       }else{
        const age=elapsed-b.plugin.springAt;
-       if(age>.35)Matter.Body.setAngularVelocity(b,b.angularVelocity*.94);
+       if(age>.16){
+        const angle=b.angle+b.plugin.spriteAngle+tilt;
+        const delta=Math.atan2(Math.sin(-angle),Math.cos(-angle));
+        const damping=ease((age-.16)/1.35);
+        Matter.Body.setAngularVelocity(b,b.angularVelocity*(1-.12*damping)+delta*.018*damping);
+       }
       }
      }
     });
@@ -619,7 +694,7 @@ function frame(now){
   }
   const steps=Math.max(1,Math.ceil(dt/16.667));
   for(let j=0;j<steps;j++)Matter.Engine.update(engine,dt/steps);
-  if(mode==='pour'&&elapsed>.57){
+  if(mode==='pour'&&elapsed>1.15){
    bodies.forEach((b,i)=>{
     if(!b.plugin.released)maintainClosedBoundary(b);
     if(b.plugin.released&&!b.plugin.wrapped){
