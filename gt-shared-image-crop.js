@@ -138,7 +138,7 @@ function pointerMove(e){
    else width=height*a.ratio;
    const maxW=west?anchorX:east?a.w-anchorX:2*Math.min(anchorX,a.w-anchorX);
    const maxH=north?anchorY:south?a.h-anchorY:2*Math.min(anchorY,a.h-anchorY);
-   width=min(width,24,maxW,maxH*a.ratio);height=width/a.ratio;
+   width=min(width,24,Math.min(maxW,maxH*a.ratio));height=width/a.ratio;
    x1=west?anchorX-width:east?anchorX:anchorX-width/2;
    y1=north?anchorY-height:south?anchorY:anchorY-height/2;
    x2=x1+width;y2=y1+height;
