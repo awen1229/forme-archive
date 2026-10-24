@@ -663,7 +663,7 @@ function beginGuided(){
    goalH:g.h/model.width*layout.logoW};
  });
  const sequence=plans.slice().sort((a,b)=>a.mouthDistance-b.mouthDistance||a.i-b.i);
- const firstMouth=Math.max(...plans.map(p=>p.mouthDistance))/speed+.38;
+ const firstMouth=Math.max(...sequence.map((p,rank)=>p.mouthDistance/speed-rank*gap))+.25;
  sequence.forEach((item,rank)=>{
   item.order=rank;
   item.mouthAt=firstMouth+rank*gap;
