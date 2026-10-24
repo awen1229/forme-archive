@@ -252,7 +252,7 @@ function extractOriginal(){
  });
 }
 
-// STUDY 07 / BOTTLE JAM, revision 2
+// STUDY 07 / BOTTLE JAM, revision 3: jam, tilt, crowd pressure, direct pour
 // Use the ORIGINAL logo glyph bitmaps and ACTUAL comma ink silhouette.
 // Packing tests the complete rotated glyph box against the silhouette and every other box.
 // There is deliberately no visual clipping used to conceal packing errors.
@@ -260,11 +260,11 @@ const startButton=document.getElementById('gt-study-activate');
 const skipButton=document.getElementById('gt-study-skip');
 const hint=overlay.querySelector('.gt-scroll-entry-hint');
 const prompt=overlay.querySelector('.gt-study-prompt');
-const totalMs=8150;
-const SHAKE_END=1350, POUR_START=1230, POUR_GAP=215, POUR_LENGTH=1580;
-const RETURN_START=4930, RETURN_GAP=135, RETURN_LENGTH=1100;
+const totalMs=8400;
+const PRESS_START=750, TILT_END=1300, POUR_START=1650, POUR_GAP=215, POUR_LENGTH=1260;
+const RETURN_START=5350, RETURN_GAP=128, RETURN_LENGTH=1120;
 const startSeed=4379085;
-let order=[],ready=false,hasFallback=false,shakeSlots=[];
+let order=[],ready=false,hasFallback=false,live=[],departures=[],lastPhysicalTime=0;
 function rng(seed){return ()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}}
 function cubic(a,b,c,d,t){const v=1-t;return v*v*v*a+3*v*v*t*b+3*v*t*t*c+t*t*t*d}
 function blend(a,b,t){return a+(b-a)*t}
@@ -326,7 +326,7 @@ function attemptPack(g,nominal,seed){
   const item=queue[q];
   let best=null,bestScore=-Infinity;
   for(let n=0;n<2550;n++){
-   const y=(.095+random()*.77)*g.hh;
+   const y=(.15+random()*.76)*g.hh;
    const row=bodyAt(y/g.hh);
    const x=(.06+random()*.88)*g.ww;
    if(!rotatedInside(item,g,x,y))continue;
@@ -339,8 +339,8 @@ function attemptPack(g,nominal,seed){
     nearest=Math.min(nearest,dist);
    }
    // Seek the compact shoulder around the neck, not evenly scattered dots.
-   const wantedY=.54*g.hh;
-   const closeness=settled.length?(-Math.abs(nearest-4.5)*.50):0;
+   const wantedY=.62*g.hh;
+   const closeness=settled.length?(-Math.abs(nearest-1.9)*.68):0;
    const score=closeness-Math.abs(y-wantedY)*g.h/g.hh*.08
      -Math.abs(x-row.x)*g.w/g.ww*.025+random()*3;
    if(score>bestScore){bestScore=score;best=probe;}
@@ -355,120 +355,132 @@ function verifyPacking(items,g){
  return items.every((c,i)=>rotatedInside(c,g,c.x,c.y)&&
               items.every((other,j)=>i===j||separate(c,other,g)));
 }
+
+ // Fit the largest feasible original glyphs rather than distorting their font.
 function pack(){
  const g=getGeometry();
  let winner=null;
- // Ask for ~9-10% of the real comma height rather than the previous ~5%.
- // Reduce proportionally only if all ten ORIGINAL shapes cannot safely fit.
- const base=clamp(g.h*.104,28,55);
- for(const multiplier of [1, .96, .92, .88, .84, .8, .76, .72, .68, .64, .60]){
-  const nominal=base*multiplier;
-  for(let n=0;n<5;n++){
-   const items=attemptPack(g,nominal,startSeed+n*1177+Math.round(multiplier*10000));
+ const base=clamp(g.h*.13,28,64);
+ for(const multiplier of [1,.96,.92,.88,.84,.80,.76,.72,.68,.64,.60,.56]){
+  for(let n=0;n<6;n++){
+   const items=attemptPack(g,base*multiplier,startSeed+n*1177+Math.round(multiplier*10000));
    if(verifyPacking(items,g)){winner=items;break;}
   }
   if(winner)break;
  }
- if(!winner){
-  throw Error("Insufficient safe space for all ten original glyphs");
- }
+ if(!winner)throw Error('No non-overlapping fit inside original comma');
  const homes=parts.map(el=>({x:g.stageRect.left+el.offsetLeft+el.offsetWidth*.5,
                              y:g.stageRect.top+el.offsetTop+el.offsetHeight*.5}));
- glyphs=winner.map((item,i)=>({
-  ...item,homeX:homes[i].x,homeY:homes[i].y,
-  start:point(g,item.x,item.y),releaseIndex:-1
+ glyphs=winner.map((item,i)=>({...item,
+  homeX:homes[i].x,homeY:homes[i].y,start:point(g,item.x,item.y),
+  releaseIndex:-1
  }));
- // Gravity/left-tip order: the letters nearest the comma's lower exit are freed first.
- order=glyphs.map((c,i)=>({...c,i})).sort((a,b)=>b.y-a.y||a.x-b.x).map(c=>c.i);
- order.forEach((glyphIndex,slot)=>glyphs[glyphIndex].releaseIndex=slot);
- layout=g;
- ready=true;
+ live=winner.map(c=>({x:c.x,y:c.y}));
+ departures=new Array(glyphs.length).fill(null);
+ const mouth=bodyAt(.87);
+ const leftMouth=mouth.x-mouth.width*.46;
+ // Nearest the original lower-left lip exits first, clearing space for the next.
+ order=glyphs.map((c,i)=>({i,
+  distance:Math.hypot((c.x-leftMouth)*g.w/g.ww,(c.y-g.hh*.88)*g.h/g.hh)
+ })).sort((a,b)=>a.distance-b.distance).map(c=>c.i);
+ order.forEach((i,slot)=>glyphs[i].releaseIndex=slot);
+ layout=g;lastPhysicalTime=0;ready=true;
  overlay.dataset.packing='verified';
  overlay.dataset.glyphHeight=Math.round(winner[0].ph).toString();
- if(hint&&!running)hint.textContent='LETTERS ARE STUCK / 點擊逗號，把它們搖出來';
- if(prompt)prompt.textContent='SHAKE TO RELEASE / 點擊逗號';
+ overlay.dataset.motion='direct-pressure-pour';
+ if(hint&&!running)hint.textContent='LETTERS ARE JAMMED / 點擊，讓字母從左下傾倒';
+ if(prompt)prompt.textContent='TAP TO TILT / 點擊逗號';
 }
-function shake(t){
- if(t>=SHAKE_END)return 0;
- const rise=smooth(range(t,0,170)),decay=1-smooth(range(t,750,SHAKE_END));
- return rise*decay*(5.5*Math.sin(t*.029)+2.3*Math.sin(t*.061));
+function tilt(t){
+ const early=(1-smooth(range(t,680,1000)))*
+  (2.3*Math.sin(t*.032)+1.1*Math.sin(t*.067))*smooth(range(t,70,260));
+ const pouring=23*smooth(range(t,600,TILT_END))*
+    (1-smooth(range(t,4650,5260)));
+ return early+pouring;
 }
-function wiggle(i,t,g){
- // Keep collisions and outline respected even during the shake.
- // If a proposed jiggle fails, this particle stays wedged in its valid slot.
- const c=glyphs[i],amp=2.5*(1-smooth(range(t,700,1700)));
- const x=c.x+(Math.sin(t*.019+i*2.47)*amp)*g.ww/g.w;
- const y=c.y+(Math.cos(t*.024+i*3.13)*amp)*g.hh/g.h;
- const proposal={...c,x,y};
- if(rotatedInside(proposal,g,x,y)&&glyphs.every((other,j)=>i===j||separate(proposal,shakeSlots[j]||other,g))){
-  shakeSlots[i]=proposal;
-  return point(g,x,y);
+function allowMove(i,x,y){
+ const g=layout,c=glyphs[i],candidate={...c,x,y};
+ if(!rotatedInside(candidate,g,x,y))return false;
+ for(let j=0;j<glyphs.length;j++){
+  if(j===i||departures[j])continue;
+  if(!separate(candidate,{...glyphs[j],...live[j]},g))return false;
  }
- shakeSlots[i]=c;
- return c.start;
+ return true;
+}
+// Tiny collision-aware shifts inside the original silhouette.
+// Unreleased glyphs cannot pass through the edge or through one another.
+function pressCrowd(t){
+ if(t<PRESS_START||t>POUR_START+POUR_GAP*9+200)return;
+ const g=layout,dt=clamp((t-lastPhysicalTime)/16,0,2.3);
+ const strength=dt*(.42+.58*smooth(range(t,850,1500)));
+ const dx=-1.00*strength*g.ww/g.w,dy=1.20*strength*g.hh/g.h;
+ // Lower-left pieces move first; back pieces follow freed space.
+ for(const i of order){
+  if(departures[i])continue;
+  const c=live[i];
+  for(const [vx,vy] of [[dx,dy],[dx*.6,dy],[dx,dy*.5],[dx*.38,dy*.42]]){
+   if(allowMove(i,c.x+vx,c.y+vy)){
+    c.x+=vx;c.y+=vy;break;
+   }
+  }
+ }
 }
 function animateGlyph(i,t){
- const c=glyphs[i],g=layout,el=parts[i];
- const turn=c.releaseIndex,releaseAt=POUR_START+turn*POUR_GAP;
+ const c=glyphs[i],g=layout,el=parts[i],pos=live[i];
+ const turn=c.releaseIndex;
+ const releaseAt=POUR_START+turn*POUR_GAP;
  const returnAt=RETURN_START+turn*RETURN_GAP;
- let x=c.start.x,y=c.start.y,rotation=c.angle,scale=c.scale,alpha=1;
- if(t<releaseAt){
-  const pos=wiggle(i,t,g);x=pos.x;y=pos.y;
- }else if(t<returnAt){
+ let x=point(g,pos.x,pos.y).x,y=point(g,pos.x,pos.y).y;
+ let rotation=c.angle,scale=c.scale,alpha=1;
+ if(t>=releaseAt&&!departures[i])departures[i]={x:pos.x,y:pos.y};
+ if(t>=releaseAt&&t<returnAt){
+  const dep=departures[i],origin=point(g,dep.x,dep.y);
+  const mouthRow=bodyAt(.87);
+  const exit=point(g,mouthRow.x-mouthRow.width*.46,g.hh*.90);
+  const farLeft=g.screen.left-Math.max(190,g.w*.55);
   const q=range(t,releaseAt,releaseAt+POUR_LENGTH);
-  const mid=bodyAt(.57),neck=bodyAt(.80),mouth=bodyAt(.90);
-  const a=point(g,mid.x,mid.y),b=point(g,neck.x,neck.y),cMouth=point(g,mouth.x,mouth.y);
-  if(q<.40){
-   const u=smooth(q/.40);
-   x=cubic(c.start.x,c.start.x,a.x+g.w*.08,a.x,u);
-   y=cubic(c.start.y,c.start.y+g.h*.06,a.y-g.h*.075,a.y,u);
-   rotation=blend(c.angle,-13,u);
-  }else if(q<.71){
-   const u=smooth((q-.40)/.31);
-   x=cubic(a.x,a.x-g.w*.055,b.x+g.w*.02,b.x,u);
-   y=cubic(a.y,a.y+g.h*.035,b.y-g.h*.02,b.y,u);
-   scale=blend(c.scale,c.scale*.74,u);
-   rotation=blend(-13,-28,u);
-  }else{
-   const u=smooth((q-.71)/.29),farLeft=g.screen.left-Math.max(140,g.w*.48);
-   x=cubic(b.x,cMouth.x-g.w*.10,farLeft+g.w*.20,farLeft,u);
-   y=cubic(b.y,cMouth.y+g.h*.03,cMouth.y+g.h*.14,cMouth.y+g.h*.17,u);
-   scale=blend(c.scale*.74,c.scale*.93,u);
-   rotation=blend(-28,-17,u);
-  }
+  // One continuous left-and-down gravity vector, not a curved route.
+  const u=q*q*(3-2*q);
+  const slope=clamp((exit.y-origin.y)/Math.max(45,origin.x-exit.x),.24,.69);
+  x=origin.x+(farLeft-origin.x)*u;
+  y=origin.y+(origin.x-x)*slope+g.h*.065*u*u;
+  rotation=c.angle-14*smooth(q);
   if(q>=1)alpha=0;
- }else{
+ }else if(t>=returnAt){
   const u=smooth(range(t,returnAt,returnAt+RETURN_LENGTH));
-  const offRight=g.screen.right+Math.max(150,g.w*.45);
-  x=cubic(offRight,offRight-g.w*.02,c.homeX+Math.min(110,g.screen.width*.19),c.homeX,u);
-  y=cubic(c.homeY-g.h*.06,c.homeY-g.h*.11,c.homeY,c.homeY,u);
-  scale=blend(c.scale*.95,1,u);
-  rotation=blend(c.angle,0,u);
+  const offRight=g.screen.right+Math.max(160,g.w*.45);
+  // Re-enter in original word order, finishing in exact PNG positions.
+  x=cubic(offRight,offRight-g.w*.06,c.homeX+g.w*.05,c.homeX,u);
+  y=cubic(c.homeY+g.h*.07,c.homeY+g.h*.035,c.homeY,c.homeY,u);
+  scale=blend(c.scale,1,u);
+  rotation=blend(c.angle-9,0,u);
+  alpha=smooth(range(t,returnAt,returnAt+180));
  }
- alpha*=1-smooth(range(t,6920,7300));
+ alpha*=1-smooth(range(t,7410,7650));
  el.style.transform='translate3d('+(x-c.homeX).toFixed(2)+'px,'+
-  (y-c.homeY).toFixed(2)+'px,0) rotate('+rotation.toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
+  (y-c.homeY).toFixed(2)+'px,0) rotate('+rotation.toFixed(2)+
+  'deg) scale('+scale.toFixed(3)+')';
  el.style.opacity=String(alpha);
 }
 function render(now){
  frame=0;if(ended||!ready)return;
  const t=running?now-startedAt:0;
- if(!running){
-  // Fixed large jammed characters, without incessant floating or edge escapes.
-  glyphs.forEach((_,i)=>animateGlyph(i,0));
-  return;
+ if(running){
+  if(!lastPhysicalTime)lastPhysicalTime=t;
+  pressCrowd(t);
+  lastPhysicalTime=t;
  }
- sculpture.style.transform='rotate('+shake(t).toFixed(2)+'deg)';
- shakeSlots=[];
+ // Vessel and contents tip together, then straighten before assembly.
+ sculpture.style.transform='rotate('+tilt(t).toFixed(2)+'deg)';
  glyphs.forEach((_,i)=>animateGlyph(i,t));
- const fading=smooth(range(t,6760,7160));
- largeComma.style.opacity=String(.95*(1-fading));
- if(full)full.style.opacity=String(smooth(range(t,6920,7350)));
- if(caption)caption.style.opacity=String(smooth(range(t,7130,7390)));
+ const fading=smooth(range(t,6600,7330));
+ largeComma.style.opacity=String(.94*(1-fading));
+ if(full)full.style.opacity=String(smooth(range(t,7490,7780)));
+ if(caption)caption.style.opacity=String(smooth(range(t,7560,7880)));
  if(bar)bar.style.transform='scaleX('+clamp(t/totalMs)+')';
  if(pct)pct.textContent=Math.round(clamp(t/totalMs)*100)+'%';
- if(t>=totalMs){finish();return}
- frame=requestAnimationFrame(render);
+ if(running&&t>=totalMs){finish();return}
+ if(running)frame=requestAnimationFrame(render);
 }
 function request(){if(!frame)frame=requestAnimationFrame(render)}
 function startStudy(){
@@ -476,7 +488,7 @@ function startStudy(){
  if(matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return}
  running=true;startedAt=performance.now();startButton.disabled=true;
  overlay.classList.add('is-started');
- if(hint)hint.textContent='SHAKE / TILT / POUR / 字母正在擠出瓶口';
+ if(hint)hint.textContent='TILT / PRESSURE / POUR / 字母順勢向左下流出';
  request();
 }
 function finish(){
