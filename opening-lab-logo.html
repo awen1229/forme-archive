@@ -279,7 +279,7 @@ cover.addEventListener("wheel",e=>{
 cover.addEventListener("keydown",e=>{
  if(["Enter"," ","ArrowDown","PageDown"].includes(e.key)){e.preventDefault();enter()}
 });
-skip.addEventListener("click",e=>{e.stopPropagation();enter()});
+skip.addEventListener("click",e=>{e.stopPropagation();clearTimeout(stampTimer);opening=true;cover.classList.add("is-opening");tween(1,320)});
 reopen.addEventListener("click",reset);
 window.addEventListener("resize",()=>drawCover(lift));
 function loadHomepage(){
