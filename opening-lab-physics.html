@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f1eb">
-<title>GOOD THINGS, | Continuous Physical Logo Flow Study V4</title>
+<title>GOOD THINGS, | Continuous Physics Spill & Return Study V5</title>
 <style>
 :root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
 *{box-sizing:border-box}
@@ -61,7 +61,7 @@ html.gt-physics-embedded .stage{width:100%;height:100%;min-height:0}
 </head>
 <body>
 <script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('gt-physics-embedded');</script>
-<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 04</span></header>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 05</span></header>
 <main>
 <div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
 <h1>Things fall into place.</h1>
@@ -76,7 +76,7 @@ html.gt-physics-embedded .stage{width:100%;height:100%;min-height:0}
    <button id="start" class="cta primary" type="button" disabled>TURN / 翻轉逗號</button>
    <button id="replay" class="cta" type="button" disabled>REPLAY ↻</button>
   </div>
-  <div class="note">Matter.js 原始字母自由碰撞、連續流出尾端，<br>自然被彈簧牽引成完整 LOGO，沒有畫面左右換場。</div>
+  <div class="note">Matter.js 真實重力與碰撞：翻正立即從逗號尾端倒出，<br>由左側離場、右側繼續滾入、接上物理彈簧組成原始 LOGO</div>
 </div>
 </main>
 <footer><span>INDEPENDENT DESIGN STUDY · NOT RELEASED</span><a class="small-link" href="./index.html">BACK TO SITE ↗</a></footer>
@@ -92,7 +92,7 @@ const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
 const rand=(n)=>{const f=Math.sin(n*78.233+25.126)*43758.5453;return f-Math.floor(f)};
 let model=null,world=null,engine=null,gate=[],bodies=[],raf=0,last=0,elapsed=0;
 let mode='loading',tilt=Math.PI,layout=null,assemblyPositions=[],assemblyStart=0,spillCount=0;
-let finishElapsed=0,lastReleasedAt=null,wallBodies=[],outlet=null,springBodies=[];
+let finishElapsed=0,lastReleasedAt=null,lastWrappedAt=null,wallBodies=[],outlet=null,springBodies=[];
 const embed=new URLSearchParams(location.search).has('embed');
 const report=(type,details={})=>{if(embed&&window.parent!==window)window.parent.postMessage({type:'gt-physics-'+type,...details},location.origin);};
 let logoImage=null;
@@ -307,7 +307,7 @@ function chooseGate(contour,r){
  }
  // Smooth multi-glyph mouth. A tiny aperture was pinching circular
  // Matter.js bodies against the tapered tail and blocking the release.
- const arc=Math.min(r*3.1,circumference*.20),gap=new Set();
+ const arc=Math.min(r*4.0,circumference*.21),gap=new Set();
  for(const direction of [-1,1]){
   let i=target,covered=0;
   while(covered<arc){
@@ -351,6 +351,8 @@ function initialize(){
   body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
   body.plugin.released=false;
   body.plugin.releasedAt=null;
+  body.plugin.wrapped=false;
+  body.plugin.wrappedAt=null;
   body.plugin.spring=null;
   body.plugin.springAt=null;
   Body.setAngle(body,-Math.PI);
@@ -359,7 +361,7 @@ function initialize(){
  Composite.add(world,bodies);
  model.gap=gapIndices;model.radius=radius;
  mode='settle';elapsed=0;tilt=Math.PI;last=0;
- finishElapsed=0;lastReleasedAt=null;assemblyPositions=[];spillCount=0;
+ finishElapsed=0;lastReleasedAt=null;lastWrappedAt=null;assemblyPositions=[];spillCount=0;
  engine.gravity.scale=.00155;
  engine.gravity.x=0;engine.gravity.y=-1;
  startButton.disabled=false;replayButton.disabled=false;
@@ -389,33 +391,45 @@ function logoTargetWorld(glyph){
  return {x:model.comma.w*.5+(px-layout.cx)/layout.scale,
          y:model.comma.h*.5+(py-layout.cy)/layout.scale};
 }
+function screenToWorld(x,y){
+ return {x:model.comma.w*.5+(x-layout.cx)/layout.scale,
+         y:model.comma.h*.5+(y-layout.cy)/layout.scale};
+}
+function wrapFromLeft(body,i){
+ // The wrap happens only after the whole glyph is already outside the
+ // LEFT viewport. It resumes outside the RIGHT viewport and keeps its
+ // actual Matter.js rolling velocity, with no visible cut or scene pause.
+ const pos=worldToScreen(body.position.x,body.position.y);
+ const margin=Math.max(45,model.radius*layout.scale*2.8);
+ const nextY=clamp(pos.y,layout.h*.34,layout.h*.68);
+ Matter.Body.setPosition(body,screenToWorld(layout.w+margin+7*(i%3),nextY));
+ Matter.Body.setVelocity(body,{x:-Math.max(3.7,Math.abs(body.velocity.x)),
+                               y:clamp(body.velocity.y,-.20,.20)});
+ Matter.Body.setAngularVelocity(body,-.075+.025*rand(i+15));
+ body.plugin.wrapped=true;
+ body.plugin.wrappedAt=elapsed;
+ lastWrappedAt=elapsed;
+}
 function attachSpring(body,i){
  if(body.plugin.spring)return;
  const target=logoTargetWorld(model.glyphs[i]);
- // A real damped Matter.js spring continuously pulls letters into their
- // own places once each one has safely passed the tail outlet.
  const spring=Matter.Constraint.create({
   pointA:target,bodyB:body,length:0,
-  stiffness:.012,damping:.24,label:'original-logo-spring-'+i
+  stiffness:.012,damping:.23,label:'original-logo-spring-'+i
  });
  Matter.Composite.add(world,spring);
  body.plugin.spring=spring;body.plugin.springAt=elapsed;
- // Collision between released glyphs stays active; the vessel wall no
- // longer catches an already-released glyph on its way to the wordmark.
- body.collisionFilter.mask=0x0001;
+ body.collisionFilter.mask=0x0001; // physical letter-letter collisions
 }
 function setupAssembly(){
  if(mode==='assemble'||mode==='done')return;
  mode='assemble';finishElapsed=0;
- // The exact original PNG is the final identity lock. This tiny finishing
- // phase starts from the live physical positions, never a second entrance.
  assemblyPositions=bodies.map(b=>{
   const pos=worldToScreen(b.position.x,b.position.y);
-  const rawAngle=b.angle+b.plugin.spriteAngle+tilt;
-  return {x:pos.x,y:pos.y,
-   angle:Math.atan2(Math.sin(rawAngle),Math.cos(rawAngle))};
+  const raw=b.angle+b.plugin.spriteAngle+tilt;
+  return {x:pos.x,y:pos.y,angle:Math.atan2(Math.sin(raw),Math.cos(raw))};
  });
- status.textContent='LETTERS FLOW INTO THEIR ORIGINAL PLACES';
+ status.textContent='PHYSICAL LETTERS SETTLE INTO THE ORIGINAL LOGO';
  report('progress',{progress:.92});
 }
 function worldToScreen(x,y){
@@ -434,12 +448,12 @@ function render(){
  if(mode==='error')return;
  const assembly=mode==='assemble'||mode==='done';
  const assemblyProgress=mode==='done'?1:ease(finishElapsed/.78);
- const originalBlend=assembly?ease((assemblyProgress-.57)/.43):0;
+ const originalBlend=assembly?ease((assemblyProgress-.58)/.42):0;
  // Fade the outlined container as the letters leave. Never cut to an
  // empty frame between the comma, physical pieces, and complete wordmark.
  const released=bodies.filter(b=>b.plugin.released).length;
  const vesselOpacity=assembly?1-assemblyProgress:
-   mode==='pour'?(1-ease((released-5)/5)*.94):1;
+   mode==='pour'?(1-ease((released-5)/5)*.97):1;
  const pts=model.contour;
  if(vesselOpacity>0.001){
   ctx.save();
@@ -493,53 +507,63 @@ function frame(now){
  if(mode==='settle'||mode==='pour'){
   if(mode==='pour'){
    elapsed+=dt/1000;
-   const z=ease(elapsed/2.08);
+   // Faster, genuine 180° vessel turn. Release begins DURING the turn,
+   // not after waiting for the complete animation.
+   const z=ease(elapsed/1.12);
    tilt=Math.PI*(1-z);
-   // Remove the physical mouth walls while leaving the remaining original
-   // comma contour solid, now with a genuinely wide smooth exit corridor.
-   if(elapsed>2.13&&gate.length){
+   if(elapsed>.48&&gate.length){
     for(const {body} of gate)Matter.Composite.remove(world,body);
-    gate=[];status.textContent='ORIGINAL LETTERS FLOW OUT OF THE TAIL';
-    report('progress',{progress:.34});
+    gate=[];
+    status.textContent='LETTERS POUR THROUGH THE ORIGINAL COMMA TAIL';
+    report('progress',{progress:.28});
    }
    engine.gravity.x=-Math.sin(tilt);
    engine.gravity.y=Math.cos(tilt);
-   if(elapsed>2.18){
+   // There is only ONE simulation from pour to the final logo. No
+   // intermediate keyframed "exit" or "right-entry" scene is used.
+   if(elapsed>.51){
     const r=model.radius;
-    const escape={x:outlet.x-r*2.7,y:outlet.y+r*.6};
+    const escape={x:outlet.x-r*3.8,y:outlet.y+r*.25};
+    const ramp=ease((elapsed-.51)/.42);
     bodies.forEach((b,i)=>{
      if(!b.plugin.released){
-      // A continuous funnel force, not position keyframes. Individual
-      // collisions, inertia, rotation and spacing remain physical.
       const dx=escape.x-b.position.x,dy=escape.y-b.position.y;
       const norm=Math.max(r*1.5,Math.hypot(dx,dy));
-      const ramp=ease((elapsed-2.18)/.9);
-      const boost=elapsed>6.7?2.2:1;
+      const boost=elapsed>4.5?1.65:1;
+      // A physical force guides a stream through the outlet. The
+      // independent bodies still collide, rotate, tumble and roll.
       Matter.Body.applyForce(b,b.position,{
-       x:dx/norm*b.mass*.00042*ramp*boost,
-       y:dy/norm*b.mass*.00042*ramp*boost
+       x:dx/norm*b.mass*.00039*ramp*boost,
+       y:dy/norm*b.mass*.00039*ramp*boost
       });
-      // Crucial anti-jam: at the genuine narrow tail, let a letter
-      // clear the vessel rim but continue colliding with other letters.
-      const nearMouth=Math.hypot(b.position.x-outlet.x,
-                                b.position.y-outlet.y)<r*3.35;
-      if(nearMouth||elapsed>8.0)b.collisionFilter.mask=0x0001;
+      // The pointed tail is much narrower than the visible glyphs.
+      // Disable ONLY vessel-wall collision near its throat while
+      // retaining letter-letter collision to remove the exit jam.
+      const nearTail=Math.hypot(b.position.x-outlet.x,
+                                b.position.y-outlet.y)<r*5.4;
+      const inChannel=b.position.y>model.comma.h*.67 &&
+                      b.position.x<model.comma.w*.76;
+      if(nearTail||inChannel||elapsed>6.3)
+        b.collisionFilter.mask=0x0001;
+     }else if(!b.plugin.wrapped){
+      // Natural off-left travel with angular momentum and light gravity
+      // cancellation, so the letters do not sink below the viewport.
+      Matter.Body.applyForce(b,b.position,{
+       x:-b.mass*.00045,
+       y:-b.mass*engine.gravity.y*engine.gravity.scale*.83
+      });
      }else{
-      const since=elapsed-b.plugin.releasedAt;
+      // The same rolling bodies re-enter from the RIGHT edge.
+      // Cancel screen-down gravity on wrapped bodies; allow momentum.
+      Matter.Body.applyForce(b,b.position,{
+       x:0,y:-b.mass*engine.gravity.y*engine.gravity.scale
+      });
       if(!b.plugin.spring){
-       const awayX=b.position.x-outlet.x,awayY=b.position.y-outlet.y;
-       // First clear the outlet before attaching the logo spring.
-       if(since>.28||Math.hypot(awayX,awayY)>r*3.25){
-        attachSpring(b,i);
-       }else{
-        Matter.Body.applyForce(b,b.position,{
-         x:-b.mass*.00037,y:b.mass*.00012
-        });
-       }
+       const px=worldToScreen(b.position.x,b.position.y).x;
+       if(px<layout.w*.84)attachSpring(b,i);
       }else{
        const age=elapsed-b.plugin.springAt;
-       // Rotational damping keeps the physical arrival legible.
-       Matter.Body.setAngularVelocity(b,b.angularVelocity*(age>1.1?.9:.97));
+       if(age>.35)Matter.Body.setAngularVelocity(b,b.angularVelocity*.94);
       }
      }
     });
@@ -547,30 +571,42 @@ function frame(now){
   }
   const steps=Math.max(1,Math.ceil(dt/16.667));
   for(let j=0;j<steps;j++)Matter.Engine.update(engine,dt/steps);
-  if(mode==='pour'&&elapsed>2.2){
+  if(mode==='pour'&&elapsed>.57){
    bodies.forEach((b,i)=>{
     if(!b.plugin.released&&!model.inside(b.position.x,b.position.y)){
-     // Anti-jam forces are still part of the running Matter.js world:
-     // never teleport to the edge, the opposite side, or a logo slot.
+     // A body genuinely crossed the wall into open space; do not
+     // teleport it to a scripted exit point.
      b.plugin.released=true;b.plugin.releasedAt=elapsed;
      b.collisionFilter.mask=0x0001;
-     Matter.Body.setAngularVelocity(b,-.055+.032*rand(i+17));
+     // Add leftward impulse without erasing its physics-derived
+     // tangential motion or angular velocity.
+     const vx=Math.min(-2.45,b.velocity.x);
+     Matter.Body.setVelocity(b,{x:vx,y:clamp(b.velocity.y,-.42,.42)});
+     Matter.Body.setAngularVelocity(b,-.06+.035*rand(i+17));
      lastReleasedAt=elapsed;
     }
+    if(b.plugin.released&&!b.plugin.wrapped){
+     const px=worldToScreen(b.position.x,b.position.y).x;
+     const radius=model.radius*layout.scale;
+     if(px < -Math.max(38,radius*2.35))
+       wrapFromLeft(b,i);
+    }
    });
-   spillCount=bodies.filter(b=>b.plugin.released).length;
-   status.textContent=String(spillCount).padStart(2,'0')+
-    ' / 10 ORIGINAL LETTERS FLOWING INTO GOOD THINGS,';
-   report('progress',{progress:.34+Math.min(.50,spillCount*.05)});
-   if(spillCount===10){
-    // Keep the same continuous animation while physical springs converge.
-    const close=bodies.every((b,i)=>{
-     if(!b.plugin.spring)return false;
+   const released=bodies.filter(b=>b.plugin.released).length;
+   const wrapped=bodies.filter(b=>b.plugin.wrapped).length;
+   const springCount=bodies.filter(b=>!!b.plugin.spring).length;
+   status.textContent=wrapped?
+      String(wrapped).padStart(2,'0')+' / 10 FROM LEFT TO RIGHT, THEN THE LOGO':
+      String(released).padStart(2,'0')+' / 10 GLYPHS FLOWING OUT';
+   report('progress',{progress:.28+released*.023+wrapped*.027+springCount*.018});
+   if(springCount===10){
+    const settled=bodies.every((b,i)=>{
      const target=logoTargetWorld(model.glyphs[i]);
-     return Math.hypot(b.position.x-target.x,b.position.y-target.y)*layout.scale<14;
+     return Math.hypot(b.position.x-target.x,b.position.y-target.y)*layout.scale<15;
     });
-    if((close&&elapsed-(lastReleasedAt||0)>.5)||
-       (lastReleasedAt&&elapsed-lastReleasedAt>4.7))setupAssembly();
+    if((settled&&elapsed-(lastWrappedAt||0)>.5)||
+       (lastWrappedAt&&elapsed-lastWrappedAt>4.6))
+      setupAssembly();
    }
   }
  }else if(mode==='assemble'){
