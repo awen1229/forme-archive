@@ -244,8 +244,8 @@ async function loadOriginalLogo(){
 async function init(){
  // Same-origin, real TEST homepage appears under the opening sheet.
  // The session flag above prevents V16 from unexpectedly playing in iframe.
- under.src="./index.html?intro=off&opening-lab-frame=1#/";
  const frameReady=waitForIframe();
+ under.src="./index.html?intro=off&opening-lab-frame=1#/";
  try{
   await loadOriginalLogo();
  }catch(error){
