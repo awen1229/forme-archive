@@ -184,7 +184,7 @@ document.addEventListener('change',async e=>{
    // Same client-side compression already used for ARTICLE covers.
    const processed=await gtCompressImage(file,'cover');
    if(choiceId!==coverChoiceId)return;
-   if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(processed.data)||processed.data.length>1_100_000)
+   if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(processed.data)||processed.data.length>3_000_000)
     throw Error('壓縮圖片無效，請改用 JPG 或 WebP');
    coverData=processed.data;
    const removeCover=form?.querySelector('input[name="clearCover"]');if(removeCover)removeCover.checked=false;
