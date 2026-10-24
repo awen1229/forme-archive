@@ -53,7 +53,7 @@ html.gt-scroll-entry-ready .gt-scroll-entry{
  vector-effect:non-scaling-stroke;will-change:stroke-dashoffset
 }
 .gt-scroll-entry-words{
- position:absolute;top:30%;left:13%;width:62%;height:26%;z-index:2;
+ position:absolute;top:29%;left:24%;width:58%;height:25%;z-index:2;
  display:flex;flex-direction:column;align-items:center;justify-content:center;
  gap:clamp(4px,.65vw,10px);text-align:center;
  pointer-events:none
@@ -94,13 +94,14 @@ html.gt-scroll-entry-ready .gt-scroll-entry{
  .gt-scroll-entry-top{font-size:9px}
  .gt-scroll-entry-sculpture{width:min(88vw,425px,52dvh)}
  .gt-scroll-entry-word{font-size:clamp(31px,9vw,47px)}
- .gt-scroll-entry-word[data-word="things"]{font-size:.83em}
+ .gt-scroll-entry-word[data-word="things"]{font-size:clamp(23px,7.1vw,37px)}
  .gt-scroll-entry-caption{font-size:9px}
  .gt-scroll-entry-foot{grid-template-columns:1fr 65px 34px;gap:11px;font-size:9px}
 }
 @media(max-height:500px) and (orientation:landscape){
  .gt-scroll-entry-sculpture{width:min(48vw,38dvh)}
  .gt-scroll-entry-word{font-size:clamp(20px,4vw,36px)}
+ .gt-scroll-entry-word[data-word="things"]{font-size:clamp(18px,3.4vw,30px)}
  .gt-scroll-entry-caption{display:none}
 }
 @media(prefers-reduced-motion:reduce){
