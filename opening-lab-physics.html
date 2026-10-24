@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f1eb">
-<title>GOOD THINGS, | Inverted Comma Study V2</title>
+<title>GOOD THINGS, | Physical Comma Return Study V3</title>
 <style>
 :root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
 *{box-sizing:border-box}
@@ -46,11 +46,22 @@ footer{border-top:1px solid var(--line);padding:17px 0 25px}
 @media(prefers-reduced-motion:reduce){
  .stage{height:52dvh;min-height:260px}
 }
+
+/* Embedded HOME preview uses the very same Matter.js simulation as Study 03. */
+html.gt-physics-embedded, html.gt-physics-embedded body{height:100%;min-height:0;overflow:hidden}
+html.gt-physics-embedded header,html.gt-physics-embedded footer,
+html.gt-physics-embedded .eyebrow,html.gt-physics-embedded h1,
+html.gt-physics-embedded #status,html.gt-physics-embedded #gesture-hint,
+html.gt-physics-embedded .controls{display:none!important}
+html.gt-physics-embedded main{width:100%;height:100%;min-height:0;
+ margin:0;padding:0;display:block}
+html.gt-physics-embedded .stage{width:100%;height:100%;min-height:0}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
 </head>
 <body>
-<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 02</span></header>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('gt-physics-embedded');</script>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 03</span></header>
 <main>
 <div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
 <h1>Things fall into place.</h1>
@@ -65,7 +76,7 @@ footer{border-top:1px solid var(--line);padding:17px 0 25px}
    <button id="start" class="cta primary" type="button" disabled>TURN / 翻轉逗號</button>
    <button id="replay" class="cta" type="button" disabled>REPLAY ↻</button>
   </div>
-  <div class="note">倒置逗號裝入原始字母，翻轉 180° 後<br>從左下細長尾端逐顆滾出 · 獨立測試</div>
+  <div class="note">Matter.js 重力碰撞與滾動：翻正後由左下尾端倒出，<br>滾出左側，再從右側回場並組成原始 LOGO</div>
 </div>
 </main>
 <footer><span>INDEPENDENT DESIGN STUDY · NOT RELEASED</span><a class="small-link" href="./index.html">BACK TO SITE ↗</a></footer>
@@ -81,6 +92,9 @@ const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
 const rand=(n)=>{const f=Math.sin(n*78.233+25.126)*43758.5453;return f-Math.floor(f)};
 let model=null,world=null,engine=null,gate=[],bodies=[],raf=0,last=0,elapsed=0;
 let mode='loading',tilt=Math.PI,layout=null,assemblyPositions=[],assemblyStart=0,spillCount=0;
+let returnElapsed=0,finishElapsed=0,wallBodies=[],outlet=null,springBodies=[];
+const embed=new URLSearchParams(location.search).has('embed');
+const report=(type,details={})=>{if(embed&&window.parent!==window)window.parent.postMessage({type:'gt-physics-'+type,...details},location.origin);};
 let logoImage=null;
 
 function fail(reason){
@@ -300,64 +314,110 @@ function chooseGate(contour,r){
    i=(i+direction+contour.length)%contour.length;
   }
  }
- return gap;
+ return {gap,point:{...contour[target]}};
 }
 function initialize(){
  if(engine){Matter.Composite.clear(engine.world,false);Matter.Engine.clear(engine);}
  const {Engine,Bodies,Composite,Body}=Matter;
- engine=Engine.create({positionIterations:10,velocityIterations:8,constraintIterations:4,enableSleeping:false});
+ engine=Engine.create({positionIterations:12,velocityIterations:10,constraintIterations:6,enableSleeping:false});
  engine.gravity.scale=.00155;
  world=engine.world;
  const {positions,radius}=packTen(),contour=model.contour;
- const gapIndices=chooseGate(contour,radius);
- gate=[];const walls=[];
+ const gateData=chooseGate(contour,radius),gapIndices=gateData.gap;
+ outlet=gateData.point;
+ gate=[];springBodies=[];
+ wallBodies=[];
  for(let i=0;i<contour.length;i++){
   const a=contour[i],b=contour[(i+1)%contour.length],len=Math.hypot(b.x-a.x,b.y-a.y);
   if(len<.15)continue;
   const segment=Bodies.rectangle((a.x+b.x)/2,(a.y+b.y)/2,len+2,4,{
    isStatic:true,angle:Math.atan2(b.y-a.y,b.x-a.x),
-   friction:.8,restitution:.13,label:'original-comma-wall'
+   friction:.81,restitution:.13,label:'original-comma-wall'
   });
-  walls.push(segment);
+  wallBodies.push(segment);
   if(gapIndices.has(i))gate.push({body:segment,i});
  }
- Composite.add(world,walls);
- bodies=positions.map((p,i)=>{
-  const body=Bodies.circle(p.x,p.y,radius*.98,{
-   friction:.82,frictionStatic:1.4,frictionAir:.008,restitution:.10,
+ Composite.add(world,wallBodies);
+ bodies=positions.map((pos,i)=>{
+  const body=Bodies.circle(pos.x,pos.y,radius*.97,{
+   friction:.72,frictionStatic:1.28,frictionAir:.009,restitution:.16,
    density:.0008,slop:.12,label:'original-letter-'+i
   },24);
-  body.plugin.glyph=i;body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
-  Body.setAngle(body,-Math.PI); // Letters begin legible inside inverted comma.
+  body.plugin.glyph=i;
+  body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
+  body.plugin.released=false;
+  body.plugin.offLeft=false;
+  body.plugin.spring=null;
+  Body.setAngle(body,-Math.PI);
   return body;
  });
  Composite.add(world,bodies);
- // Closed wall first: all ten pieces settle before the exit is opened.
  model.gap=gapIndices;model.radius=radius;
- mode='settle';elapsed=0;tilt=Math.PI;last=0;assemblyPositions=[];spillCount=0;
+ mode='settle';elapsed=0;tilt=Math.PI;last=0;
+ returnElapsed=0;finishElapsed=0;assemblyPositions=[];spillCount=0;
+ engine.gravity.scale=.00155;
  engine.gravity.x=0;engine.gravity.y=-1;
  startButton.disabled=false;replayButton.disabled=false;
  status.textContent='10 ORIGINAL LETTERS / INSIDE THE INVERTED COMMA';
  document.getElementById('gesture-hint').style.opacity='1';
+ report('progress',{progress:0});
  render();
 }
 function triggerPour(){
  if(mode==='error'||mode==='loading')return;
  if(mode==='assemble'||mode==='done'){initialize();}
- mode='pour';elapsed=0;spillCount=0;status.textContent='TURNING THE COMMA / 180°';
+ mode='pour';elapsed=0;spillCount=0;
+ status.textContent='TURNING THE COMMA / REAL GRAVITY & COLLISIONS';
  document.getElementById('gesture-hint').style.opacity='0';
  startButton.textContent='TURNING…';startButton.disabled=true;
+ report('progress',{progress:.1});
 }
 function replay(){
  initialize();startButton.textContent='TURN / 翻轉逗號';
 }
-function setupAssembly(){
- mode='assemble';elapsed=0;
- assemblyPositions=bodies.map((b,i)=>{
-  const a=worldToScreen(b.position.x,b.position.y);
-  return {x:a.x,y:a.y,angle:b.angle+b.plugin.spriteAngle+tilt};
+function logoTargetWorld(glyph){
+ const logoLeft=(layout.w-layout.logoW)/2;
+ const logoHeight=layout.logoW*model.height/model.width;
+ const logoTop=layout.logoY-logoHeight/2;
+ const px=logoLeft+(glyph.x+glyph.w*.5)/model.width*layout.logoW;
+ const py=logoTop+(glyph.y+glyph.h*.5)/model.height*logoHeight;
+ return {x:model.comma.w*.5+(px-layout.cx)/layout.scale,
+         y:model.comma.h*.5+(py-layout.cy)/layout.scale};
+}
+function beginReturn(){
+ if(mode!=='pour')return;
+ // Physical letters have crossed the comma opening and cleared the LEFT
+ // edge. The screen wraps at its boundary to the RIGHT, rather than
+ // teleporting them directly to a logo coordinate.
+ mode='return';returnElapsed=0;tilt=0;
+ const {Composite,Body}=Matter;
+ for(const wall of wallBodies)Composite.remove(world,wall);
+ wallBodies=[];gate=[];
+ engine.gravity.scale=0;engine.gravity.x=0;engine.gravity.y=0;
+ const travelScale=layout.scale;
+ bodies.forEach((b,i)=>{
+  const py=layout.cy+Math.sin(i*1.37)*layout.vh*.14;
+  const px=layout.w+86+i*59;
+  Body.setPosition(b,{
+   x:model.comma.w*.5+(px-layout.cx)/travelScale,
+   y:model.comma.h*.5+(py-layout.cy)/travelScale
+  });
+  Body.setVelocity(b,{x:-(3.0+.55*rand(i+12)),y:(rand(i+21)-.5)*.18});
+  Body.setAngularVelocity(b,-.09+.03*rand(i+30));
+  b.plugin.returnIndex=i;
  });
- status.textContent='FINDING THEIR ORIGINAL PLACES';
+ status.textContent='LETTERS RETURN FROM THE RIGHT / PHYSICAL MOTION';
+ report('progress',{progress:.65});
+}
+function setupAssembly(){
+ if(mode==='assemble'||mode==='done')return;
+ mode='assemble';finishElapsed=0;elapsed=0;
+ assemblyPositions=bodies.map(b=>{
+  const pos=worldToScreen(b.position.x,b.position.y);
+  return {x:pos.x,y:pos.y,angle:b.angle+b.plugin.spriteAngle+tilt};
+ });
+ status.textContent='LETTERFORMS SETTLE INTO THE ORIGINAL LOGO';
+ report('progress',{progress:.89});
 }
 function worldToScreen(x,y){
  const dx=(x-model.comma.w*.5)*layout.scale,dy=(y-model.comma.h*.5)*layout.scale;
@@ -374,21 +434,24 @@ function render(){
  ctx.clearRect(0,0,layout.w,layout.h);
  if(mode==='error')return;
  const assembly=mode==='assemble'||mode==='done';
- const assemblyProgress=mode==='done'?1:ease(elapsed/1.5);
- const originalBlend=assembly?ease((assemblyProgress-.80)/.20):0;
- const vesselOpacity=assembly?1-ease((assemblyProgress-.40)/.5):1;
+ const assemblyProgress=mode==='done'?1:ease(finishElapsed/1.22);
+ const originalBlend=assembly?ease((assemblyProgress-.78)/.22):0;
+ const vesselOpacity=mode==='return'?1-ease(returnElapsed/.9):
+  assembly?0:1;
  const pts=model.contour;
- ctx.save();
- ctx.translate(layout.cx,layout.cy);ctx.rotate(tilt);
- ctx.scale(layout.scale,layout.scale);
- ctx.translate(-model.comma.w/2,-model.comma.h/2);
- ctx.globalAlpha=vesselOpacity;
- strokeComma(pts,mode==='pour'&&elapsed>2.30?model.gap:new Set());
- ctx.restore();
-
+ if(vesselOpacity>0){
+  ctx.save();
+  ctx.translate(layout.cx,layout.cy);ctx.rotate(tilt);
+  ctx.scale(layout.scale,layout.scale);
+  ctx.translate(-model.comma.w/2,-model.comma.h/2);
+  ctx.globalAlpha=vesselOpacity;
+  strokeComma(pts,mode==='pour'&&elapsed>2.13?model.gap:new Set());
+  ctx.restore();
+ }
  const {radius}=model;
  for(let i=0;i<bodies.length;i++){
-  const body=bodies[i],glyph=model.glyphs[i],pos=worldToScreen(body.position.x,body.position.y);
+  const body=bodies[i],glyph=model.glyphs[i],
+        pos=worldToScreen(body.position.x,body.position.y);
   const originalW=radius*1.63*layout.scale*(glyph.w/Math.max(glyph.w,glyph.h));
   const originalH=radius*1.63*layout.scale*(glyph.h/Math.max(glyph.w,glyph.h));
   let x=pos.x,y=pos.y,angle=body.angle+body.plugin.spriteAngle+tilt,w=originalW,h=originalH;
@@ -405,12 +468,14 @@ function render(){
    w=lerp(originalW,glyph.w/model.width*layout.logoW,t);
    h=lerp(originalH,glyph.h/model.height*logoHeight,t);
   }
-  drawGlyph(glyph.img,x,y,angle,w,h,1-originalBlend);
+  // Original raster glyph only, never browser text or replacement letter.
+  if(originalBlend<1)drawGlyph(glyph.img,x,y,angle,w,h,1-originalBlend);
  }
  if(originalBlend>0){
   const lh=layout.logoW*model.height/model.width;
   ctx.save();ctx.globalAlpha=originalBlend;
-  ctx.drawImage(model.source,(layout.w-layout.logoW)/2,layout.logoY-lh/2,layout.logoW,lh);
+  ctx.drawImage(model.source,(layout.w-layout.logoW)/2,
+                layout.logoY-lh/2,layout.logoW,lh);
   ctx.restore();
  }
 }
@@ -419,36 +484,108 @@ function frame(now){
  if(!last)last=now;
  const dt=Math.min(35,now-last);last=now;
  if(!model||!engine||!layout)return;
- if(mode==='settle'||mode==='pour'){
+ if(mode==='settle'||mode==='pour'||mode==='return'){
   if(mode==='pour'){
    elapsed+=dt/1000;
-   // Actual vessel turns through HALF A REVOLUTION: upside-down -> upright.
-   // Engine runs in the vessel's local coordinates. Gravity remains fixed
-   // in screen space by transforming it into those local coordinates below.
-   const z=ease(elapsed/2.25);
+   const z=ease(elapsed/2.08);
    tilt=Math.PI*(1-z);
-   if(elapsed>2.30&&gate.length){
+   if(elapsed>2.13&&gate.length){
     for(const {body} of gate)Matter.Composite.remove(world,body);
-    gate=[];status.textContent='OPENING THE LOWER-LEFT COMMA TAIL';
+    gate=[];
+    status.textContent='OPENING THE LOWER-LEFT COMMA TAIL';
+    report('progress',{progress:.34});
    }
-   if(elapsed>2.4&&!gate.length){
-    // Bodies still collide freely. Count actual exits through the open tail,
-    // rather than pretending a scripted row of letters has flowed out.
-    spillCount=bodies.reduce((n,b)=>n+(!model.inside(b.position.x,b.position.y)?1:0),0);
-    status.textContent=String(spillCount).padStart(2,'0')+' / 10 ORIGINAL LETTERS RELEASED';
-    if((spillCount>=10&&elapsed>3.5)||elapsed>12.5)setupAssembly();
+   // Gravity remains vertical on screen as vessel turns 180 degrees.
+   engine.gravity.x=-Math.sin(tilt);
+   engine.gravity.y=Math.cos(tilt);
+   if(elapsed>2.25){
+    bodies.forEach((b,i)=>{
+     if(!b.plugin.released){
+      // A weak force toward the real, open narrow tail is a physical
+      // pressure gradient, not a precomputed motion path.
+      const dx=outlet.x-b.position.x,dy=outlet.y-b.position.y;
+      const norm=Math.max(12,Math.hypot(dx,dy));
+      const boost=elapsed>6?2.1:1;
+      Matter.Body.applyForce(b,b.position,{
+       x:dx/norm*b.mass*.000012*boost,
+       y:dy/norm*b.mass*.000012*boost
+      });
+     }else{
+      // Once a glyph has emerged it continues to ROLL to screen-left.
+      Matter.Body.applyForce(b,b.position,{
+       x:-b.mass*.000073,y:0
+      });
+     }
+    });
    }
   }
-  // Rotate gravity opposite to the drawn comma's angle, preserving a
-  // physically vertical pull throughout the 180-degree overturn.
-  engine.gravity.x=-Math.sin(tilt);
-  engine.gravity.y=Math.cos(tilt);
-  // Fixed steps keep the collisions consistent under uneven mobile frames.
+  if(mode==='return'){
+   returnElapsed+=dt/1000;
+   engine.gravity.x=0;engine.gravity.y=0;engine.gravity.scale=0;
+   bodies.forEach((b,i)=>{
+    if(b.plugin.spring)return;
+    if(worldToScreen(b.position.x,b.position.y).x>layout.w*.88)return;
+    const target=logoTargetWorld(model.glyphs[i]);
+    // Matter.Constraint is a genuine damped spring. Every glyph retains
+    // independent momentum, collisions and a distinct settling motion.
+    const spring=Matter.Constraint.create({
+     pointA:target,bodyB:b,length:0,
+     stiffness:.011,damping:.19,label:'original-logo-spring-'+i
+    });
+    Matter.Composite.add(world,spring);
+    b.plugin.spring=spring;
+   });
+  }
   const steps=Math.max(1,Math.ceil(dt/16.667));
   for(let j=0;j<steps;j++)Matter.Engine.update(engine,dt/steps);
+  if(mode==='pour'&&elapsed>2.28){
+   bodies.forEach((b,i)=>{
+    if(!b.plugin.released&&!model.inside(b.position.x,b.position.y)){
+     b.plugin.released=true;
+     Matter.Body.setVelocity(b,{x:-2.8-.2*rand(i+7),y:Math.min(1.4,b.velocity.y)});
+    }
+    if(b.plugin.released&&!b.plugin.offLeft){
+     const pos=worldToScreen(b.position.x,b.position.y);
+     if(pos.x < -model.radius*layout.scale*2.3){
+      b.plugin.offLeft=true;
+     }
+    }
+   });
+   spillCount=bodies.filter(b=>b.plugin.released).length;
+   status.textContent=String(spillCount).padStart(2,'0')+
+    ' / 10 ORIGINAL LETTERS OUT OF THE COMMA';
+   report('progress',{progress:.34+Math.min(.29,spillCount*.029)});
+   if(bodies.every(b=>b.plugin.offLeft))beginReturn();
+   // Never fake the travel with keyframes. A recovery impulse is applied
+   // to stuck bodies by the same physical engine after a long delay.
+   if(elapsed>9.5&&!bodies.every(b=>b.plugin.released)){
+    for(const b of bodies){
+     if(b.plugin.released)continue;
+     Matter.Body.applyForce(b,b.position,{
+      x:(outlet.x-b.position.x)*b.mass*.000022,
+      y:(outlet.y-b.position.y)*b.mass*.000022
+     });
+    }
+   }
+  }
+  if(mode==='return'){
+   const arrived=bodies.every((b,i)=>{
+    if(!b.plugin.spring)return false;
+    const t=logoTargetWorld(model.glyphs[i]);
+    return Math.hypot(b.position.x-t.x,b.position.y-t.y)*layout.scale<12;
+   });
+   report('progress',{progress:.65+Math.min(.23,returnElapsed/8*.23)});
+   if((arrived&&returnElapsed>2.4)||returnElapsed>10.8)setupAssembly();
+  }
  }else if(mode==='assemble'){
-  elapsed+=dt/1000;
-  if(elapsed>=1.5){mode='done';elapsed=1.5;status.textContent='GOOD THINGS, / ORIGINAL LOGO';startButton.disabled=false;startButton.textContent='TURN AGAIN ↻';}
+  finishElapsed+=dt/1000;
+  report('progress',{progress:.89+Math.min(.11,finishElapsed/1.22*.11)});
+  if(finishElapsed>=1.22){
+   mode='done';finishElapsed=1.22;
+   status.textContent='GOOD THINGS, / ORIGINAL LOGO';
+   startButton.disabled=false;startButton.textContent='TURN AGAIN ↻';
+   report('progress',{progress:1});report('complete');
+  }
  }
  render();
 }
