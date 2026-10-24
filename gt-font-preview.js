@@ -19,10 +19,28 @@ async function ensureFont(font){
  if(!validate(font))throw Error('字型資訊不正確');
  files.set(font._id,font);
  if(loaded.has(font._id))return loaded.get(font._id);
- const format=font.format==='otf'?'opentype':font.format==='ttf'?'truetype':font.format;
  const family=FAMILY(font._id);
- const face=new FontFace(family,'url("/api/editor/font-file?id='+encodeURIComponent(font._id)+'") format("'+format+'")',{style:'normal',weight:'400',display:'swap'});
- const pending=face.load().then(v=>{document.fonts.add(v);return family}).catch(error=>{loaded.delete(font._id);throw Error('字型無法載入：'+(error?.message||'格式、檔案或權限錯誤'))});
+ const pending=(async()=>{
+  const path='/api/editor/font-file?id='+encodeURIComponent(font._id);
+  let response;
+  try{response=await fetch(path,{credentials:'same-origin',cache:'no-store'})}
+  catch(error){throw Error('無法連線至本站字型服務：'+(error?.message||'網路錯誤'))}
+  if(!response.ok){
+   let detail='';
+   try{const data=await response.json();detail=typeof data?.error==='string'?data.error:typeof data?.message==='string'?data.message:''}catch{}
+   throw Error('字型讀取服務 HTTP '+response.status+(detail?'：'+detail:''))
+  }
+  const data=await response.arrayBuffer();
+  if(data.byteLength<16)throw Error('字型檔案內容不完整')
+  // Loading from an ArrayBuffer bypasses cross-origin CSS font fetches.
+  let face;
+  try{
+   face=new FontFace(family,data,{style:'normal',weight:'400',display:'swap'});
+   await face.load();
+  }catch(error){throw Error('檔案已下載，但瀏覽器不支援或無法解析這個字型：'+(error?.message||'解析失敗'))}
+  document.fonts.add(face);
+  return family;
+ })().catch(error=>{loaded.delete(font._id);throw error});
  loaded.set(font._id,pending);
  return pending;
 }
