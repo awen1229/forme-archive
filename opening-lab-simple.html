@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f0e8">
+<title>GOOD THINGS, | OPENING STUDY 03: ONE GESTURE</title>
+<meta name="description" content="GOOD THINGS, simplified one-gesture interactive editorial opening. Test preview only.">
+<style>
+:root{--paper:#f3f1eb;--green:#26743a;--text:#324237;--soft:#737d70;--line:#bfc7ba;--page-speed:840ms}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:var(--paper);color:var(--text);font-family:Arial,"PingFang TC","Noto Sans TC",sans-serif}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+#under{position:fixed;inset:0;z-index:0;background:var(--paper)}
+#under-frame{border:0;width:100%;height:100%;display:block;background:var(--paper)}
+#under-note{position:absolute;inset:0;background:var(--paper);display:grid;place-items:center;font-size:11px;letter-spacing:.18em;color:var(--soft)}
+#under-note[hidden]{display:none}
+#cover{
+ --lift:0;--edge:0px;
+ position:fixed;inset:0;z-index:10;overflow:hidden;
+ height:100vh;height:100dvh;min-height:320px;
+ background:var(--paper);
+ touch-action:none;overscroll-behavior:contain;
+ transform-origin:50% 0;will-change:transform;
+ box-shadow:0 16px 55px rgba(36,50,31,.16);
+ user-select:none;-webkit-user-select:none;
+ padding:clamp(26px,4vh,44px) clamp(24px,5.5vw,78px) max(35px,env(safe-area-inset-bottom));
+ display:flex;flex-direction:column;
+}
+#cover::before{
+ content:"";pointer-events:none;position:absolute;inset:0;z-index:0;
+ background:
+  radial-gradient(ellipse at 25% 8%,rgba(255,255,255,.85),transparent 53%),
+  repeating-linear-gradient(0deg,rgba(89,100,79,.018) 0px,rgba(89,100,79,.018) 1px,transparent 1px,transparent 6px),
+  radial-gradient(ellipse at 90% 87%,rgba(67,72,54,.065),transparent 52%);
+}
+#cover::after{
+ content:"";pointer-events:none;position:absolute;left:0;right:0;bottom:0;height:var(--edge);
+ background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.45) 35%,rgba(75,85,67,.13) 100%);
+ border-bottom:1px solid rgba(73,90,74,.18);
+}
+#cover.is-dragging{cursor:grabbing}
+#cover.is-complete{visibility:hidden;pointer-events:none}
+#page-curl{
+ position:fixed;z-index:11;bottom:0;right:0;pointer-events:none;
+ width:var(--curl,0px);height:var(--curl,0px);
+ background:linear-gradient(132deg,#bfc5b8 0%,#e5e7df 24%,#f8f7f0 64%,#cbd1c6 100%);
+ clip-path:polygon(100% 0%,0% 100%,100% 100%);
+ opacity:var(--curl-opacity,0);filter:drop-shadow(-3px -8px 10px rgba(52,72,55,.12));
+}
+#cover-head,#cover-foot{position:relative;z-index:2;display:flex;justify-content:space-between;gap:16px;align-items:center}
+#cover-head{padding-bottom:16px;border-bottom:1px solid var(--line)}
+#cover-foot{padding-top:15px;border-top:1px solid var(--line)}
+.label{font-size:clamp(9px,.9vw,11px);letter-spacing:.14em;line-height:1.5;font-weight:500}
+.muted{color:var(--soft)}
+#skip{color:#48664e;background:none;border:0;padding:7px 1px;font-size:10px;letter-spacing:.14em;white-space:nowrap;font-weight:600}
+#cover-center{position:relative;z-index:1;min-height:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.folio{color:#798579;letter-spacing:.21em;font-size:10px;margin-bottom:clamp(30px,5.2vh,67px);text-align:center}
+#logo-box{width:min(82vw,720px);aspect-ratio:1240/562;position:relative}
+#original-logo{display:block;width:100%;height:100%;object-fit:contain;opacity:0;visibility:hidden}
+#ink-print{
+ position:absolute;inset:0;display:block;width:100%;height:100%;
+ object-fit:contain;visibility:hidden;
+ will-change:mask-image;-webkit-mask-size:100% 100%;mask-size:100% 100%;
+}
+#logo-error{font-size:12px;color:#8a5148;text-align:center;display:none;line-height:1.7;padding:16px}
+#caption{margin:clamp(29px,4.9vh,58px) 0 0;text-align:center;letter-spacing:.12em;font-size:clamp(11px,1.2vw,14px);color:#536452;font-family:Georgia,"Noto Serif TC",serif}
+#secondary{font-size:9px;letter-spacing:.21em;text-align:center;margin:11px 0 0;color:#889487}
+#hint{display:flex;align-items:center;gap:14px;border-top:1px solid #cdd1c7;padding-top:16px;margin-top:clamp(34px,7.3vh,76px);color:#436348}
+#hint-arrow{font-size:25px;display:block;line-height:1;transform:translateY(0);animation:uphint 2.1s ease-in-out infinite}
+#hint strong{font-size:12px;letter-spacing:.08em;font-weight:500}
+#hint small{font-size:10px;letter-spacing:.11em;display:block;color:#7a8778;margin-top:7px}
+@keyframes uphint{0%,100%{transform:translateY(3px)}50%{transform:translateY(-6px)}}
+#cover-foot .page-count{white-space:nowrap}
+#reopen{position:fixed;z-index:7;right:clamp(14px,4vw,45px);bottom:max(14px,env(safe-area-inset-bottom));padding:10px 13px;display:none;border:1px solid #bac8ba;background:rgba(247,247,241,.96);color:#3b6344;letter-spacing:.12em;font-size:10px;box-shadow:0 5px 14px rgba(35,47,31,.08)}
+#reopen.show{display:block}
+#preview-flag{position:fixed;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2;pointer-events:none;color:#5b6e5a;font-size:9px;letter-spacing:.12em;background:#f3f1ebf2;padding:7px 10px;border:1px solid #d5dbd2;white-space:nowrap}
+@media(max-width:700px){
+ #cover{padding:24px 23px max(28px,env(safe-area-inset-bottom))}
+ .label{font-size:9px;letter-spacing:.08em}
+ #cover-head{align-items:flex-start}
+ #cover-head span:first-child{max-width:67%}
+ #logo-box{width:87vw}
+ .folio{margin-bottom:30px}
+ #caption{margin-top:35px}
+ #hint{margin-top:45px}
+ #hint strong{font-size:11px}
+ #hint small{font-size:9px}
+ #cover-foot span:first-child{max-width:64%}
+}
+@media(max-height:570px){
+ #cover{padding-top:10px;padding-bottom:10px}
+ .folio{margin-bottom:10px}
+ #caption{margin-top:10px}
+ #hint{margin-top:13px;padding-top:8px}
+ #secondary{margin-top:3px}
+ #cover-head{padding-bottom:6px}
+ #cover-foot{padding-top:6px}
+}
+@media(prefers-reduced-motion:reduce){#hint-arrow{animation:none}*{scroll-behavior:auto!important}}
+</style>
+<script>
+// Suppress the V16 experimental overlay inside the actual preview homepage.
+try{sessionStorage.setItem("gt-scroll-entry-v16","done")}catch(e){}
+</script>
+</head>
+<body>
+<div id="under"><div id="under-note">GOOD THINGS, / OPENING A JOURNAL</div><iframe id="under-frame" title="GOOD THINGS, 測試站真實首頁"></iframe></div>
+<div id="preview-flag">OPENING STUDY 03 / TEST ONLY</div>
+<section id="cover" aria-label="GOOD THINGS, 可以上滑或輕觸的雜誌封面" tabindex="0">
+ <header id="cover-head">
+  <span class="label">GOOD THINGS, / AN INDEPENDENT JOURNAL</span>
+  <button type="button" id="skip">SKIP / 直接進入 ↗</button>
+ </header>
+ <main id="cover-center">
+  <div class="folio">VOL. 01 / THE EVERYDAY ISSUE</div>
+  <div id="logo-box"><img id="original-logo" alt="" aria-hidden="true"><img id="ink-print" alt="GOOD THINGS, 原始手繪標誌"><div id="logo-error">原始 LOGO 暫時無法載入，請重新整理。</div></div>
+  <p id="caption">THINGS WORTH EXPLORING.</p>
+  <p id="secondary">CLOTHING / PEOPLE / STYLE / PLACES</p>
+  <div id="hint" role="status"><span id="hint-arrow" aria-hidden="true">↑</span><span><strong>向上滑動，翻開這一頁</strong><small>SWIPE UP TO OPEN / OR TAP ANYWHERE</small></span></div>
+ </main>
+ <footer id="cover-foot"><span class="label muted">THE INDEX / FEATURES / PERSONAL NOTES</span><span class="label page-count">NO. 001 / 2026</span></footer>
+</section>
+<div id="page-curl" aria-hidden="true"></div>
+<button type="button" id="reopen">↻ REPLAY INTRO</button>
+<script>
+(()=>{
+"use strict";
+const get=id=>document.getElementById(id),cover=get("cover"),curl=get("page-curl"),logo=get("original-logo"),print=get("ink-print"),under=get("under-frame"),note=get("under-note"),skip=get("skip"),reopen=get("reopen");
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
+const ease=t=>{t=clamp(t);return 1-Math.pow(1-t,3)};
+let lift=0,drag=null,raf=0,autoDone=false,inkRaf=0,inkStart=0,inkDone=false;
+function paintLogo(p){
+ p=clamp(p);
+ if(!print.src)return;
+ print.style.visibility="visible";
+ const start=Math.max(0,p*100-14),end=Math.min(100,p*100+5);
+ print.style.webkitMaskImage="linear-gradient(90deg,#000 0%,#000 "+start+"%,transparent "+end+"%,transparent 100%)";
+ print.style.maskImage=print.style.webkitMaskImage;
+ if(p>=1){print.style.maskImage="none";print.style.webkitMaskImage="none"}
+}
+function inkTick(now){
+ if(!inkStart)inkStart=now;
+ const t=clamp((now-inkStart)/(reduced?1:1120));
+ paintLogo(ease(t));
+ if(t<1)inkRaf=requestAnimationFrame(inkTick);
+ else inkDone=true;
+}
+function drawCover(p){
+ lift=clamp(p);
+ const h=window.innerHeight,w=window.innerWidth;
+ cover.style.transform="translate3d(0,"+(-107*lift).toFixed(3)+"%,0) rotate("+(lift*-.95).toFixed(3)+"deg)";
+ cover.style.setProperty("--edge",(7+lift*29).toFixed(1)+"px");
+ curl.style.setProperty("--curl",Math.min(130,w*.17)*Math.sin(Math.PI*lift)+.01+"px");
+ curl.style.setProperty("--curl-opacity",lift>.025&&lift<.95?"1":"0");
+ curl.style.transform="translate3d(0,"+(-h*.91*lift).toFixed(2)+"px,0)";
+ cover.classList.toggle("is-complete",lift>=.998);
+ cover.setAttribute("aria-hidden",lift>=.998?"true":"false");
+ reopen.classList.toggle("show",lift>=.998);
+}
+function cancelTransition(){cancelAnimationFrame(raf);raf=0}
+function tween(to,duration=610){
+ cancelTransition();const from=lift,then=performance.now();
+ function frame(now){
+  const t=clamp((now-then)/(reduced?1:duration));
+  drawCover(from+(to-from)*ease(t));
+  if(t<1)raf=requestAnimationFrame(frame);
+ }
+ raf=requestAnimationFrame(frame);
+}
+function enter(){tween(1,680)}
+function reset(){
+ cancelTransition();cancelAnimationFrame(inkRaf);
+ inkStart=0;inkDone=false;autoDone=false;
+ paintLogo(0);drawCover(0);
+ inkRaf=requestAnimationFrame(inkTick);
+}
+function start(e){
+ if(lift>.995||e.target.closest("button"))return;
+ if(e.pointerType==="mouse"&&e.button!==0)return;
+ cancelTransition();
+ drag={id:e.pointerId,y:e.clientY,time:performance.now(),base:lift,travel:0};
+ cover.classList.add("is-dragging");
+ try{cover.setPointerCapture(e.pointerId)}catch(err){}
+}
+function move(e){
+ if(!drag||e.pointerId!==drag.id)return;
+ const up=drag.y-e.clientY;
+ drag.travel=up;
+ drawCover(clamp(drag.base+Math.max(0,up)/Math.max(270,innerHeight*.72)));
+ if(Math.abs(up)>5)e.preventDefault();
+}
+function finish(e){
+ if(!drag||e.pointerId!==drag.id)return;
+ const d=drag;drag=null;cover.classList.remove("is-dragging");
+ const elapsed=Math.max(1,performance.now()-d.time);
+ const velocity=d.travel/elapsed;
+ if(Math.abs(d.travel)<11){enter();return}
+ tween(lift>.22||velocity>.48?1:0,lift>.22?560:410);
+}
+cover.addEventListener("pointerdown",start);
+cover.addEventListener("pointermove",move);
+cover.addEventListener("pointerup",finish);
+cover.addEventListener("pointercancel",e=>{
+ if(!drag||e.pointerId!==drag.id)return;
+ drag=null;cover.classList.remove("is-dragging");tween(0,400);
+});
+cover.addEventListener("wheel",e=>{
+ if(lift>=.998)return;
+ e.preventDefault();
+ if(e.deltaY>0){tween(1,650)}
+ else if(e.deltaY<0){tween(0,400)}
+},{passive:false});
+cover.addEventListener("keydown",e=>{
+ if(["Enter"," ","ArrowDown","PageDown"].includes(e.key)){e.preventDefault();enter()}
+});
+skip.addEventListener("click",e=>{e.stopPropagation();enter()});
+reopen.addEventListener("click",reset);
+window.addEventListener("resize",()=>drawCover(lift));
+function loadHomepage(){
+ under.addEventListener("load",()=>{note.hidden=true},{once:true});
+ setTimeout(()=>note.hidden=true,4500);
+ under.src="./index.html?intro=off&opening-study=03#/";
+}
+async function loadLogo(){
+ const r=await fetch("./index.html?opening-source=03",{cache:"no-store"});
+ if(!r.ok)throw Error("Logo source unavailable: "+r.status);
+ const doc=new DOMParser().parseFromString(await r.text(),"text/html");
+ const src=doc.querySelector(".site-header .gt-brand-logo")?.getAttribute("src");
+ if(!src||!src.startsWith("data:image/"))throw Error("Original logo missing");
+ const img=new Image();img.src=src;
+ if(img.decode)await img.decode();else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+ logo.src=src;print.src=src;
+ logo.style.visibility="visible";logo.style.opacity=".065";
+ paintLogo(0);inkRaf=requestAnimationFrame(inkTick);
+}
+drawCover(0);
+loadHomepage();
+loadLogo().catch(err=>{console.warn(err);get("logo-error").style.display="block"});
+})();
+</script>
+</body>
+</html>
