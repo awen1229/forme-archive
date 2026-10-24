@@ -416,6 +416,8 @@ function initialize(){
  engine.gravity.scale=.00155;
  world=engine.world;
  const {positions,radius}=packTen(),contour=model.contour;
+ // Initialize BEFORE buildOutletFlow() to avoid an empty path grid.
+ model.radius=radius;
  const gateData=chooseGate(contour,radius),gapIndices=gateData.gap;
  outlet=gateData.point;
  mouthEdges=Array.from(gapIndices,i=>({a:contour[i],b:contour[(i+1)%contour.length]}));
