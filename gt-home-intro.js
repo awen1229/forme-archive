@@ -236,7 +236,7 @@ function extractOriginal(){
 
  });
 }
-// GOOD THINGS, / V13 CONSTANT-SPACING COMMA TRACK
+// GOOD THINGS, / V14 CONSTANT-SPACING COMMA TRACK
 // Letter movement is based on distance along ONE sampled arc-length track,
 // not individually eased segments. This prevents bunching at tight bends.
 // The user's red guideline is a motion reference, never a visible element.
@@ -311,10 +311,10 @@ function paint(){
  // Final composite uses original PNG without reconstructing its shapes.
  const intact=smooth(range(p,.986,.999));
  const maxDiagonal=Math.max(1,...parts.map(el=>Math.hypot(el.offsetWidth,el.offsetHeight)));
- // V13: modestly larger glyphs, closer spacing while keeping a gap around bends.
- const targetGlyphPx=clamp(w*.132,22,31);
- const glideScale=clamp(targetGlyphPx/maxDiagonal,.26,.58);
- const letterGap=Math.max(28,targetGlyphPx*1.55);
+ // V14: increase glyph size another step; retain V13's relatively tight spacing.
+ const targetGlyphPx=clamp(w*.155,26,37);
+ const glideScale=clamp(targetGlyphPx/maxDiagonal,.30,.68);
+ const letterGap=Math.max(30,targetGlyphPx*1.55);
  // Every letter follows exactly the same physical distance profile,
  // separated by a stable interval. No crowding at the entrance or turn.
  const leadingDistance=range(p,.035,.72)*(track.length+(parts.length-1)*letterGap);
@@ -368,7 +368,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v13','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v14','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
