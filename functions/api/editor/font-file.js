@@ -20,18 +20,34 @@ export async function onRequestGet({request,env}){
   const font=(await result.json()).result
   if(!font||!Object.hasOwn(MIME,font.format)||!CDN.test(font.url||''))
    throw new AuthError(404,'這款字型已不存在')
-  const response=await fetch(font.url,{redirect:'error'})
-  if(!response.ok)throw new AuthError(502,'讀取字型檔案失敗 HTTP '+response.status)
+  // Sanity's asset CDN can redirect downloads. Refusing redirects turns
+  // an otherwise valid file into an unhandled TypeError / generic HTTP 500.
+  let response
+  try{
+   response=await fetch(font.url,{redirect:'follow',headers:{Accept:'application/octet-stream,*/*'}})
+  }catch(error){
+   console.error('GT font service: trusted Sanity CDN fetch failed',error?.name||'unknown')
+   throw new AuthError(502,'Sanity 字型檔連線失敗。這是雲端下載問題，不代表字型損壞。')
+  }
+  if(!response.ok)throw new AuthError(502,'Sanity 字型檔下載失敗 HTTP '+response.status)
   const size=Number(response.headers.get('content-length')||0)
-  if(size>9_000_000)throw new AuthError(413,'字型檔案超過限制')
-  const bytes=new Uint8Array(await response.arrayBuffer())
-  if(bytes.length<16||bytes.length>9_000_000)throw new AuthError(413,'字型檔案大小不正確')
+  if(size>9_000_000)throw new AuthError(413,'字型檔案超過 9 MB')
+  let data
+  try{data=await response.arrayBuffer()}
+  catch(error){
+   console.error('GT font service: Sanity response body failed',error?.name||'unknown')
+   throw new AuthError(502,'Sanity 已回應，但字型資料傳輸不完整。')
+  }
+  const bytes=new Uint8Array(data)
+  if(bytes.length<16||bytes.length>9_000_000)throw new AuthError(422,'字型檔內容太小或超過 9 MB')
   const magic=String.fromCharCode(...bytes.slice(0,4))
-  if(magic!==MAGIC[font.format])throw new AuthError(415,'字型檔內容與登錄格式不符')
-  return new Response(bytes,{
+  if(magic!==MAGIC[font.format])throw new AuthError(422,'下載內容不符合已登錄字型格式，請檢查雲端檔案。')
+  // A raw ArrayBuffer is accepted consistently by Cloudflare's Response API.
+  return new Response(data,{
    status:200,headers:{
     'Content-Type':MIME[font.format],
-    'Cache-Control':'private, max-age=300',
+    'Content-Length':String(bytes.length),
+    'Cache-Control':'private, no-store',
     'X-Content-Type-Options':'nosniff',
     'Cross-Origin-Resource-Policy':'same-origin'
    }
