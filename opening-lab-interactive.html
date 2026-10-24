@@ -206,7 +206,7 @@ function drawInk(){
  inkCtx.drawImage(mask,0,0);
  inkCtx.globalCompositeOperation="source-over";
 }
-function dab(x,y,r=143){
+function dab(x,y,r=143,render=true){
  const inner=Math.max(2,r*.57),grad=mctx.createRadialGradient(x,y,inner,x,y,r);
  grad.addColorStop(0,"rgba(0,0,0,1)");
  grad.addColorStop(1,"rgba(0,0,0,0)");
@@ -214,14 +214,15 @@ function dab(x,y,r=143){
  mctx.beginPath();mctx.arc(x,y,r,0,Math.PI*2);mctx.fill();
  brushCount++;
  if(brushCount>5)hint.style.opacity=".2";
- drawInk();
+ if(render)drawInk();
 }
 function stampLine(a,b){
  const steps=Math.max(1,Math.ceil(Math.hypot(a.x-b.x,a.y-b.y)/23));
  for(let i=1;i<=steps;i++){
   const u=i/steps;
-  dab(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u,156);
+  dab(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u,156,false);
  }
+ drawInk();
 }
 function pointFromEvent(e){
  const r=canvas.getBoundingClientRect();
@@ -350,8 +351,9 @@ async function autoDemo(){
     if(token!==demoToken){resolve(false);return}
     const t=clamp((now-begin)/1580);
     const x=90+t*1080;
-    dab(x,170+30*Math.sin(t*6.28),180);
-    dab(x,410+18*Math.sin(t*7.3),180);
+    dab(x,170+30*Math.sin(t*6.28),180,false);
+    dab(x,410+18*Math.sin(t*7.3),180,false);
+    drawInk();
     if(t<1)requestAnimationFrame(frame);
     else{fillInk();resolve(true)}
    }
