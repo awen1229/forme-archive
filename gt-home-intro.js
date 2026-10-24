@@ -14,6 +14,7 @@ const bar=overlay.querySelector('.gt-scroll-entry-progress i'),pct=overlay.query
 const source=document.querySelector('.site-header .gt-brand-logo');
 if(!stage||!largeComma||!source){root.classList.remove('gt-scroll-entry-ready');overlay.remove();return}
 let parts=[],full=null,commaBox=null,commaRail=[],commaOuterRail=[],p=0,frame=0,ended=false,startTouch=null,wheelTime=0;
+let grainMask=null,grainField=null,grainPieces=[],grainPacking=null;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
 const range=(v,a,b)=>clamp((v-a)/(b-a));
@@ -94,6 +95,18 @@ function extractOriginal(){
    el.style.left=(c.x/W*100)+'%';el.style.top=(c.y/H*100)+'%';
    el.style.width=(c.w/W*100)+'%';el.style.height=(c.h/H*100)+'%';
    el.append(img);stage.append(el);return el;
+  });
+  // The grains are copies of the extracted ORIGINAL glyphs, not a new font.
+  grainField=document.createElement('div');
+  grainField.className='gt-scroll-entry-grains';
+  grainField.setAttribute('aria-hidden','true');
+  sculpture.insertBefore(grainField,stage);
+  grainPieces=parts.map(el=>{
+   const piece=document.createElement('span');
+   piece.className='gt-scroll-entry-grain';
+   const image=document.createElement('img');
+   image.src=el.firstElementChild.src;image.alt='';
+   piece.append(image);grainField.append(piece);return piece;
   });
   // Isolate ONLY the connected component belonging to the original comma.
   // The previous rectangular raster crop could contain nearby S pixels and
@@ -197,6 +210,11 @@ function extractOriginal(){
   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+ww+' '+hh+'" width="'+ww+'" height="'+hh+'" shape-rendering="geometricPrecision">'+
    '<path d="'+d+'" fill="none" stroke="#397541" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
   largeComma.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  const maskSVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+ww+' '+hh+'"><path d="'+d+'" fill="white"/></svg>';
+  const maskURL='url("data:image/svg+xml;charset=utf-8,'+encodeURIComponent(maskSVG)+'")';
+  grainField.style.webkitMaskImage=maskURL;
+  grainField.style.maskImage=maskURL;
+  grainMask={ink,ww,hh};
   largeComma.dataset.originalComma='smooth-vector';
   
   // Measure the connected ink in each source-image row. The letters can
@@ -248,134 +266,192 @@ function extractOriginal(){
 
  });
 }
-// GOOD THINGS, / V16 CENTER-TO-OUTER-RIM COMMA GLIDE
-// Original raster logo preserved. Letters emerge in the comma's center,
-// flow outward onto its ACTUAL outer-right contour, follow the lower bend,
-// then slide through the lower-left tail and out of the viewport.
-// No visible guide path is drawn.
-const trackCache={key:'',points:null,length:0};
+// GOOD THINGS, / V17 ORIGINAL-LETTER GRANULAR COMMA STUDY.
+// A fixed, seeded packing made from the actual original glyph bitmaps.
+// The comma's actual traced ink is the containment mask. No traced guide
+// line, fake character, or substitute logo is introduced.
+const releaseTimes=[.170,.222,.268,.286,.350,.405,.431,.490,.537,.583];
+const travelTimes=[.345,.330,.355,.327,.345,.333,.338,.347,.335,.325];
+const clampPoint=(x,y,r,w,h)=>{
+ if(!grainMask)return false;
+ const {ink,ww,hh}=grainMask;
+ const test=(px,py)=>{
+  const ix=Math.floor(px/w*ww),iy=Math.floor(py/h*hh);
+  return ix>=0&&iy>=0&&ix<ww&&iy<hh&&ink[iy*ww+ix]===1;
+ };
+ if(!test(x,y))return false;
+ for(let j=0;j<12;j++){
+  const a=j*Math.PI/6;
+  if(!test(x+Math.cos(a)*r,y+Math.sin(a)*r))return false;
+ }
+ return true;
+};
+function generatePacking(w,h){
+ const key=Math.round(w)+'x'+Math.round(h);
+ if(grainPacking&&grainPacking.key===key)return grainPacking;
+ // First fill the wide bowl from the bottom upward, then stack the next
+ // original characters over its shoulders, retaining an actual gap.
+ let radius=Math.min(w*.064,h*.052,22);
+ let positions=[];
+ for(let attempt=0;attempt<11;attempt++){
+  const candidates=[],step=Math.max(5,radius*.56);
+  for(let y=h*.72;y>=h*.10;y-=step){
+   for(let x=radius*1.2;x<w-radius*1.2;x+=step){
+    const n=Math.sin(x*.083+y*.171)*.37;
+    const px=x+n*step,py=y+Math.sin(x*.123-y*.079)*step*.17;
+    if(!clampPoint(px,py,radius*1.12,w,h))continue;
+    const score=-py+h*.13*Math.sin(x*.025+y*.04);
+    candidates.push({x:px,y:py,score});
+   }
+  }
+  candidates.sort((a,b)=>a.score-b.score);
+  const selected=[];
+  for(const c of candidates){
+   if(selected.every(q=>Math.hypot(c.x-q.x,c.y-q.y)>radius*2.19)){
+    selected.push({x:c.x,y:c.y});
+    if(selected.length===10)break;
+   }
+  }
+  if(selected.length===10){positions=selected;break;}
+  radius*=.91;
+ }
+ if(positions.length!==10)throw Error('Original comma has insufficient room for ten separated glyphs');
+ // Exit starts around the tail; other letters follow in loosely clustered
+ // pairs. Each grain keeps its own independent position.
+ positions.sort((a,b)=>b.y-a.y||(a.x-b.x));
+ grainPacking={key,radius,positions};
+ return grainPacking;
+}
 function bezier(a,b,c,d,t){
  const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
 }
-function buildTrack(cx,cy,w,h,bounds){
- const key=[cx,cy,w,h,bounds.left,bounds.right,commaOuterRail.length]
-  .map(v=>Math.round(v)).join(':');
- if(trackCache.key===key&&trackCache.points)return trackCache;
- const points=[];let length=0,prev=null;
- function add(x,y){
-  if(prev)length+=Math.hypot(x-prev.x,y-prev.y);
-  const item={x,y,d:length};points.push(item);prev=item;
- }
- function cubic(a,b,c,d,steps=54){
-  for(let i=0;i<=steps;i++){
-   if(points.length&&i===0)continue;
-   const t=i/steps;
-   add(bezier(a.x,b.x,c.x,d.x,t),
-       bezier(a.y,b.y,c.y,d.y,t));
+function paint(){
+ frame=0;if(ended||!grainMask)return;
+ const sr=sculpture.getBoundingClientRect(),lr=stage.getBoundingClientRect();
+ const iw=largeComma.offsetWidth||260,ih=largeComma.offsetHeight||440;
+ const aspect=grainMask.ww/grainMask.hh;
+ const w=Math.min(iw,ih*aspect),h=Math.min(ih,iw/aspect);
+ if(w<4||h<4)return;
+ const cx=sr.left+sr.width*.5,cy=sr.top+sr.height*.47;
+ const pack=generatePacking(w,h);
+ const radius=pack.radius;
+ // Tilt and unwind the original comma. The pile rotates with its container,
+ // not with an unrelated page coordinate system.
+ const tilt=-11*smooth(range(p,.035,.285))
+           +7*smooth(range(p,.48,.70))
+           +4*smooth(range(p,.72,.88));
+ const rad=tilt*Math.PI/180,co=Math.cos(rad),si=Math.sin(rad);
+ const screen=(x,y)=>({
+  x:cx+(x-w*.5)*co-(y-h*.5)*si,
+  y:cy+(x-w*.5)*si+(y-h*.5)*co
+ });
+ grainField.style.width=w+'px';grainField.style.height=h+'px';
+ grainField.style.transform='translate(-50%,-50%) rotate('+tilt.toFixed(2)+'deg)';
+ grainField.style.opacity=String(1-smooth(range(p,.855,.948)));
+ const commaFade=smooth(range(p,.785,.942));
+ largeComma.style.opacity=String(.88*(1-commaFade));
+ largeComma.style.transform='translate(-50%,-50%) rotate('+tilt.toFixed(2)+'deg)';
+ const intact=smooth(range(p,.936,.985));
+ if(full)full.style.opacity=String(intact);
+
+ // Local contact solver: the remaining grains respond to the tilt and the
+ // empty spaces left by neighbors, without intersecting one another.
+ const occupied=pack.positions.map((q,i)=>({x:q.x,y:q.y,i}));
+ const released=releaseTimes.filter(t=>p>t).length;
+ for(let i=0;i<occupied.length;i++){
+  if(p>=releaseTimes[i])continue;
+  const q=occupied[i],trigger=smooth(range(p,releaseTimes[i]-.18,releaseTimes[i]));
+  const dx=-radius*.43*smooth(range(p,.055,.39))
+    +Math.sin(i*3.7+p*17)*radius*.11*trigger;
+  const dy=Math.min(radius*.72,released*radius*.12)
+    +Math.sin(i*2.37+p*20)*radius*.095*trigger;
+  if(clampPoint(q.x+dx,q.y+dy,radius*1.1,w,h)){
+   q.x+=dx;q.y+=dy;
   }
  }
- const center={x:cx-w*.12,y:cy-h*.02};
- const inset=Math.max(8,Math.min(22,w*.038));
- function rimAt(t){
-  const y=clamp(t);
-  const row=commaOuterRail[Math.round(y*(commaOuterRail.length-1))];
-  const fallbackX=.91-.65*Math.pow(range(y,.39,.97),1.7);
-  const x=row?row.x:fallbackX;
-  return {x:cx+(x-.5)*w-inset,y:cy+(y-.5)*h};
+ for(let pass=0;pass<5;pass++){
+  for(let i=0;i<occupied.length;i++){
+   if(p>=releaseTimes[i])continue;
+   for(let j=i+1;j<occupied.length;j++){
+    if(p>=releaseTimes[j])continue;
+    const a=occupied[i],b=occupied[j];
+    let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+    if(d<.001){dx=1;dy=0;d=1;}
+    const overlap=radius*2.14-d;
+    if(overlap<=0)continue;
+    const ox=dx/d*overlap*.51,oy=dy/d*overlap*.51;
+    if(clampPoint(a.x-ox,a.y-oy,radius*1.08,w,h)){a.x-=ox;a.y-=oy;}
+    if(clampPoint(b.x+ox,b.y+oy,radius*1.08,w,h)){b.x+=ox;b.y+=oy;}
+   }
+  }
  }
- const rimStart=.39,rimFinish=.955;
- const join=rimAt(rimStart);
- cubic(center,
-  {x:cx+w*.06,y:cy-h*.11},
-  {x:join.x-w*.012,y:join.y-h*.085},
-  join,68);
- // Sample the actual outer contour by height, not the old inner Bezier.
- for(let i=1;i<=118;i++){
-  const q=i/118,t=rimStart+(rimFinish-rimStart)*q;
-  const pt=rimAt(t);
-  add(pt.x,pt.y);
- }
- const tail=rimAt(rimFinish);
- const exit={x:bounds.left-Math.max(115,w*.24),
-             y:tail.y+Math.min(h*.07,70)};
- cubic(tail,
-  {x:tail.x-w*.19,y:tail.y+h*.018},
-  {x:bounds.left+Math.min(w*.13,53),y:tail.y+h*.06},
-  exit,70);
- Object.assign(trackCache,{key,points,length});
- return trackCache;
-}
-function atDistance(track,d){
- const pts=track.points;
- if(d<=0)return pts[0];
- if(d>=track.length)return pts[pts.length-1];
- let lo=0,hi=pts.length-1;
- while(lo+1<hi){
-  const mid=(lo+hi)>>1;
-  if(pts[mid].d<d)lo=mid;else hi=mid;
- }
- const a=pts[lo],b=pts[hi];
- const f=(d-a.d)/Math.max(.00001,b.d-a.d);
- return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};
-}
-function paint(){
- frame=0;if(ended)return;
- const sr=sculpture.getBoundingClientRect(),lr=stage.getBoundingClientRect();
- const bounds=overlay.getBoundingClientRect();
- const original=commaBox||{w:1,h:1};
- const iw=largeComma.offsetWidth||260,ih=largeComma.offsetHeight||440;
- const aspect=original.w/original.h;
- const w=Math.min(iw,ih*aspect),h=Math.min(ih,iw/aspect);
- const cx=sr.left+sr.width*.5,cy=sr.top+sr.height*.47;
- const track=buildTrack(cx,cy,w,h,bounds);
- // Keep original curved comma dominant until most letters have exited.
- const commaFade=smooth(range(p,.69,.90));
- largeComma.style.opacity=String(.88*(1-commaFade));
- largeComma.style.transform='translate(-50%,-50%) scale('+
-  (1+.025*smooth(range(p,.02,.28))-.025*commaFade)+')';
- // Final composite uses original PNG without reconstructing its shapes.
- const intact=smooth(range(p,.986,.999));
- const maxDiagonal=Math.max(1,...parts.map(el=>Math.hypot(el.offsetWidth,el.offsetHeight)));
- // V15: stronger notch-scale glyphs; compact visual spacing along the same track.
- const targetGlyphPx=clamp(w*.26,42,88);
- const glideScale=clamp(targetGlyphPx/maxDiagonal,.28,1.04);
- const letterGap=Math.max(36,targetGlyphPx*1.06);
- // Every letter follows exactly the same physical distance profile,
- // separated by a stable interval. No crowding at the entrance or turn.
- const leadingDistance=range(p,.035,.72)*(track.length+(parts.length-1)*letterGap);
- const returnStart=.746,returnStagger=.012,returnDuration=.125;
+ const tailRow=commaRail[Math.round(commaRail.length*.885)]||{x:.36};
+ const tailX=tailRow.x*w,tailY=h*.885;
+ const tail=screen(tailX,tailY);
+ const outside=screen(-w*.14,h*.96);
+ const maxEnd=Math.max(...releaseTimes.map((a,i)=>a+travelTimes[i]));
  parts.forEach((el,i)=>{
   const homeX=lr.left+el.offsetLeft+el.offsetWidth*.5;
   const homeY=lr.top+el.offsetTop+el.offsetHeight*.5;
-  const distance=leadingDistance-i*letterGap;
-  const returnT=range(p,returnStart+i*returnStagger,
-                         returnStart+i*returnStagger+returnDuration);
-  const returning=p>=returnStart+i*returnStagger;
-  let pos,scale=glideScale,opacity=0;
-  if(returning){
-   // Re-enter individually from fully beyond the RIGHT edge, then settle
-   // into the exact position of each original glyph.
-   const u=smooth(returnT);
-   const offRight=bounds.right+Math.max(100,maxDiagonal);
-   const approach=homeX+Math.min(115,bounds.width*.19);
-   pos={
-    x:bezier(offRight,bounds.right+30,approach,homeX,u),
-    y:bezier(homeY-h*.065,homeY-h*.035,homeY,homeY,u)
-   };
-   scale=glideScale+(1-glideScale)*u;
-   opacity=1-intact;
-  }else{
-   pos=atDistance(track,distance);
-   // The start and end of the path are physically off-screen.
-   opacity=(distance>=0&&distance<=track.length)?1:0;
+  const grain=grainPieces[i],boxW=el.offsetWidth,boxH=el.offsetHeight;
+  const glyphScale=Math.min(1,(radius*1.38)/Math.max(1,boxW,boxH));
+  grain.style.width=boxW+'px';grain.style.height=boxH+'px';
+  const release=releaseTimes[i],u=range(p,release,release+travelTimes[i]);
+  const before=p<release;
+  let innerX=occupied[i].x,innerY=occupied[i].y;
+  let innerScale=glyphScale,innerOpacity=before?1:0;
+  if(!before){
+   // A short pause, then a gravity-led slide through the real silhouette.
+   // At the narrowing tail, glyphs become smaller rather than crossing ink.
+   const f=smooth(range(u,.035,.565));
+   innerY=pack.positions[i].y+(tailY-pack.positions[i].y)*f;
+   const idx=Math.round(clamp(innerY/h)*(commaRail.length-1));
+   const rail=commaRail[idx]||{x:.5,clearance:.13};
+   const targetX=rail.x*w;
+   innerX=pack.positions[i].x+(targetX-pack.positions[i].x)*f;
+   const localR=radius*(1-.50*smooth(range(u,.20,.58)));
+   if(!clampPoint(innerX,innerY,localR,w,h)){
+    // Never paint an unmasked grain outside the supplied comma ink.
+    const previous=pack.positions[i];
+    innerX=previous.x+(targetX-previous.x)*smooth(range(u,.03,.36))*.4;
+    innerY=previous.y+(tailY-previous.y)*smooth(range(u,.03,.36))*.4;
+   }
+   innerScale=glyphScale*(1-.42*smooth(range(u,.18,.58)));
+   innerOpacity=1-smooth(range(u,.47,.635));
   }
-  el.style.opacity=String(opacity);
+  grain.style.left=innerX.toFixed(2)+'px';
+  grain.style.top=innerY.toFixed(2)+'px';
+  grain.style.opacity=String(innerOpacity*(1-intact));
+  const rotation=(-13+(i*17%27))*(1-.5*smooth(range(u,.08,.5)));
+  grain.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(2)+'deg) scale('+innerScale.toFixed(3)+')';
+
+  // Crossfade at the tail from a strictly masked interior letter to the
+  // same original glyph on the exterior; then each finds its unique slot.
+  const outer=smooth(range(u,.485,.645));
+  const q=range(u,.485,1);
+  let pos=tail;
+  if(q<.32){
+   const t=smooth(q/.32);
+   pos={
+    x:bezier(tail.x,tail.x-w*.10,outside.x+w*.045,outside.x,t),
+    y:bezier(tail.y,tail.y+h*.07,outside.y,outside.y,t)
+   };
+  }else{
+   const t=smooth((q-.32)/.68);
+   pos={
+    x:bezier(outside.x,outside.x-w*.06,homeX+w*.11,homeX,t),
+    y:bezier(outside.y,outside.y+h*.09,homeY-h*.075,homeY,t)
+   };
+  }
+  const arrive=smooth(range(q,.34,1));
+  const scale=innerScale+(1-innerScale)*arrive;
+  el.style.opacity=String((before?0:outer)*(1-intact));
   el.style.transform='translate3d('+(pos.x-homeX).toFixed(2)+'px,'+
-   (pos.y-homeY).toFixed(2)+'px,0) scale('+scale.toFixed(3)+')';
+    (pos.y-homeY).toFixed(2)+'px,0) rotate('+
+    (rotation*(1-arrive)).toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
  });
- if(full)full.style.opacity=String(intact);
- caption.style.opacity=String(smooth(range(p,.87,.965)));
- const out=smooth(range(p,.977,1));
+ caption.style.opacity=String(smooth(range(p,.84,.955)));
+ const out=smooth(range(p,.975,1));
  sculpture.style.opacity=String(1-.08*out);
  overlay.style.transform='translate3d(0,'+(-12*out)+'%,0)';
  bar.style.transform='scaleX('+p+')';
@@ -393,7 +469,7 @@ function cleanup(){
 }
 function finish(){
  if(ended)return;ended=true;cancelAnimationFrame(frame);
- try{sessionStorage.setItem('gt-scroll-entry-v16','done')}catch{}
+ try{sessionStorage.setItem('gt-scroll-entry-v17','done')}catch{}
  overlay.classList.add('is-completing');overlay.style.removeProperty('transform');
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  setTimeout(cleanup,580);
