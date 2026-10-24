@@ -1,6 +1,6 @@
-/* GOOD THINGS, / real Matter.js homepage opener.
-   Deliberately embeds the single physics-study implementation rather than
-   duplicating its physics with CSS paths or keyframe translations. */
+/* GOOD THINGS, / Matter.js tumble followed by a measured constant-speed glyph stream.
+   Embeds the same standalone V8 study instead of
+   replacing the authentic original letterforms or comma outline. */
 (()=>{'use strict';
 const root=document.documentElement;
 const overlay=document.getElementById('gt-scroll-entry');
@@ -24,7 +24,7 @@ let completed=false,timeout=0;
 function finish(){
  if(completed)return;
  completed=true;
- try{sessionStorage.setItem('gt-scroll-entry-physics7','done')}catch(e){}
+ try{sessionStorage.setItem('gt-scroll-entry-physics8','done')}catch(e){}
  overlay.classList.add('is-completing');
  const cleanup=()=>{
   root.classList.remove('gt-scroll-entry-ready');
@@ -58,5 +58,5 @@ window.addEventListener('keydown',onKey);
 window.addEventListener('hashchange',onRoute);
 skip.addEventListener('click',finish);
 frame.addEventListener('error',finish);
-frame.src='./opening-lab-physics.html?embed=1&build=physics07';
+frame.src='./opening-lab-physics-v8.html?embed=1&build=physics08';
 })();
