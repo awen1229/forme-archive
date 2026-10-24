@@ -60,10 +60,11 @@ function schedule(){
  pending=true;requestAnimationFrame(update);
 }
 function connect(){
- const stage=document.getElementById(stageId);
- if(!stage)return;
- new MutationObserver(schedule).observe(stage,{childList:true,subtree:false});
- if('ResizeObserver'in window)new ResizeObserver(schedule).observe(stage);
+ // The site uses client-side routes: new carousel nodes replace the old ones.
+ // Observe DOM replacements as well as slide changes and font loading.
+ new MutationObserver(records=>{
+  if(records.some(record=>record.addedNodes.length||record.removedNodes.length))schedule();
+ }).observe(document.body,{childList:true,subtree:true});
  window.addEventListener('resize',schedule,{passive:true});
  if(document.fonts?.ready)document.fonts.ready.then(schedule);
  if(document.fonts?.addEventListener)document.fonts.addEventListener('loadingdone',schedule);
