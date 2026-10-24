@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f1eb">
-<title>GOOD THINGS, | Continuous Physics Spill & Return Study V5</title>
+<title>GOOD THINGS, | Protected Tail Physics Spill & Return Study V6</title>
 <style>
 :root{--paper:#f3f1eb;--green:#28733b;--ink:#293b2d;--line:#bfc8bc;--mute:#718072}
 *{box-sizing:border-box}
@@ -61,7 +61,7 @@ html.gt-physics-embedded .stage{width:100%;height:100%;min-height:0}
 </head>
 <body>
 <script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('gt-physics-embedded');</script>
-<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 05</span></header>
+<header><a href="./index.html" class="brand">GOOD THINGS,</a><span class="side">OPENING EXPERIMENT / PHYSICS 06</span></header>
 <main>
 <div class="eyebrow">A STUDY OF GRAVITY &amp; LETTERS</div>
 <h1>Things fall into place.</h1>
@@ -307,7 +307,7 @@ function chooseGate(contour,r){
  }
  // Smooth multi-glyph mouth. A tiny aperture was pinching circular
  // Matter.js bodies against the tapered tail and blocking the release.
- const arc=Math.min(r*4.0,circumference*.21),gap=new Set();
+ const arc=Math.min(r*2.75,circumference*.15),gap=new Set();
  for(const direction of [-1,1]){
   let i=target,covered=0;
   while(covered<arc){
@@ -350,6 +350,9 @@ function initialize(){
   body.plugin.glyph=i;
   body.plugin.spriteAngle=(-15+rand(i+1)*31)*Math.PI/180;
   body.plugin.released=false;
+  body.plugin.colliderScale=1;
+  body.plugin.lastInside={x:pos.x,y:pos.y};
+  body.plugin.blockedLeaks=0;
   body.plugin.releasedAt=null;
   body.plugin.wrapped=false;
   body.plugin.wrappedAt=null;
@@ -390,6 +393,54 @@ function logoTargetWorld(glyph){
  const py=logoTop+(glyph.y+glyph.h*.5)/model.height*logoHeight;
  return {x:model.comma.w*.5+(px-layout.cx)/layout.scale,
          y:model.comma.h*.5+(py-layout.cy)/layout.scale};
+}
+// Physical, size-aware channel. The original comma narrows toward its
+// true LOWER-LEFT tip, so the circular colliders must compress before
+// entering the neck. Never bypass a solid wall to solve a jam.
+function fitInTail(body){
+ if(body.plugin.released)return;
+ const y=body.position.y/model.comma.h;
+ const near=Math.hypot(body.position.x-outlet.x,body.position.y-outlet.y);
+ const progress=Math.max(ease((y-.46)/.36),ease(1-near/(model.radius*8)));
+ const target=1-.63*progress;
+ const current=body.plugin.colliderScale||1;
+ const next=Math.max(target,current*.94);
+ if(next<current-.001){
+  Matter.Body.scale(body,next/current,next/current);
+  body.plugin.colliderScale=next;
+ }
+}
+// The only valid aperture is at the measured lower-left tip. A solid
+// upper or side wall must never become permeable simply because a glyph
+// happens to approach the tail while the vessel is turning.
+function atActualMouth(body){
+ const r=model.radius;
+ return body.position.y>model.comma.h*.70 &&
+  body.position.x<outlet.x+r*2.1 &&
+  Math.hypot(body.position.x-outlet.x,body.position.y-outlet.y)<r*5.2;
+}
+function maintainClosedBoundary(body){
+ if(body.plugin.released)return;
+ if(model.inside(body.position.x,body.position.y)){
+  body.plugin.lastInside={x:body.position.x,y:body.position.y};
+  return;
+ }
+ if(mode==='pour'&&elapsed>.48&&atActualMouth(body)){
+  body.plugin.released=true;body.plugin.releasedAt=elapsed;
+  body.collisionFilter.mask=0x0001;
+  const vx=Math.min(-2.8,body.velocity.x);
+  Matter.Body.setVelocity(body,{x:vx,y:clamp(body.velocity.y,-.35,.35)});
+  Matter.Body.setAngularVelocity(body,-.065+.035*rand(body.plugin.glyph+17));
+  lastReleasedAt=elapsed;
+  return;
+ }
+ // Safety correction for a rare solver tunneling event. It corrects only
+ // a physics breach, never advances or teleports a letter toward the logo.
+ if(body.plugin.lastInside){
+  Matter.Body.setPosition(body,body.plugin.lastInside);
+  Matter.Body.setVelocity(body,{x:body.velocity.x*.22,y:body.velocity.y*.22});
+  body.plugin.blockedLeaks++;
+ }
 }
 function screenToWorld(x,y){
  return {x:model.comma.w*.5+(x-layout.cx)/layout.scale,
@@ -468,8 +519,11 @@ function render(){
  for(let i=0;i<bodies.length;i++){
   const body=bodies[i],glyph=model.glyphs[i],
         pos=worldToScreen(body.position.x,body.position.y);
-  const ballW=radius*1.63*layout.scale*(glyph.w/Math.max(glyph.w,glyph.h));
-  const ballH=radius*1.63*layout.scale*(glyph.h/Math.max(glyph.w,glyph.h));
+  const passage=body.plugin.released
+    ?ease((elapsed-body.plugin.releasedAt)/.44):0;
+  const visibleSize=lerp(body.plugin.colliderScale||1,1,passage);
+  const ballW=radius*1.63*layout.scale*(glyph.w/Math.max(glyph.w,glyph.h))*visibleSize;
+  const ballH=radius*1.63*layout.scale*(glyph.h/Math.max(glyph.w,glyph.h))*visibleSize;
   const goalW=glyph.w/model.width*layout.logoW;
   const goalH=glyph.h/model.height*(layout.logoW*model.height/model.width);
   // Each glyph grows naturally into its final width as its live spring
@@ -536,15 +590,9 @@ function frame(now){
        x:dx/norm*b.mass*.00039*ramp*boost,
        y:dy/norm*b.mass*.00039*ramp*boost
       });
-      // The pointed tail is much narrower than the visible glyphs.
-      // Disable ONLY vessel-wall collision near its throat while
-      // retaining letter-letter collision to remove the exit jam.
-      const nearTail=Math.hypot(b.position.x-outlet.x,
-                                b.position.y-outlet.y)<r*5.4;
-      const inChannel=b.position.y>model.comma.h*.67 &&
-                      b.position.x<model.comma.w*.76;
-      if(nearTail||inChannel||elapsed>6.3)
-        b.collisionFilter.mask=0x0001;
+      // Preserve collision with EVERY solid contour edge. The real
+      // aperture is opened only by removing its own wall segments.
+      fitInTail(b);
      }else if(!b.plugin.wrapped){
       // Natural off-left travel with angular momentum and light gravity
       // cancellation, so the letters do not sink below the viewport.
@@ -573,18 +621,7 @@ function frame(now){
   for(let j=0;j<steps;j++)Matter.Engine.update(engine,dt/steps);
   if(mode==='pour'&&elapsed>.57){
    bodies.forEach((b,i)=>{
-    if(!b.plugin.released&&!model.inside(b.position.x,b.position.y)){
-     // A body genuinely crossed the wall into open space; do not
-     // teleport it to a scripted exit point.
-     b.plugin.released=true;b.plugin.releasedAt=elapsed;
-     b.collisionFilter.mask=0x0001;
-     // Add leftward impulse without erasing its physics-derived
-     // tangential motion or angular velocity.
-     const vx=Math.min(-2.45,b.velocity.x);
-     Matter.Body.setVelocity(b,{x:vx,y:clamp(b.velocity.y,-.42,.42)});
-     Matter.Body.setAngularVelocity(b,-.06+.035*rand(i+17));
-     lastReleasedAt=elapsed;
-    }
+    if(!b.plugin.released)maintainClosedBoundary(b);
     if(b.plugin.released&&!b.plugin.wrapped){
      const px=worldToScreen(b.position.x,b.position.y).x;
      const radius=model.radius*layout.scale;
