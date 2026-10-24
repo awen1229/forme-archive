@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-Hant" class="gt-scroll-entry-ready">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f1eb">
+<meta name="description" content="GOOD THINGS, opening motion Study 07. Original logo comma becomes a letter container. Experimental preview only.">
+<title>GOOD THINGS, / Study 07: Comma Container</title>
+<style>
+:root{--paper:#f3f1eb;--ink:#2b3d31;--green:#397541;--muted:#708072;--line:#c5cdc0}
+*{box-sizing:border-box}
+html,body{margin:0;min-width:280px;min-height:100%;background:var(--paper);color:var(--ink);font-family:Arial,"PingFang TC","Noto Sans TC",sans-serif;-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:5px}
+#gt-study-source{display:none}
+.gt-scroll-entry{
+ position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;overflow:hidden;
+ min-height:320px;height:100vh;height:100dvh;
+ padding:clamp(21px,3.5vw,40px) clamp(22px,5vw,76px) max(25px,env(safe-area-inset-bottom));
+ background:var(--paper);touch-action:manipulation;
+ transition:transform 460ms cubic-bezier(.65,.03,.18,1),opacity 460ms
+}
+.gt-scroll-entry::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+ radial-gradient(ellipse at 20% 7%,rgba(255,255,255,.53),transparent 48%),
+ radial-gradient(ellipse at 90% 91%,rgba(126,145,116,.09),transparent 45%)}
+.gt-scroll-entry.is-completing{transform:translateY(-103%);opacity:0}
+.gt-scroll-entry-top,.gt-scroll-entry-foot{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:14px;
+ color:var(--muted);font-size:10px;letter-spacing:.13em;line-height:1.5}
+.gt-scroll-entry-top{flex:0 0 auto;border-bottom:1px solid var(--line);padding-bottom:16px}
+.gt-scroll-entry-top-label{max-width:65%}
+.gt-scroll-entry-skip{border:0;background:none;color:#44684b;letter-spacing:.1em;font-size:10px;padding:8px 0;white-space:nowrap}
+.gt-scroll-entry-skip:hover{text-decoration:underline;text-underline-offset:5px}
+.gt-scroll-entry-center{position:relative;flex:1 1 auto;display:grid;min-height:0;place-items:center}
+.gt-scroll-entry-sculpture{position:relative;width:min(92vw,850px);height:min(72dvh,610px);
+ display:grid;place-items:center;isolation:isolate;min-width:0}
+.gt-scroll-entry-comma-backdrop{position:absolute;z-index:1;
+ left:50%;top:47%;transform:translate(-50%,-50%);
+ height:min(64dvh,540px);width:auto;max-width:min(66vw,420px);object-fit:contain;
+ pointer-events:none;will-change:opacity,transform;opacity:.92;filter:none}
+.gt-scroll-entry-logo-stage{position:absolute;z-index:3;left:50%;top:48%;transform:translate(-50%,-50%);
+ width:min(79%,530px);aspect-ratio:1240 / 562;pointer-events:none;isolation:isolate}
+.gt-scroll-entry-full-logo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+ display:block;opacity:0;will-change:opacity}
+.gt-scroll-entry-piece{position:absolute;display:block;pointer-events:none;opacity:0;
+ transform-origin:50% 50%;will-change:transform,opacity}
+.gt-scroll-entry-piece img{display:block;width:100%;height:100%;object-fit:fill}
+.gt-study-activate{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);
+ z-index:4;width:min(65vw,390px);height:min(64dvh,540px);border:0;border-radius:40%;
+ cursor:pointer;background:transparent;color:transparent;touch-action:manipulation}
+.gt-study-activate:focus-visible{outline:2px solid var(--green);outline-offset:8px}
+.gt-study-activate:disabled{cursor:default}
+.gt-scroll-entry-caption{position:absolute;bottom:-1%;left:50%;transform:translateX(-50%);
+ text-align:center;white-space:nowrap;font-size:10px;letter-spacing:.18em;color:#728376;opacity:0}
+.gt-study-prompt{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);
+ color:var(--green);font-weight:650;font-size:10px;letter-spacing:.18em;white-space:nowrap;
+ text-align:center;pointer-events:none;transition:opacity .25s}
+.gt-study-prompt::after{content:"";display:block;width:38px;height:1px;margin:10px auto 0;background:#7c9980}
+.gt-scroll-entry.is-started .gt-study-prompt{opacity:0}
+.gt-scroll-entry-foot{flex:0 0 auto;border-top:1px solid var(--line);padding-top:17px;display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(75px,160px) 42px;gap:14px}
+.gt-scroll-entry-hint{font-size:9px;min-width:0}
+.gt-scroll-entry-progress{display:block;height:1px;background:#bacabd;overflow:hidden}
+.gt-scroll-entry-progress i{display:block;height:100%;background:var(--green);width:100%;
+ transform:scaleX(0);transform-origin:left center}
+.gt-scroll-entry-percent{text-align:right;font-size:10px;font-variant-numeric:tabular-nums}
+.gt-study-flag{position:fixed;top:4px;left:50%;transform:translateX(-50%);color:#879287;
+ font-size:8px;letter-spacing:.15em;opacity:.7;pointer-events:none;white-space:nowrap}
+@media(max-width:700px){
+ .gt-scroll-entry{padding:22px 23px max(24px,env(safe-area-inset-bottom))}
+ .gt-scroll-entry-top{font-size:9px}
+ .gt-scroll-entry-sculpture{width:100%;height:min(72dvh,570px)}
+ .gt-scroll-entry-comma-backdrop{height:min(53dvh,430px);max-width:70vw}
+ .gt-scroll-entry-logo-stage{width:min(92%,500px)}
+ .gt-study-activate{height:min(53dvh,430px);width:70vw}
+ .gt-study-prompt{bottom:4%;font-size:9px}
+ .gt-scroll-entry-caption{bottom:-2%;font-size:9px}
+ .gt-scroll-entry-foot{grid-template-columns:minmax(0,1fr) 64px 34px;gap:10px}
+ .gt-scroll-entry-hint{font-size:8.5px;letter-spacing:.06em}
+}
+@media(max-height:510px) and (orientation:landscape){
+ .gt-scroll-entry{padding-top:10px;padding-bottom:12px}
+ .gt-scroll-entry-top{padding-bottom:5px}.gt-scroll-entry-foot{padding-top:6px}
+ .gt-scroll-entry-sculpture{height:70dvh}
+ .gt-scroll-entry-comma-backdrop{height:64dvh}
+ .gt-study-activate{height:64dvh}
+ .gt-scroll-entry-logo-stage{width:min(54vw,430px)}
+ .gt-study-prompt{bottom:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .gt-scroll-entry{transition:none}
+ .gt-scroll-entry-piece{transition:none}
+}
+</style>
+</head>
+<body>
+<img id="gt-study-source" alt="" aria-hidden="true">
+<section id="gt-scroll-entry" class="gt-scroll-entry" aria-label="GOOD THINGS, 逗號容器動畫測試">
+ <header class="gt-scroll-entry-top">
+  <span class="gt-scroll-entry-top-label">GOOD THINGS, / AN INDEPENDENT JOURNAL</span>
+  <button id="gt-study-skip" class="gt-scroll-entry-skip" type="button">SKIP / 進入網站 ↗</button>
+ </header>
+ <div class="gt-scroll-entry-center">
+  <div class="gt-scroll-entry-sculpture">
+   <img class="gt-scroll-entry-comma-backdrop" alt="" aria-hidden="true">
+   <div class="gt-scroll-entry-logo-stage" aria-hidden="true"></div>
+   <button id="gt-study-activate" class="gt-study-activate" type="button" aria-label="點擊逗號，釋放 GOOD THINGS 字母"></button>
+   <div class="gt-study-prompt">TAP THE COMMA / 點擊逗號</div>
+   <div class="gt-scroll-entry-caption">GOOD THINGS,</div>
+  </div>
+ </div>
+ <footer class="gt-scroll-entry-foot">
+  <span class="gt-scroll-entry-hint" aria-live="polite">LETTERS INSIDE / 故事從逗號開始</span>
+  <span class="gt-scroll-entry-progress" aria-hidden="true"><i></i></span>
+  <span class="gt-scroll-entry-percent" aria-hidden="true">0%</span>
+ </footer>
+</section>
+<div class="gt-study-flag">STUDY 07 / TEST PREVIEW</div>
+<script>
+(function(){
+ var skip=document.getElementById('gt-study-skip'),go=function(){
+  try{sessionStorage.setItem('gt-scroll-entry-v16','done')}catch(e){}
+  location.assign('./');
+ };
+ skip.addEventListener('click',go);
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){
+  document.querySelector('.gt-scroll-entry-hint').textContent='REDUCED MOTION / 點擊進入網站';
+  document.getElementById('gt-study-activate').addEventListener('click',go);
+  return;
+ }
+ fetch('./index.html',{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('source page '+r.status);return r.text()})
+ .then(function(content){
+  var match=content.match(/class="gt-brand-logo"\s+src="(data:image\/png;base64,[^"]+)"/);
+  if(!match)throw Error('original logo not present');
+  document.getElementById('gt-study-source').src=match[1];
+  var script=document.createElement('script');script.src='./gt-comma-container-study07.js?v=1';
+  script.onerror=function(){document.querySelector('.gt-scroll-entry-hint').textContent='無法載入動畫，請按 SKIP 進入網站';};
+  document.body.appendChild(script);
+ }).catch(function(error){
+  console.warn('Original logo was not loaded',error);
+  document.querySelector('.gt-scroll-entry-hint').textContent='無法載入原始 LOGO，請按 SKIP 進入網站';
+  document.getElementById('gt-study-activate').addEventListener('click',go,{once:true});
+ });
+})();
+</script>
+</body>
+</html>
