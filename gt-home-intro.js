@@ -310,7 +310,7 @@ function paint(){
   const landing=smooth(range(t,.78,1));
   const glyphScale=travellingScale+(1-travellingScale)*landing;
   el.style.opacity=String(reveal*(1-assembling));
-  el.style.transform='translate3d('+(position.x-homeX).toFixed(2)+'px,'+(position.y-homeY).toFixed(2)+'px,0) rotate('+angle.toFixed(2)+'deg)';
+  el.style.transform='translate3d('+(position.x-homeX).toFixed(2)+'px,'+(position.y-homeY).toFixed(2)+'px,0) rotate('+angle.toFixed(2)+'deg) scale('+glyphScale.toFixed(3)+')';
  });
  if(full)full.style.opacity=String(assembling);
  caption.style.opacity=String(smooth(range(p,.78,.92)));
