@@ -414,7 +414,7 @@ function setupAssembly(){
  mode='assemble';finishElapsed=0;elapsed=0;
  assemblyPositions=bodies.map(b=>{
   const pos=worldToScreen(b.position.x,b.position.y);
-  return {x:pos.x,y:pos.y,angle:b.angle+b.plugin.spriteAngle+tilt};
+  return {x:pos.x,y:pos.y,angle:Math.atan2(Math.sin(b.angle+b.plugin.spriteAngle+tilt),Math.cos(b.angle+b.plugin.spriteAngle+tilt))};
  });
  status.textContent='LETTERFORMS SETTLE INTO THE ORIGINAL LOGO';
  report('progress',{progress:.89});
@@ -562,8 +562,8 @@ function frame(now){
     for(const b of bodies){
      if(b.plugin.released)continue;
      Matter.Body.applyForce(b,b.position,{
-      x:(outlet.x-b.position.x)*b.mass*.000022,
-      y:(outlet.y-b.position.y)*b.mass*.000022
+      x:(outlet.x-b.position.x)/Math.max(10,Math.hypot(outlet.x-b.position.x,outlet.y-b.position.y))*b.mass*.000028,
+      y:(outlet.y-b.position.y)/Math.max(10,Math.hypot(outlet.x-b.position.x,outlet.y-b.position.y))*b.mass*.000028
      });
     }
    }
