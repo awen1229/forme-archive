@@ -363,7 +363,7 @@ function drawGlyph(el,i,now){
  const rstart=firstReturn+i*returnGap;
  let x=c.start.x,y=c.start.y,scale=c.scale,opacity=1,rotate=c.angle;
  if(now<start){
-  const phase=now*.0013+i*1.8;
+  const phase=(running?now:performance.now())*.0013+i*1.8;
   x+=Math.sin(phase)*1.2;y+=Math.cos(phase*.88)*1.6;
  }else if(now<rstart){
   // Every letter follows the same inner corridor to the lower-left tail.
@@ -412,6 +412,7 @@ function paint(now){
  const elapsed=running?now-startedAt:0;
  if(!running){
   glyphs.forEach((_,i)=>drawGlyph(parts[i],i,elapsed));
+  frame=requestAnimationFrame(paint);
   return;
  }
  parts.forEach((_,i)=>drawGlyph(parts[i],i,elapsed));
@@ -428,6 +429,7 @@ function paint(now){
 function request(){if(!frame)frame=requestAnimationFrame(paint)}
 function startStudy(){
  if(running||ended)return;
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){enterSite();return;}
  running=true;
  startedAt=performance.now();
  startButton.disabled=true;
@@ -461,7 +463,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')enterSite()});
 window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',e=>{
  if(e.matches)enterSite();
 });
-extractOriginal().then(()=>{
+extractOriginal().then(()=>largeComma.decode?.().catch(()=>{})||Promise.resolve()).then(()=>{
  prepareLayout();
  request();
 }).catch(showFallback);
