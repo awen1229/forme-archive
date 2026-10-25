@@ -171,17 +171,22 @@ function getBitmap(img){
   }
   if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
  }
- const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const comma=comps
+  .filter(c=>c.x>width*.74 && c.y+c.h>height*.79)
+  .sort((a,b)=>b.x-a.x)[0];
  const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
   const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
   return rowA-rowB||a.x-b.x;
  });
- if(!comma||letters.length!==10){
-  console.warn('GOOD THINGS logo glyph detection fell back safely:', {glyphs:letters.length,components:comps.length});
-  // Drawing still works and the intact source logo will be revealed;
-  // never block entry for an unusual future branding asset.
+ if(!comma){
+  console.warn('No separable logo comma: using whole-brand fallback safely', {components:comps.length});
   return {width,height,source:base,comma:null,glyphs:[],contour:[],fallback:true};
  }
+ if(letters.length!==10)
+  console.warn('Letter outlines are adjacent, using the complete original wordmark', {letters:letters.length});
+ // We only move individual glyphs if the original artwork truly has ten
+ // separate parts. The authentic unmodified wordmark remains available
+ // regardless of connected handwritten letterforms.
  function cropGlyph(c){
   const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
   const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
@@ -201,7 +206,7 @@ function getBitmap(img){
   }
   target.putImageData(im,0,0);return o;
  }
- const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const glyphs=letters.length===10?letters.map(c=>({...c,img:cropGlyph(c)})):[];
  const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
  for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
   const n=(comma.y+y)*width+comma.x+x;
@@ -266,7 +271,12 @@ function getBitmap(img){
   }
  }
  if(contour.length<30)throw Error('Insufficient original contour points');
- return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:base,fallback:false};
+ const wordmark=document.createElement('canvas');
+ wordmark.width=width;wordmark.height=height;
+ const wp=wordmark.getContext('2d');
+ wp.drawImage(base,0,0);
+ wp.clearRect(comma.x-2,comma.y-2,comma.w+4,comma.h+4);
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,wordmark,source:base,fallback:false};
 }
 function layout(){
  const box=canvas.getBoundingClientRect();
@@ -379,6 +389,13 @@ function renderPlacement(progress){
  const x=mix(inkCenter.x,target.x,move),y=mix(inkCenter.y,target.y,move);
  const w=mix(inkCenter.w,target.w,move),h=mix(inkCenter.h,target.h,move);
  commaImage(x,y,w,h);
+ // If the original typography has touching letterforms, reveal the
+ // real wordmark as one unbroken source image, never substitute fonts.
+ if(!model.glyphs.length){
+  ctx.save();ctx.globalAlpha=phase(.30,.87,progress);
+  ctx.drawImage(model.wordmark,q.x,q.y,q.w,q.h);
+  ctx.restore();return;
+ }
  // The text doesn't arrive as an unrelated animation. Its ten genuine
  // letter sprites settle exactly around the traveling comma.
  for(let i=0;i<model.glyphs.length;i++){
@@ -400,6 +417,7 @@ function renderComplete(progress){
  const q=markLayout(),settle=phase(.04,.35,progress);
  const comma=targetComma(q);
  commaImage(comma.x,comma.y,comma.w,comma.h);
+ if(!model.glyphs.length)ctx.drawImage(model.wordmark,q.x,q.y,q.w,q.h);
  for(let i=0;i<model.glyphs.length;i++){
   const g=model.glyphs[i],ww=(g.w+4)*q.s,hh=(g.h+4)*q.s;
   const gx=q.x+(g.x+g.w*.5)*q.s,gy=q.y+(g.y+g.h*.5)*q.s;
