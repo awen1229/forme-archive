@@ -1,0 +1,185 @@
+/* GOOD THINGS, / V1 VISUAL REVIEW
+   An isolated, read-only style experiment for the existing editorial site.
+   Never ships on production; loaded inside visual-review.html preview frame.
+   No DOM templates, article data, CMS, routes or brand artwork are modified.
+   Design intention: quieter black on white, fewer 'AI template' signals,
+   maintain human editorial voice in actual published content.
+*/
+:root{
+ --gt-paper:#fff;
+ --gt-ink:#222521;
+ --gt-soft:#767b75;
+ --gt-line:#e4e6e1;
+ --gt-olive:#315f40;
+ --gt-warm:#f5f6f3;
+ --gt-surface:#f5f6f3;
+ --gt-brand-type:"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC",sans-serif;
+ --gt-cjk:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+ color:var(--gt-ink);
+ background:var(--gt-paper);
+}
+html,body,.site-shell{background:#fff;color:var(--gt-ink)}
+html{font-synthesis:none}
+body{font-family:var(--gt-cjk);font-size:15px;line-height:1.76}
+a,button{transition:color .15s ease,border-color .15s ease}
+.utility-bar{background:#fff;border-bottom-color:#ededeb;color:#777e78;letter-spacing:.075em;font-weight:400}
+.site-header{
+ background:#fff;
+ border-bottom:1px solid #e9ebe7;
+ padding-top:18px;
+ padding-bottom:18px;
+ gap:18px;
+}
+.brandmark .gt-brand-logo{width:156px;max-width:100%;object-fit:contain}
+.brandmark .gt-brand-tagline{letter-spacing:.11em;font-weight:400;color:#828981}
+.desktop-nav a,.mobile-nav a{
+ font-family:var(--gt-cjk);
+ font-weight:500;
+ letter-spacing:.055em;
+ color:#30362f;
+}
+.menu-toggle{border-left-color:#e2e6e0;letter-spacing:.07em}
+.menu-toggle svg,.gt-mag-arrow svg,.ui-icon{stroke-width:1.35}
+.gt-hero.gt-editorial-home{padding-top:23px;padding-bottom:38px}
+.gt-editorial-home .gt-meta{
+ color:#848b84;
+ font-size:10px;
+ letter-spacing:.075em;
+ margin-bottom:19px;
+ font-weight:400;
+}
+.gt-editorial-home .gt-home-intro{
+ margin-bottom:30px;
+ gap:clamp(25px,4vw,58px);
+ align-items:end;
+}
+.gt-home-intro h1{
+ font-family:"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC",sans-serif;
+ font-weight:500;
+ font-size:clamp(34px,4.15vw,58px);
+ line-height:1.15;
+ letter-spacing:-.045em;
+ max-width:760px;
+}
+.gt-home-intro h1 em{font-style:normal;font-weight:500;color:var(--gt-ink)}
+.gt-home-intro .gt-label,.gt-label,.gt-feature-intro,.kicker,.eyebrow,.meta-tag{
+ color:#777f78;
+ letter-spacing:.075em;
+ font-weight:500;
+}
+.gt-home-intro .gt-deck{
+ color:#6a716b;
+ font-family:var(--gt-cjk);
+ font-size:13px;
+ line-height:1.95;
+ max-width:350px;
+}
+.gt-feature-intro{border-bottom-color:#e8eae6;padding-bottom:12px}
+.gt-mag-stage{
+ background:#e9eae6;
+ box-shadow:none;
+ border:0;
+ perspective:none;
+}
+.gt-mag-stage:before,.gt-mag-stage:after{box-shadow:none}
+.gt-mag-sheet{box-shadow:none}
+.gt-mag-copy{
+ background:#f7f8f6;
+ box-shadow:none;
+ padding:clamp(24px,3vw,42px);
+}
+.gt-mag-copy:before,.gt-mag-copy:after{box-shadow:none}
+.gt-mag-copy h2{
+ font-family:var(--gt-cjk);
+ font-size:clamp(23px,2.7vw,36px);
+ font-weight:550;
+ letter-spacing:-.025em;
+ line-height:1.43;
+}
+.gt-mag-copy p{font-size:13px;line-height:1.85;color:#626a62}
+.gt-mag-type{font-size:10px;letter-spacing:.06em;color:#687b6b}
+.gt-mag-read{
+ font-family:var(--gt-cjk);
+ font-weight:500;
+ font-size:11px;
+ letter-spacing:.045em;
+ color:var(--gt-olive);
+}
+.gt-mag-photo:after{background:linear-gradient(0deg,#1118,transparent 24%)}
+.gt-mag-photo-note{letter-spacing:.045em}
+.gt-mag-bottom{border-bottom-color:#e2e5e0;padding-bottom:13px}
+.gt-mag-progress,.gt-mag-tips{color:#717a72;font-weight:400;letter-spacing:.07em}
+.gt-mag-arrow{border-color:#dfe3dd;background:transparent}
+.gt-mag-arrow:hover{background:#f4f7f3}
+.gt-mag-dots button{opacity:.84}
+.gt-sectional.gt-latest{padding-top:49px;padding-bottom:60px}
+.gt-section-top{border-bottom-color:#e3e7e2}
+.gt-section-top h2,.gt-discover-head h2{
+ font-family:var(--gt-cjk);
+ font-size:clamp(27px,3.1vw,41px);
+ font-weight:600;
+ letter-spacing:-.035em;
+ line-height:1.24;
+}
+.gt-section-top .link-arrow,.link-arrow{
+ font-size:11px;
+ letter-spacing:.065em;
+ font-weight:500;
+}
+.article-row{border-color:#e7e9e4}
+.article-row h3{
+ font-family:var(--gt-cjk);
+ font-weight:550;
+ letter-spacing:-.025em;
+ line-height:1.48;
+ font-size:clamp(19px,2.05vw,26px);
+}
+.article-row p{color:#737a73;line-height:1.87}
+.gt-compact-discover{background:#f7f8f5}
+.gt-discover-head h2{font-size:clamp(27px,3vw,37px)}
+.gt-discover-links a{
+ border-color:#e4e7e1;
+ background:#fff;
+ box-shadow:none;
+ padding:clamp(20px,2.2vw,30px);
+}
+.gt-discover-links a strong{
+ font-family:var(--gt-cjk);
+ font-weight:600;
+ letter-spacing:-.02em;
+}
+.gt-discover-links a small{letter-spacing:.065em;font-weight:400}
+.section-heading h1,.section-heading h2,
+.gt-content-intro h2,.detail-title,
+.gt-forme h2,.gt-feature-copy h2{
+ font-family:var(--gt-cjk);
+ letter-spacing:-.035em;
+ font-weight:550;
+}
+.gt-content-intro h2{font-size:clamp(26px,3.2vw,37px);line-height:1.55}
+.brand-profile .detail-title{font-family:var(--gt-brand-type);letter-spacing:-.035em;font-weight:550}
+.gt-directory .brand-card,.brand-card{border-color:#e7e9e4}
+.gt-alpha-key{border-color:#e4e7e1}
+.article-body,.detail-copy,.gt-deck{color:#343935;line-height:1.92}
+.article-body p{line-height:1.95}
+footer{background:#fff;border-color:#e7e9e4}
+@media(max-width:760px){
+ .utility-bar{display:none}
+ .site-header{padding-top:16px;padding-bottom:13px;min-height:72px}
+ .site-header .brandmark .gt-brand-logo{width:145px}
+ .gt-hero.gt-editorial-home{padding-top:17px}
+ .gt-editorial-home .gt-meta{font-size:9px;margin-bottom:16px}
+ .gt-editorial-home .gt-home-intro{gap:10px;margin-bottom:23px}
+ .gt-home-intro h1{font-size:clamp(30px,8vw,42px);letter-spacing:-.04em;line-height:1.19}
+ .gt-home-intro .gt-deck{font-size:12px;line-height:1.85;max-width:none;margin-left:0}
+ .gt-feature-intro{margin-bottom:10px}
+ .gt-mag-copy{padding:25px 23px}
+ .gt-mag-copy h2{font-size:clamp(23px,6.3vw,29px);line-height:1.37}
+ .gt-mag-copy p{font-size:12px;line-height:1.73}
+ .gt-mag-stage{box-shadow:none}
+ .gt-section-top h2,.gt-discover-head h2{font-size:29px}
+ .gt-sectional.gt-latest{padding-top:43px;padding-bottom:49px}
+ .gt-compact-discover{padding-top:36px}
+ .article-row h3{font-size:clamp(18px,5vw,24px);line-height:1.45}
+}
+@media(prefers-reduced-motion:reduce){.gt-mag-sheet{animation:none!important;transition:none!important}}
