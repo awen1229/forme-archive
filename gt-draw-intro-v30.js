@@ -6,7 +6,7 @@
   const KEY='gt-draw-comma-intro-v30-seen';
   const MESSAGE_TYPE='gt-draw-intro-v30';
   const ORIGIN=window.location.origin;
-  let overlay=null,entryFrame=null,leaving=false,closeTimer=0;
+  let overlay=null,entryFrame=null,leaving=false,closeTimer=0,watchdog=0,entryReady=false;
   const params=new URLSearchParams(window.location.search);
   const force=params.get('intro')==='draw';
   const suppress=['off','skip','none'].includes(params.get('intro'));
@@ -43,6 +43,7 @@
     leaving=true;
     rememberSeen();
     clearReplayQuery();
+    if(watchdog){window.clearTimeout(watchdog);watchdog=0;}
     overlay.classList.add('is-leaving');
     document.documentElement.classList.remove('gt-draw-entry-active');
     if(closeTimer)window.clearTimeout(closeTimer);
@@ -62,7 +63,8 @@
     const frame=document.createElement('iframe');
     frame.className='gt-draw-entry-frame';
     frame.title='GOOD THINGS, / Draw a comma';
-    frame.src='./gt-draw-intro-v30.html';
+    frame.src='./gt-draw-intro-v30.html?v=20261025b';
+    frame.addEventListener('error',complete);
     frame.setAttribute('loading','eager');
     const skip=document.createElement('button');
     skip.className='gt-draw-entry-skip';
@@ -71,6 +73,10 @@
     skip.addEventListener('click',complete);
     overlay.append(frame,skip);
     entryFrame=frame;
+    entryReady=false;
+    // Fail open if an iframe resource hangs; readers should never be trapped.
+    if(watchdog)window.clearTimeout(watchdog);
+    watchdog=window.setTimeout(()=>{if(overlay&&!entryReady)complete()},16000);
     document.documentElement.classList.add('gt-draw-entry-active');
     document.body.appendChild(overlay);
     window.addEventListener('keydown',onEscape);
@@ -86,7 +92,12 @@
     if(!overlay||leaving||event.origin!==ORIGIN)return;
     if(event.source!==entryFrame?.contentWindow)return;
     if(event.data?.type!==MESSAGE_TYPE)return;
-    if(['done','skip','enter'].includes(event.data.action))complete();
+    if(event.data.action==='ready'){
+      entryReady=true;
+      if(watchdog){window.clearTimeout(watchdog);watchdog=0;}
+      return;
+    }
+    if(['done','skip','enter','error'].includes(event.data.action))complete();
   });
   function initialize(){
     addReplayLink();
