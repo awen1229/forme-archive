@@ -131,7 +131,11 @@ function getBitmap(img){
    if(a>=245)opaqueSamples++;samples++;
   }
  }
- const flattenBackground=opaqueSamples/samples>.78;
+ // A nontransparent corner is stronger evidence of flattened PNG
+ // background than global opacity alone (important for semiopaque exports).
+ const edgePixels=[0,width-1,(height-1)*width,height*width-1];
+ const cornerAlpha=edgePixels.reduce((sum,i)=>sum+px[i*4+3],0)/edgePixels.length;
+ const flattenBackground=opaqueSamples/samples>.78 || cornerAlpha>24;
  if(flattenBackground){
   const corners=[0,width-1,(height-1)*width, height*width-1];
   const bg=[0,0,0];
