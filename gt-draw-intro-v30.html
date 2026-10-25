@@ -119,6 +119,35 @@ function getBitmap(img){
  const base=document.createElement('canvas');base.width=width;base.height=height;
  const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
  const data=c.getImageData(0,0,width,height);
+ // IMPORTANT: The production logo PNG can be fully opaque with an ivory/
+ // white backdrop. An alpha-only ink detector then sees ONE giant rectangle,
+ // not ten letters and a comma. Remove that flat background chromatically
+ // while retaining source letterforms, smoothing and native RGBA pixels.
+ const px=data.data,pixels=width*height;
+ let opaqueSamples=0,samples=0;
+ for(let y=0;y<height;y+=Math.max(1,Math.floor(height/18))){
+  for(let x=0;x<width;x+=Math.max(1,Math.floor(width/24))){
+   const a=px[(y*width+x)*4+3];
+   if(a>=245)opaqueSamples++;samples++;
+  }
+ }
+ const flattenBackground=opaqueSamples/samples>.78;
+ if(flattenBackground){
+  const corners=[0,width-1,(height-1)*width, height*width-1];
+  const bg=[0,0,0];
+  for(const n of corners){
+   bg[0]+=px[n*4];bg[1]+=px[n*4+1];bg[2]+=px[n*4+2];
+  }
+  for(let k=0;k<3;k++)bg[k]/=corners.length;
+  for(let i=0;i<pixels;i++){
+   const j=i*4;
+   const difference=Math.max(Math.abs(px[j]-bg[0]),Math.abs(px[j+1]-bg[1]),Math.abs(px[j+2]-bg[2]));
+   // Preserve near-white antialiasing softly, never as a solid background.
+   const coverage=Math.max(0,Math.min(1,(difference-11)/88));
+   px[j+3]=Math.round(px[j+3]*coverage);
+  }
+  c.putImageData(data,0,0);
+ }
  const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
  const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
  for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
@@ -143,7 +172,12 @@ function getBitmap(img){
   const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
   return rowA-rowB||a.x-b.x;
  });
- if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ if(!comma||letters.length!==10){
+  console.warn('GOOD THINGS logo glyph detection fell back safely:', {glyphs:letters.length,components:comps.length});
+  // Drawing still works and the intact source logo will be revealed;
+  // never block entry for an unusual future branding asset.
+  return {width,height,source:base,comma:null,glyphs:[],contour:[],fallback:true};
+ }
  function cropGlyph(c){
   const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
   const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
@@ -228,7 +262,7 @@ function getBitmap(img){
   }
  }
  if(contour.length<30)throw Error('Insufficient original contour points');
- return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:base,fallback:false};
 }
 function layout(){
  const box=canvas.getBoundingClientRect();
@@ -296,6 +330,11 @@ function originalCommaOutline(count){
 }
 function prepareMorph(points){
  drawnSamples=resample(points,105);
+ if(model.fallback){
+  targetSamples=drawnSamples;
+  inkCenter={x:view.w*.5,y:view.h*.47,w:0,h:0};
+  return;
+ }
  const source=originalCommaOutline(105),c=model.comma;
  const sizePx=Math.min(140,view.w*.27,view.h*.31);
  const scale=sizePx/c.w;
@@ -312,6 +351,12 @@ function commaImage(x,y,w,h,alpha=1){
  ctx.restore();
 }
 function renderMorph(progress){
+ if(model.fallback){
+  penLine(drawnSamples,1-phase(.25,.83,progress));
+  const q=markLayout();ctx.save();ctx.globalAlpha=phase(.38,.96,progress);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);ctx.restore();
+  return;
+ }
  const p=phase(0,.80,progress);
  const pts=drawnSamples.map((item,i)=>({
   x:mix(item.x,targetSamples[i].x,p),
@@ -322,6 +367,10 @@ function renderMorph(progress){
  commaImage(inkCenter.x,inkCenter.y,inkCenter.w,inkCenter.h,phase(.47,.98,progress));
 }
 function renderPlacement(progress){
+ if(model.fallback){
+  const q=markLayout();ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  return;
+ }
  const q=markLayout(),target=targetComma(q),move=phase(.02,.82,progress);
  const x=mix(inkCenter.x,target.x,move),y=mix(inkCenter.y,target.y,move);
  const w=mix(inkCenter.w,target.w,move),h=mix(inkCenter.h,target.h,move);
@@ -340,6 +389,10 @@ function renderPlacement(progress){
  }
 }
 function renderComplete(progress){
+ if(model.fallback){
+  const q=markLayout();ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  return;
+ }
  const q=markLayout(),settle=phase(.04,.35,progress);
  const comma=targetComma(q);
  commaImage(comma.x,comma.y,comma.w,comma.h);
@@ -471,7 +524,12 @@ async function init(){
   model=await getBitmap(img);
   loading.hidden=true;layout();
   raf=requestAnimationFrame(tick);
- }catch(error){loading.textContent='THE ORIGINAL LOGO COULD NOT LOAD · '+(error?.message||String(error))}
+ }catch(error){
+  console.error('GOOD THINGS intro asset could not initialize:',error);
+  // Broken assets must never trap a first-time reader behind the overlay.
+  loading.textContent='OPENING THE JOURNAL…';
+  notifyParent('error');
+ }
 }
 function notifyParent(action){
  if(window.parent!==window){
