@@ -399,6 +399,141 @@ function drawOffsetProof(t){
   ctx.restore();
  }
 }
+
+/* The following drawings are editorial marks, not replacement glyphs.
+   The comma, text ink and finished mark are cropped from the real asset. */
+function drawProofSheet(q,t,kind){
+ const opacity=fade(.02,.25,t)*(1-fade(.86,1,t)*.82);
+ const mobile=size.w<610;
+ const mx=Math.min(mobile?15:43,size.w*.038),my=Math.max(25,q.h*.48);
+ const x=q.x-mx,y=q.y-my,w=q.w+2*mx,h=q.h+2*my;
+ const outer=Math.min(11,Math.max(6,size.w*.012));
+ const mark=kind==='anchor'?'LAYOUT  /  02':kind==='registration'?'REGISTRATION  /  03':'EDITORIAL PROOF  /  01';
+ ctx.save();ctx.globalAlpha=opacity;
+ // A trim box and a second, faint bleed boundary at its outside edge.
+ ctx.strokeStyle='#89a08c';ctx.lineWidth=.65;
+ ctx.strokeRect(x,y,w,h);
+ ctx.setLineDash([3,5]);ctx.globalAlpha=opacity*.56;
+ ctx.strokeRect(x-outer,y-outer,w+outer*2,h+outer*2);
+ ctx.setLineDash([]);ctx.globalAlpha=opacity*.78;
+ // Classic offset crop marks and a few restrained column guides.
+ for(const px of [x,x+w])for(const py of [y,y+h]){
+  const hsign=px===x?-1:1,vsign=py===y?-1:1;
+  ctx.beginPath();
+  ctx.moveTo(px+hsign*3,py);ctx.lineTo(px+hsign*(outer+11),py);
+  ctx.moveTo(px,py+vsign*3);ctx.lineTo(px,py+vsign*(outer+11));
+  ctx.stroke();
+ }
+ if(kind==='anchor'){
+  ctx.globalAlpha=opacity*.25;
+  for(let k=1;k<4;k++){
+   const gx=x+k*w/4;
+   ctx.beginPath();ctx.moveTo(gx,y);ctx.lineTo(gx,y+h);ctx.stroke();
+  }
+  ctx.beginPath();ctx.moveTo(x,y+h*.5);ctx.lineTo(x+w,y+h*.5);ctx.stroke();
+ }
+ ctx.font=(mobile?'8':'9')+'px Arial';ctx.fillStyle='#5f7965';
+ ctx.globalAlpha=opacity*.76;ctx.textAlign='left';
+ ctx.fillText('GOOD THINGS, / A NOTE ON EVERYTHING',x,Math.max(30,y-18));
+ ctx.fillText('EST. 2026   ·   TAIWAN / JAPAN',x,Math.min(size.h-16,y+h+27));
+ ctx.textAlign='right';
+ ctx.fillText(mark,x+w,Math.min(size.h-16,y+h+27));
+ ctx.restore();
+}
+function drawRegistrationCross(x,y,alpha,scale=1){
+ if(alpha<.002)return;
+ ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle='#719077';
+ ctx.lineWidth=.7;ctx.beginPath();
+ ctx.arc(x,y,4*scale,0,Math.PI*2);
+ ctx.moveTo(x-8*scale,y);ctx.lineTo(x+8*scale,y);
+ ctx.moveTo(x,y-8*scale);ctx.lineTo(x,y+8*scale);
+ ctx.stroke();ctx.restore();
+}
+function commaTarget(q){
+ const c=model.comma;
+ return {x:q.x+(c.x+c.w*.5)*q.scale,y:q.y+(c.y+c.h*.5)*q.scale,
+  w:c.w*q.scale,h:c.h*q.scale};
+}
+function drawTurningComma(t,opts={}){
+ const q=logoLayout(),c=model.comma,goal=commaTarget(q);
+ const slide=fade(opts.moveStart??.18,opts.moveEnd??.78,t);
+ const turn=fade(.03,.39,t);
+ const heroWidth=Math.min(115,size.w*.205,size.h*.31);
+ const startX=size.w*.50,startY=size.h*.49;
+ const cx=lerp(startX,goal.x,slide),cy=lerp(startY,goal.y,slide);
+ const W=lerp(heroWidth,goal.w,slide),H=W*c.h/c.w;
+ const fading=1-fade(.86,.985,t);
+ ctx.save();ctx.translate(cx,cy);ctx.rotate(Math.PI+turn*Math.PI);
+ ctx.globalAlpha=fading;ctx.drawImage(model.source,c.x,c.y,c.w,c.h,
+  -W/2,-H/2,W,H);
+ ctx.restore();
+ return {x:cx,y:cy,angle:Math.PI+turn*Math.PI,progress:slide};
+}
+function drawLetterInk(q,progress,source,dx=0,dy=0,alpha=1,scan=false){
+ if(!source)return;
+ printingBands(q,clamp(progress),source,dx,dy,alpha,scan);
+}
+function finishExactOriginal(t,start=.90){
+ const p=fade(start,.998,t);
+ if(p<.001)return;
+ const q=logoLayout();
+ // Only the logo crop is replaced, keeping fine page annotations intact.
+ ctx.save();ctx.globalAlpha=p;
+ ctx.fillStyle='#f6f5f0';
+ ctx.fillRect(q.x-3,q.y-4,q.w+6,q.h+8);
+ ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+ ctx.restore();
+}
+function drawV24Proof(t){
+ const q=logoLayout();
+ drawProofSheet(q,t,'proof');
+ // Turn one authentic comma, then print each scan alternating directions.
+ drawTurningComma(t,{moveStart:.19,moveEnd:.84});
+ const ink=fade(.40,.88,t);
+ drawLetterInk(q,ink,textInk,0,0,1,ink<.995);
+ finishExactOriginal(t,.91);
+}
+function drawV24Anchor(t){
+ const q=logoLayout(),goal=commaTarget(q);
+ drawProofSheet(q,t,'anchor');
+ const turn=drawTurningComma(t,{moveStart:.19,moveEnd:.82});
+ const cross=fade(.12,.52,t)*(1-fade(.76,.98,t));
+ drawRegistrationCross(turn.x,turn.y,cross*.58,1);
+ // Ten authentic bitmap glyphs settle into their exact source positions.
+ for(let i=0;i<model.glyphs.length;i++){
+  const g=model.glyphs[i];
+  const settle=fade(.35+i*.025,.76+i*.017,t);
+  if(settle<=0)continue;
+  const gx=q.x+(g.x+g.w*.5)*q.scale;
+  const gy=q.y+(g.y+g.h*.5)*q.scale;
+  const side=i%2===0?-1:1;
+  const dx=side*Math.min(size.w*.16,82);
+  const dy=(i<5?-1:1)*Math.min(size.h*.10,35);
+  const x=lerp(gx+dx,gx,settle),y=lerp(gy+dy,gy,settle);
+  const w=(g.w+4)*q.scale,h=(g.h+4)*q.scale;
+  ctx.save();ctx.translate(x,y);ctx.rotate((1-settle)*side*.095);
+  ctx.globalAlpha=fade(.35+i*.025,.62+i*.025,t)*(1-fade(.92,1,t));
+  ctx.drawImage(g.img,-w/2,-h/2,w,h);
+  ctx.restore();
+ }
+ finishExactOriginal(t,.90);
+}
+function drawV24Registration(t){
+ const q=logoLayout();
+ drawProofSheet(q,t,'registration');
+ drawTurningComma(t,{moveStart:.20,moveEnd:.83});
+ const marked=fade(.08,.22,t)*(1-fade(.78,.98,t));
+ drawRegistrationCross(q.x-20,q.y+q.h*.50,marked*.66,.85);
+ drawRegistrationCross(q.x+q.w+20,q.y+q.h*.50,marked*.66,.85);
+ const displacement=Math.min(2,Math.max(.65,q.w*.0036));
+ // First run lays down pale mismatched ink; second precisely registers.
+ const first=fade(.39,.72,t),second=fade(.59,.91,t);
+ drawLetterInk(q,first,tintTextInk,displacement,-displacement*.6,.72,first<.998);
+ drawLetterInk(q,second,textInk,0,0,1,second<.998);
+ // The two proof layers are only a transient demonstration; the final
+ // frame displays the untouched source bitmap exactly.
+ finishExactOriginal(t,.915);
+}
 function render(){
  ctx.clearRect(0,0,size.w,size.h);
  if(!model)return;
@@ -408,6 +543,9 @@ function render(){
  else if(mode==='paper')drawPaper(t);
  else if(mode==='print')drawEditorialPress(t);
  else if(mode==='offset')drawOffsetProof(t);
+ else if(mode==='proof')drawV24Proof(t);
+ else if(mode==='anchor')drawV24Anchor(t);
+ else if(mode==='registration')drawV24Registration(t);
  const small=size.w<600;
  ctx.save();ctx.fillStyle='#778476';ctx.font=(small?'10':'11')+'px Arial';
  ctx.textAlign='center';
@@ -449,14 +587,63 @@ function choose(key){
   const selected=b.dataset.mode===key;
   b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected));
  });
- counter.textContent=String(Object.keys(configs).indexOf(key)+1).padStart(2,'0')+' / 05';
+ counter.textContent=String(Object.keys(configs).indexOf(key)+1).padStart(2,'0')+' / 08';
+ document.querySelector('.scene').classList.toggle('is-interactive',isNew());
  const brow=document.getElementById('scene-eyebrow');
- if(brow)brow.textContent=key==='print'||key==='offset'
-  ?'GOOD THINGS, / PRINT STUDIO':'GOOD THINGS, / A VISUAL EXPERIMENT';
+ if(brow)brow.textContent=isNew()?'GOOD THINGS, / EDITORIAL STUDIO':
+  key==='print'||key==='offset'?'GOOD THINGS, / PRINT STUDIO':
+  'GOOD THINGS, / A VISUAL EXPERIMENT';
  replay();
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.mode)));
 document.getElementById('replay').addEventListener('click',replay);
+
+/* One-motion interaction. No puzzle, no required gesture: each design
+   autoplays once, but a finger, pointer, or wheel can scrub it precisely. */
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{
+ if(!model||!isNew())return;
+ drag={id:e.pointerId,x:e.clientX,y:e.clientY,progress:elapsed/duration,moved:false};
+ try{canvas.setPointerCapture(e.pointerId)}catch{}
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!drag||e.pointerId!==drag.id)return;
+ const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+ if(Math.max(Math.abs(dx),Math.abs(dy))>6)drag.moved=true;
+ if(!drag.moved)return;
+ played=false;
+ const fraction=Math.abs(dx)>Math.abs(dy)*.85
+  ?dx/Math.max(200,size.w*.82):-dy/Math.max(210,size.h*.90);
+ elapsed=duration*clamp(drag.progress+fraction);
+ render();
+});
+canvas.addEventListener('pointerup',e=>{
+ if(!drag||e.pointerId!==drag.id)return;
+ const tapped=!drag.moved;
+ drag=null;
+ if(tapped)replay();
+});
+canvas.addEventListener('pointercancel',()=>drag=null);
+canvas.addEventListener('wheel',e=>{
+ if(!model||!isNew()||Math.abs(e.deltaY)<2)return;
+ if(e.deltaY>0&&elapsed>=duration-.1)return; // pass through to native scroll
+ if(e.cancelable)e.preventDefault();
+ played=false;
+ const delta=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*size.h:e.deltaY;
+ elapsed=clamp(elapsed+delta*2.3,0,duration);
+ render();
+},{passive:false});
+canvas.addEventListener('keydown',e=>{
+ if(!model||!isNew())return;
+ let delta=0;
+ if(e.key==='ArrowRight'||e.key==='ArrowDown')delta=.08;
+ if(e.key==='ArrowLeft'||e.key==='ArrowUp')delta=-.08;
+ if(!delta)return;
+ e.preventDefault();played=false;
+ elapsed=duration*clamp(elapsed/duration+delta);
+ render();
+});
+
 range.addEventListener('input',()=>{
  played=false;elapsed=+range.value/1000*duration;render();
 });
@@ -482,7 +669,23 @@ async function init(){
   pc.fillRect(0,0,proof.width,proof.height);
   pc.globalCompositeOperation='source-over';
   proofInk=proof;
-  loading.hidden=true;resize();choose('print');
+  // Separate the authentic comma from the authentic lettering, so the
+  // rotated comma stays the only comma until the final aligned logo.
+  textInk=document.createElement('canvas');
+  textInk.width=model.width;textInk.height=model.height;
+  const tc=textInk.getContext('2d');
+  tc.drawImage(model.source,0,0);
+  const comma=model.comma;
+  tc.clearRect(comma.x-3,comma.y-3,comma.w+6,comma.h+6);
+  tintTextInk=document.createElement('canvas');
+  tintTextInk.width=model.width;tintTextInk.height=model.height;
+  const tint=tintTextInk.getContext('2d');
+  tint.drawImage(textInk,0,0);
+  tint.globalCompositeOperation='source-in';
+  tint.fillStyle='#91b096';
+  tint.fillRect(0,0,tintTextInk.width,tintTextInk.height);
+  tint.globalCompositeOperation='source-over';
+  loading.hidden=true;resize();choose('proof');
   raf=requestAnimationFrame(tick);
  }catch(err){loading.textContent='CAN NOT LOAD ORIGINAL LOGO · '+(err?.message||err)}
 }
