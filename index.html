@@ -1891,6 +1891,38 @@ function gtMagControls(){const n=String(gtCarouselIndex+1).padStart(2,'0');const
 let gtTurnState=null;
 let gtTurnTimer=null;
 let gtSuppressClickUntil=0;
+
+/* GOOD THINGS, / homepage editorial carousel auto advance.
+   About 2.5 seconds of reading time per featured page, then the existing
+   soft-paper transition. Pauses while browsing, touching, or drawing. */
+const GT_MAG_AUTOPLAY_DELAY=2500;
+let gtMagAutoplayTimer=null;
+function gtMagAutoStop(){
+ if(gtMagAutoplayTimer!==null){
+  clearTimeout(gtMagAutoplayTimer);
+  gtMagAutoplayTimer=null;
+ }
+}
+function gtMagAutoSchedule(){
+ gtMagAutoStop();
+ const stage=document.getElementById('gt-mag-stage');
+ if(gtReducedMotion||!stage||!stage.isConnected||gtSlides.length<2)return;
+ gtMagAutoplayTimer=setTimeout(()=>{
+  gtMagAutoplayTimer=null;
+  const current=document.getElementById('gt-mag-stage');
+  if(!current||!current.isConnected)return;
+  const pause=gtMagBusy||document.hidden||
+   !!document.querySelector('.gt-draw-entry-overlay')||
+   document.body.classList.contains('gt-drawer-open')||
+   current.contains(document.activeElement)||
+   (matchMedia('(hover:hover)').matches && current.matches(':hover'));
+  if(pause){gtMagAutoSchedule();return}
+  gtMagGo(gtCarouselIndex+1);
+ },GT_MAG_AUTOPLAY_DELAY);
+}
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)gtMagAutoSchedule();
+});
 function gtMagPrepare(dir){
   const stage=document.getElementById('gt-mag-stage');
   if(!stage||gtMagBusy)return null;
@@ -1929,6 +1961,7 @@ function gtMagFinish(st,commit){
     }
     st.current.classList.remove('gt-soft-active','gt-soft-dragging','gt-soft-settle','gt-soft-direction-next','gt-soft-direction-prev');
     st.current.style.zIndex='';st.current.style.transition='';gtMagBusy=false;
+    gtMagAutoSchedule();
   };
   if(gtReducedMotion){finish();return;}
   const d=(matchMedia('(max-width:700px)').matches?360:420);
@@ -1971,6 +2004,7 @@ function gtMagFinish(st,commit){
 }
 function gtMagGo(target){
   if(gtMagBusy)return;
+  gtMagAutoStop();
   const next=(target+gtSlides.length)%gtSlides.length;
   if(next===gtCarouselIndex)return;
   const diff=(next-gtCarouselIndex+gtSlides.length)%gtSlides.length;
@@ -1980,13 +2014,16 @@ function gtMagGo(target){
   gtMagFinish(st,true);
 }
 function initGtCarousel(){
+  gtMagAutoStop();
   if(gtTurnTimer){clearTimeout(gtTurnTimer);gtTurnTimer=null;}
   gtTurnState=null;gtCarouselIndex=0;gtMagBusy=false;
   const stage=document.getElementById('gt-mag-stage');if(!stage)return;
   stage.innerHTML=gtMagMarkup(0);gtMagControls();
+  gtMagAutoSchedule();
   let gesture=null;
   stage.addEventListener('pointerdown',e=>{
     if(gtMagBusy||!e.isPrimary||e.button>0||e.target.closest('a,button'))return;
+    gtMagAutoStop();
     gesture={pointer:e.pointerId,x:e.clientX,y:e.clientY,started:performance.now(),lastX:e.clientX,lastTime:performance.now(),vx:0,axis:null,turn:null};
   },{passive:true});
   stage.addEventListener('pointermove',e=>{
@@ -2013,7 +2050,7 @@ function initGtCarousel(){
   const end=(e,cancelled=false)=>{
     if(!gesture||gesture.pointer!==e.pointerId)return;
     const g=gesture;gesture=null;
-    if(!g.turn)return;
+    if(!g.turn){gtMagAutoSchedule();return}
     const dx=e.clientX-g.x;
     const w=g.turn.width||1;
     const expected=g.turn.dir==='next'?-1:1;
