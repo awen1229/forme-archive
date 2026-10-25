@@ -4,7 +4,7 @@
 (()=>{'use strict';
 const root=document.documentElement;
 // The reversible scroll-lab owns this intro only on its opt-in preview URL.
-if(['scrolllab','scrollstage'].includes(new URLSearchParams(location.search).get('intro')))return;
+if(['scrolllab','scrollstage','pinnedstage'].includes(new URLSearchParams(location.search).get('intro')))return;
 const overlay=document.getElementById('gt-scroll-entry');
 const home=()=>!location.hash||location.hash==='#'||location.hash==='#/';
 if(!overlay||!home()||!root.classList.contains('gt-scroll-entry-ready'))return;
