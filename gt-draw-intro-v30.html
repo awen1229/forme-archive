@@ -22,7 +22,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:18px;bo
 .stage-folio{pointer-events:none;position:absolute;left:22px;top:17px;font-size:9px;letter-spacing:.17em;color:#8b9788}
 .stage-folio.right{left:auto;right:22px}
 .draw-prompt{position:absolute;top:48%;left:50%;width:min(90%,470px);transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .26s ease}
-.draw-prompt h2{font:400 clamp(28px,5.5vw,49px)/1.22 "Noto Sans TC","PingFang TC",Arial,sans-serif;color:#315f40;letter-spacing:.08em;margin:0 0 14px}
+.draw-prompt h2{font:400 clamp(28px,5.5vw,49px)/1.18 Georgia,"Times New Roman",serif;color:#315f40;letter-spacing:-.028em;margin:0 0 14px}
 .draw-prompt p{margin:0;color:#8b978a;font-size:12px;letter-spacing:.035em}
 .draw-prompt[hidden]{display:none}
 .draw-prompt.fade{opacity:0}
@@ -89,7 +89,7 @@ html.gt-draw-standalone .gt-entry-skip{display:block}
 <section id="stage" class="stage" aria-label="自由畫逗號的互動開場">
 <canvas id="canvas" tabindex="0" aria-label="在這裡用手指或滑鼠隨意畫一筆逗號。按 Enter 可以觀看示範"></canvas>
 <div class="stage-folio">GOOD THINGS, / 001</div><div class="stage-folio right">A CONTINUING JOURNAL</div>
-<div id="prompt" class="draw-prompt"><h2>畫一個逗號</h2><p>Draw a comma. · 用手指或滑鼠，自由畫一筆。</p></div>
+<div id="prompt" class="draw-prompt"><h2>Draw a comma.</h2><p>畫一個逗號，開始閱讀。</p></div>
 <div class="stage-finish"><a href="./" class="enter-link">EXPLORE GOOD THINGS,</a><button type="button" id="again" class="again">DRAW AGAIN</button></div>
 <div id="loading" class="loading">PREPARING THE ORIGINAL LETTERFORMS...</div>
 <button type="button" class="gt-entry-skip" id="gt-entry-skip">SKIP INTRO</button>
