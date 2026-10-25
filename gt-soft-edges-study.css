@@ -1,0 +1,112 @@
+/*
+GOOD THINGS, / SOFT EDGES STUDY 01
+Optional layer on top of gt-curated-edition-01.css.
+Editorial softness, not cute app UI:
+- 8 to 10px photographs
+- circular, minimal carousel controls
+- mild cards for feature issues only
+- comma-green small highlights
+- original dark side MENU remains untouched
+*/
+:root{
+ --gt-photo-radius:9px;
+ --gt-card-radius:7px;
+ --gt-control-radius:999px;
+}
+/* Hero: a soft paper edge, while avoiding floating white app cards. */
+.gt-mag-stage{
+ border-radius:var(--gt-photo-radius);
+ overflow:hidden;
+ box-shadow:0 1px 3px #26332908!important;
+}
+.gt-mag-sheet{
+ border-radius:inherit;
+ overflow:hidden;
+}
+/* Only the image carries a rounded outside silhouette; no round-corner overlays. */
+.gt-mag-photo,.gt-mag-copy{
+ overflow:hidden;
+}
+.gt-mag-arrow{
+ border-radius:50%;
+ border-color:#dfe6de;
+ transition:background .18s,border-color .18s,transform .2s;
+}
+.gt-mag-arrow:hover,.gt-mag-arrow:focus-visible{
+ background:#e9efe7;
+ border-color:#9fb3a0;
+ transform:translateY(-1px);
+}
+/* Tiny pill in the section eyebrow, not every word and heading. */
+.gt-feature-intro span:first-child{
+ display:inline-flex;
+ align-items:center;
+ width:max-content;
+ max-width:100%;
+ padding:5px 11px 5px 9px;
+ border-radius:999px;
+ background:#f1f5ef;
+ color:#566d58;
+}
+.gt-feature-intro span:first-child:before{content:"";width:5px;height:5px;border-radius:50%;background:#315f40;margin-right:8px;flex-shrink:0}
+/* Secondary links retain magazine line-work, with a much softer interaction. */
+.gt-discover-links a{
+ border-radius:0;
+}
+.gt-discover-links a .ui-icon,.gt-discover-links a svg{
+ width:19px;height:19px;
+ border-radius:50%;
+}
+/* FEATURES series stays linear; only actual issue covers/cards get subtle curvature. */
+.gt-feature-series-nav-item{
+ border-radius:var(--gt-card-radius);
+ padding-left:10px;
+ padding-right:10px;
+}
+.gt-feature-series-nav-item:hover,.gt-feature-series-nav-item:focus-visible{
+ background:#f3f6f1;
+}
+.gt-issue-cover-frame,.gt-issue-placeholder,
+.gt-issue-card .gt-issue-cover-frame{
+ border-radius:var(--gt-photo-radius);
+ overflow:hidden;
+}
+.gt-issue-card .gt-feature-issue-read{
+ display:inline-flex;
+ align-items:center;
+ gap:9px;
+}
+/* Brand / article media should feel photographic, not enclosed in shiny product cards. */
+.gt-article-cover,
+.article-body img:not(.gt-brand-logo),
+.gt-issue-hero,
+.gt-issue-crop-stage,
+.gt-cover-image,
+.gt-cover-viewport{
+ border-radius:var(--gt-photo-radius);
+ overflow:hidden;
+}
+.article-body blockquote{
+ border-left:2px solid #315f40;
+ border-radius:0 var(--gt-card-radius) var(--gt-card-radius) 0;
+}
+/* Keep THE INDEX alphabetical directory flat: reading/order is the design. */
+.gt-alpha-key{
+ border-radius:6px;
+}
+.gt-alpha-key:focus-visible{outline-offset:2px}
+.gt-index-brand-grid .brand-card,.brand-grid .brand-card{border-radius:0}
+/* Round only the small icon buttons, not the original vertical MENU tab. */
+.gt-mag-arrow svg{width:17px;height:17px}
+/* Intentional brand character: no modifications to .gt-side-tab or .gt-drawer. */
+@media(max-width:700px){
+ :root{--gt-photo-radius:8px;--gt-card-radius:6px}
+ .gt-mag-stage{border-radius:8px}
+ .gt-feature-intro span:first-child{padding:4px 9px;font-size:9px}
+ .gt-feature-series-nav-item{border-radius:0;padding-left:4px;padding-right:4px}
+ .gt-feature-series-nav-item:hover,.gt-feature-series-nav-item:focus-visible{padding-left:4px}
+ .gt-mag-arrow:hover,.gt-mag-arrow:focus-visible{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .gt-mag-arrow{transition:none}
+}
