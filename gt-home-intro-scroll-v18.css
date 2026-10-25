@@ -1,0 +1,62 @@
+/* GOOD THINGS, / V18 pin-locked scroll stage.
+   Only loaded with ?intro=pinnedstage. A gesture advances a VIRTUAL
+   timeline while the viewport stays absolutely still. */
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready,
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready body{
+ overflow:hidden!important;overscroll-behavior:none!important;
+ scroll-behavior:auto!important;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready.gt-stage-home,
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready.gt-stage-home body{
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:auto!important;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .gt-scroll-entry{
+ display:flex!important;position:fixed!important;inset:0!important;
+ z-index:220000!important;width:100%!important;
+ height:100vh!important;height:100dvh!important;
+ min-height:340px!important;margin:0!important;
+ padding:clamp(20px,3.5vw,42px) clamp(22px,5vw,78px)!important;
+ transform:none!important;transition:none!important;
+ touch-action:none!important;overscroll-behavior:contain!important;
+ overflow:hidden!important;background:#f3f1eb;
+ opacity:var(--gt-pinned-opacity,1);
+ will-change:opacity;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .gt-scroll-entry-center{
+ display:flex;min-height:0;flex:1 1 auto;
+ align-items:stretch;justify-content:stretch;overflow:hidden;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .gt-physics-stage-frame{
+ display:block;width:100%;height:100%;border:0;
+ background:#f3f1eb;touch-action:none;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .gt-scroll-entry-progress>i{
+ transition:transform .09s linear;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .site-shell{
+ margin:0!important;opacity:var(--gt-pinned-home-opacity,0);
+ will-change:opacity;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready:not(.gt-stage-home) .site-shell{
+ pointer-events:none!important;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready.gt-stage-home .gt-scroll-entry{
+ opacity:0!important;pointer-events:none!important;
+}
+html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready.gt-stage-home .site-shell{
+ opacity:1!important;pointer-events:auto!important;
+}
+@media(max-width:700px){
+ html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .gt-scroll-entry{
+  padding:20px 23px max(26px,env(safe-area-inset-bottom))!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .gt-scroll-entry{
+  display:none!important;
+ }
+ html.gt-scroll-entry-pinnedstage.gt-scroll-entry-ready .site-shell{
+  opacity:1!important;
+ }
+}
