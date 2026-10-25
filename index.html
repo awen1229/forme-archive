@@ -768,6 +768,7 @@ body.gt-drawer-open{overflow:hidden}
 <link rel="stylesheet" href="./gt-home-intro-scroll-v16.css?v=scrolllab16">
 <link rel="stylesheet" href="./gt-home-intro-scroll-v17.css?v=scrollstage17">
 <link rel="stylesheet" href="./gt-home-intro-scroll-v18.css?v=pinned18">
+<link rel="stylesheet" href="./gt-home-intro-scroll-v19.css?v=pinned19">
 <script>
 (function(){
  try{
@@ -776,15 +777,17 @@ body.gt-drawer-open{overflow:hidden}
   var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var introMode=new URLSearchParams(location.search).get('intro');
   var replay=introMode==='replay';
-  var lab=introMode==='scrolllab'||introMode==='scrollstage'||introMode==='pinnedstage';
+  var lab=introMode==='scrolllab'||introMode==='scrollstage'||introMode==='pinnedstage'||introMode==='pinnedstage19';
   var stage=introMode==='scrollstage';
   var pinned=introMode==='pinnedstage';
+  var pinned19=introMode==='pinnedstage19';
   var seen=sessionStorage.getItem('gt-scroll-entry-physics10')==='done';
   if(home&&!reduced&&(lab||replay||!seen)){
    document.documentElement.classList.add('gt-scroll-entry-ready');
    if(introMode==='scrolllab')document.documentElement.classList.add('gt-scroll-entry-scrolllab');
    if(stage)document.documentElement.classList.add('gt-scroll-entry-scrollstage');
    if(pinned)document.documentElement.classList.add('gt-scroll-entry-pinnedstage');
+   if(pinned19)document.documentElement.classList.add('gt-scroll-entry-pinnedstage19');
   }
  }catch(e){}
 })();
@@ -2106,5 +2109,6 @@ gtLoadCloudPublishedBrands();
 <script src="./gt-home-intro-scroll-v16.js?v=scrolllab16" defer></script>
 <script src="./gt-home-intro-scroll-v17.js?v=scrollstage17" defer></script>
 <script src="./gt-home-intro-scroll-v18.js?v=pinned18" defer></script>
+<script src="./gt-home-intro-scroll-v19.js?v=pinned19" defer></script>
 </body>
 </html>
