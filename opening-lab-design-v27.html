@@ -236,10 +236,178 @@ function coloredLogo(color){
  brush.globalCompositeOperation='source-over';
  return surface;
 }
-function drawMagnetic(t){drawLogo(fade(.15,.92,t));}
-function drawDiecut(t){drawLogo(fade(.15,.92,t));}
-function drawExposure(t){drawLogo(fade(.15,.92,t));}
-function drawRipple(t){drawLogo(fade(.15,.92,t));}
+
+/* KINETIC TYPE: ten exact letter sprites orbit, then magnetically align. */
+function drawMagnetic(t){
+ const w=view.w,h=view.h,q=originalLayout();
+ ctx.fillStyle='#f6f5f0';ctx.fillRect(0,0,w,h);
+ const union=fade(.09,.84,t),fading=1-fade(.64,.96,t);
+ const cx=w*.5,cy=h*.5;
+ const radius=Math.min(w*.24,h*.27);
+ ctx.save();ctx.globalAlpha=fading*.43;
+ ctx.strokeStyle='#c2cec0';ctx.lineWidth=.75;
+ for(const r of [radius*.69,radius*1.18]){
+  ctx.beginPath();ctx.ellipse(cx,cy,r,r*.61,0,0,Math.PI*2);ctx.stroke();
+ }
+ ctx.restore();
+ smalltype('ATTRACTION   /   10 ELEMENTS',w*.06,34,
+  {size:9,color:'#728273',alpha:1-fade(.68,.98,t)*.7});
+ for(let i=0;i<model.glyphs.length;i++){
+  const g=model.glyphs[i],theta=i*Math.PI*2/10+random(i+17)*.8;
+  const swirl=(1-union)*1.15;
+  const fromX=cx+Math.cos(theta+swirl)*radius*(.72+random(i+2)*.4);
+  const fromY=cy+Math.sin(theta+swirl)*radius*.6*(.72+random(i+3)*.4);
+  const finalX=q.x+(g.x+g.w*.5)*q.w/model.width;
+  const finalY=q.y+(g.y+g.h*.5)*q.h/model.height;
+  const delay=fade(.07+i*.013,.66+i*.018,t);
+  const spring=delay<1?Math.min(1.06,delay+Math.sin(delay*Math.PI*2.7)*.055*(1-delay)):1;
+  const gx=lerp(fromX,finalX,spring),gy=lerp(fromY,finalY,spring);
+  const rw=(g.w+4)*q.w/model.width,rh=(g.h+4)*q.h/model.height;
+  const scale=lerp(.83,1,spring);
+  const angle=(1-delay)*(random(i+4)-.5)*.27;
+  ctx.save();ctx.translate(gx,gy);ctx.rotate(angle);
+  ctx.globalAlpha=1-fade(.92,.998,t)*.92;
+  ctx.drawImage(g.img,-rw*scale/2,-rh*scale/2,rw*scale,rh*scale);
+  ctx.restore();
+ }
+ const punct=fade(.71,.89,t);
+ if(punct>.001){
+  const c=model.comma;
+  ctx.save();ctx.globalAlpha=punct*(1-fade(.92,1,t)*.8);
+  ctx.drawImage(model.source,c.x,c.y,c.w,c.h,
+   q.x+c.x*q.w/model.width,q.y+c.y*q.h/model.height,
+   c.w*q.w/model.width,c.h*q.h/model.height);
+  ctx.restore();
+ }
+ const finish=fade(.89,1,t);
+ if(finish>0){
+  ctx.save();ctx.globalAlpha=finish;
+  ctx.fillStyle='#f6f5f0';ctx.fillRect(0,0,w,h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+ smalltype('MAGNETIC FIELD  /  TYPE 01',w*.5,h-24,
+  {size:9,align:'center',alpha:1-finish*.7});
+}
+/* PAPER DIE-CUT: transparency is derived from the actual source alpha. */
+function drawDiecut(t){
+ const w=view.w,h=view.h,q=originalLayout();
+ ctx.fillStyle='#ece8dd';ctx.fillRect(0,0,w,h);
+ const p=fade(.07,.83,t),finish=fade(.78,.995,t);
+ const ox=(1-p)*Math.min(w*.14,100);
+ const oy=(1-p)*Math.min(h*.11,45);
+ // Green underlay is visible only through the original type-shaped holes.
+ ctx.save();ctx.shadowColor='rgba(37,54,36,.13)';
+ ctx.shadowBlur=18;ctx.shadowOffsetY=6;
+ ctx.fillStyle='#376948';
+ ctx.fillRect(q.x-1,q.y-2,q.w+2,q.h+4);
+ ctx.restore();
+ ctx.save();ctx.globalAlpha=1-finish;
+ ctx.translate(ox,oy);
+ ctx.shadowColor='rgba(63,65,54,.15)';
+ ctx.shadowBlur=12*(1-p)+3;
+ ctx.shadowOffsetY=2*(1-p)+1;
+ ctx.drawImage(cutPaper,q.x,q.y,q.w,q.h);
+ ctx.restore();
+ ctx.save();ctx.globalAlpha=(1-finish)*.42;
+ ctx.strokeStyle='#899b88';ctx.lineWidth=.7;
+ const margin=Math.max(12,w*.026);
+ ctx.strokeRect(q.x-margin,q.y-margin,q.w+margin*2,q.h+margin*2);
+ const x2=q.x+q.w+margin,y2=q.y+q.h+margin;
+ for(const x of [q.x-margin,x2]){
+  for(const y of [q.y-margin,y2]){
+   ctx.beginPath();ctx.moveTo(x-5,y);ctx.lineTo(x+5,y);
+   ctx.moveTo(x,y-5);ctx.lineTo(x,y+5);ctx.stroke();
+  }
+ }
+ ctx.restore();
+ if(finish>.001){
+  ctx.save();ctx.globalAlpha=finish;
+  ctx.fillStyle='#ece8dd';ctx.fillRect(0,0,w,h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+ smalltype('NEGATIVE SPACE   /   DIE-CUT',w*.06,34,
+  {size:9,alpha:1-finish*.5});
+ smalltype('A PIECE REMOVED. A MARK REMAINS.',w*.5,h-24,
+  {size:9,align:'center',alpha:1-finish*.55});
+}
+/* CONTACT EXPOSURE: light visibly develops the source wordmark. */
+function drawExposure(t){
+ const w=view.w,h=view.h,q=originalLayout();
+ ctx.fillStyle='#e6eadf';ctx.fillRect(0,0,w,h);
+ const progress=fade(.10,.87,t),settled=fade(.86,.995,t);
+ const lightX=q.x+progress*q.w;
+ ctx.save();ctx.globalAlpha=(1-settled)*.42;
+ ctx.drawImage(ghostLogo,q.x+1.2,q.y+1.2,q.w,q.h);
+ ctx.restore();
+ // Keep already-developed ink, use the moving beam to develop the rest.
+ ctx.save();ctx.beginPath();
+ ctx.rect(q.x-1,q.y-12,q.w*progress+2,q.h+24);ctx.clip();
+ ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+ ctx.restore();
+ const glow=(1-settled)*Math.sin(Math.PI*progress);
+ if(glow>0){
+  ctx.save();ctx.globalAlpha=.25*glow;
+  const halo=ctx.createLinearGradient(lightX-80,0,lightX+80,0);
+  halo.addColorStop(0,'rgba(255,255,246,0)');
+  halo.addColorStop(.50,'rgba(255,255,246,.86)');
+  halo.addColorStop(1,'rgba(255,255,246,0)');
+  ctx.fillStyle=halo;ctx.fillRect(lightX-80,q.y-45,160,q.h+90);
+  ctx.restore();
+  ctx.save();ctx.globalAlpha=glow*.42;
+  ctx.strokeStyle='#71856f';ctx.lineWidth=.85;
+  ctx.beginPath();ctx.moveTo(lightX,q.y-30);
+  ctx.lineTo(lightX,q.y+q.h+30);ctx.stroke();ctx.restore();
+ }
+ if(settled>0){
+  ctx.save();ctx.globalAlpha=settled;
+  ctx.fillStyle='#e6eadf';ctx.fillRect(0,0,w,h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+ smalltype('LIGHT TABLE  /  CONTACT EXPOSURE',w*.06,34,
+  {size:9,alpha:1-settled*.58});
+ smalltype('EXPOSURE     '+String(Math.round(progress*100)).padStart(3,'0')+'%',w*.94,h-24,
+  {size:9,align:'right',alpha:1-settled*.7});
+}
+/* ELASTIC TYPE: actual bitmap is divided into thin wave-displaced strips. */
+function drawRipple(t){
+ const w=view.w,h=view.h,q=originalLayout();
+ ctx.fillStyle='#f7f7f4';ctx.fillRect(0,0,w,h);
+ const settle=fade(.35,.94,t);
+ const amp=(1-settle)*Math.min(31,h*.11);
+ const slices=75;
+ const spin=fade(.02,.84,t);
+ ctx.save();ctx.strokeStyle='#c5d2c4';ctx.globalAlpha=.52*(1-settle);
+ ctx.lineWidth=.85;ctx.beginPath();
+ for(let i=0;i<=160;i++){
+  const p=i/160;
+  const shift=Math.sin(p*6.283*1.65-spin*6.283)*amp;
+  const x=q.x+p*q.w,y=q.y+q.h*.68+shift;
+  if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ }
+ ctx.stroke();ctx.restore();
+ // Ripple moves the ORIGINAL pixels rather than independently typed text.
+ for(let i=0;i<slices;i++){
+  const a=i/slices,b=(i+1)/slices,mid=(a+b)*.5;
+  const wave=Math.sin(mid*Math.PI*3.6-spin*Math.PI*3.4);
+  const envelope=.65+.35*Math.cos((mid-.5)*Math.PI);
+  const dy=amp*wave*envelope;
+  const sx=model.width*a,sourceW=model.width/slices;
+  ctx.drawImage(model.source,sx,0,sourceW,model.height,
+   q.x+a*q.w,q.y+dy,q.w/slices+.28,q.h);
+ }
+ const exact=fade(.92,1,t);
+ if(exact>.001){
+  ctx.save();ctx.globalAlpha=exact;
+  ctx.fillStyle='#f7f7f4';ctx.fillRect(0,0,w,h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+ smalltype('ELASTIC BASELINE / 04',w*.5,h-23,
+  {size:9,align:'center',alpha:1-exact*.6});
+}
 function draw(){
  ctx.clearRect(0,0,view.w,view.h);
  if(!model)return;
