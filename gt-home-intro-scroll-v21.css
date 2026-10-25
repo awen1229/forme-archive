@@ -1,0 +1,58 @@
+/* GOOD THINGS, V21 / lock only DURING the opening.
+   Once the homepage is entered, BOTH locking classes are removed so the
+   original page receives unmodified iOS scrolling, overscroll and inertia. */
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready,
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready body{
+ overflow:hidden!important;overscroll-behavior:none!important;
+ scroll-behavior:auto!important;
+}
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .gt-scroll-entry{
+ display:flex!important;position:fixed!important;inset:0!important;
+ z-index:220000!important;width:100%!important;
+ height:100vh!important;height:100dvh!important;
+ min-height:340px!important;margin:0!important;
+ padding:clamp(20px,3.5vw,42px) clamp(22px,5vw,78px)!important;
+ transform:none!important;transition:none!important;
+ touch-action:none!important;overscroll-behavior:contain!important;
+ overflow:hidden!important;background:#f3f1eb;
+ opacity:var(--gt-v20-intro-opacity,1);will-change:opacity;
+}
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .gt-scroll-entry-center{
+ display:flex;min-height:0;flex:1 1 auto;
+ align-items:stretch;justify-content:stretch;overflow:hidden;
+}
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .gt-physics-stage-frame{
+ display:block;width:100%;height:100%;border:0;
+ background:#f3f1eb;touch-action:none;
+}
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .site-shell{
+ opacity:var(--gt-v20-home-opacity,0);
+ pointer-events:none!important;
+}
+html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .gt-scroll-entry-progress>i{
+ transition:transform .09s linear;
+}
+/* Intentional replay remains available after all lock classes are removed. */
+.gt-intro-replay-v21{
+ appearance:none;border:0;border-bottom:1px solid currentColor;
+ border-radius:0;background:transparent;padding:1px 0;
+ margin-left:clamp(9px,2vw,24px);color:inherit;
+ font:inherit;font-size:inherit;letter-spacing:.08em;
+ cursor:pointer;opacity:.68;-webkit-tap-highlight-color:transparent;
+}
+.gt-intro-replay-v21:hover{opacity:1}
+.gt-intro-replay-v21:focus-visible{outline:1px solid currentColor;outline-offset:4px}
+html.gt-scroll-entry-pinnedstage21 .gt-intro-replay-v21{visibility:hidden}
+@media(max-width:700px){
+ html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .gt-scroll-entry{
+  padding:20px 23px max(26px,env(safe-area-inset-bottom))!important;
+ }
+ .gt-intro-replay-v21{
+  margin-left:9px;font-size:9px;letter-spacing:.05em;white-space:nowrap;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html.gt-scroll-entry-pinnedstage21.gt-scroll-entry-ready .gt-scroll-entry{
+  display:none!important;
+ }
+}
