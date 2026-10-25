@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#ffffff"><title>GOOD THINGS, / Typography Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fff;--text:#242424;--muted:#69706b;--green:#315f40;--border:#e5e7e4;--surface:#f8f9f7;--userfont:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;--title:28px;--body:16px;--tracking:0em;--leading:1.87;font-family:"PingFang TC",Arial,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--text)}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--green);outline-offset:2px}button:hover{color:var(--green)}.shell{max-width:1330px;margin:auto;padding:0 clamp(18px,4vw,48px)}.toolbar{padding:21px 0 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:20px;align-items:end;flex-wrap:wrap}.id strong{color:var(--green);font-size:20px;letter-spacing:-.035em}.id p{margin:7px 0 0;font-size:11px;color:var(--muted);letter-spacing:.08em}.kicker{font:500 10px/1.5 Arial,sans-serif;letter-spacing:.12em;color:var(--muted)}.heading{padding:35px 0 22px}.heading h1{font:600 30px/1.25 Arial,"PingFang TC",sans-serif;letter-spacing:-.045em;margin:9px 0}.heading p{font:13px/1.9 "PingFang TC",sans-serif;color:var(--muted);max-width:660px;margin:0}.layout{display:grid;grid-template-columns:minmax(240px,310px) 1fr;gap:clamp(20px,4vw,70px);align-items:start}.controls{background:var(--surface);padding:25px 21px 21px;border:1px solid var(--border);position:sticky;top:10px;margin-bottom:25px}.controls h2{margin:0 0 19px;font-size:16px}.ctrl{padding-bottom:20px;margin-bottom:18px;border-bottom:1px solid #e3e6e0}.ctrl:last-child{border:0;margin-bottom:0;padding-bottom:0}.ctrl label{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#515a51;font-size:12px;margin-bottom:10px}.ctrl output{color:var(--text);font:500 12px Arial,sans-serif}.ctrl select{width:100%;border:1px solid #cbd3c9;background:#fff;padding:12px;font-size:13px;color:#202620;min-height:45px;border-radius:2px}.ctrl input[type=range]{width:100%;accent-color:var(--green);cursor:pointer}.note{font-size:11px;color:var(--muted);line-height:1.75;margin:7px 0 0}.presets{display:flex;gap:6px;flex-wrap:wrap}.preset{padding:9px 11px;border:1px solid #cdd4cd;background:#fff;border-radius:3px;font-size:11px}.preset:hover{background:#ebf0e9}.previews{padding-bottom:55px;min-width:0}.option-tip{background:#f6f8f5;padding:12px 15px;font-size:11px;line-height:1.7;color:#526353;border-left:3px solid var(--green);margin-bottom:25px}.specimen{border-bottom:1px solid var(--border);padding:0 0 32px;margin-bottom:33px}.specimen .head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:27px}.specimen .head span{font:500 10px/1.5 Arial,sans-serif;letter-spacing:.11em;color:var(--muted)}.specimen .head span:last-child{letter-spacing:.04em}.micro{font:400 11px/1.6 "Helvetica Neue",Arial,sans-serif;letter-spacing:.08em;color:var(--muted)}.chinese{font-family:var(--userfont);letter-spacing:var(--tracking);font-synthesis:none}.title{font-size:var(--title);font-weight:500;line-height:1.43;letter-spacing:var(--tracking);max-width:690px;margin:12px 0 17px;overflow-wrap:anywhere}.body{font-size:var(--body);font-weight:400;line-height:var(--leading);max-width:690px;margin:0 0 17px;color:#353935}.meta{font-size:12px;line-height:1.65;font-weight:400;color:#6e756f}.tags{display:flex;gap:18px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:13px}.tags b{font:500 11px/1.4 var(--userfont);letter-spacing:var(--tracking);color:#444c44}.feature-row{display:grid;grid-template-columns:70px 1fr;gap:22px;border-bottom:1px solid var(--border);padding:15px 0}.feature-row small{font:11px Arial,sans-serif;color:#869087;letter-spacing:.1em}.feature-row .row-title{font-size:calc(var(--body) + 2px);font-weight:500;line-height:1.4}.wide-example{display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center}.fake-image{aspect-ratio:5/4;background:#e9ece8;display:flex;align-items:center;justify-content:center;font:10px Arial,sans-serif;color:#879187;letter-spacing:.1em}.info{background:#fafbfa;border:1px solid var(--border);padding:14px 17px;color:#59625a;font-size:11px;line-height:1.8}.info b{color:#29382a}.status{font-size:11px;line-height:1.7;color:var(--muted);margin-top:11px;min-height:21px}.mobile .specimen{max-width:385px;margin-left:auto;margin-right:auto}.mobile .wide-example{grid-template-columns:1fr;gap:13px}.mobile .fake-image{aspect-ratio:16/9}.footer{border-top:1px solid var(--border);margin-top:30px;padding:26px 0 44px;font-size:11px;line-height:1.8;color:var(--muted)}@media(max-width:820px){.layout{grid-template-columns:1fr;gap:15px}.controls{position:static;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.controls h2,.controls .presets-wrap{grid-column:1/-1}.toolbar{padding-top:17px}.heading{padding-top:26px}.heading h1{font-size:25px}.specimen{margin-top:17px}}@media(max-width:530px){.controls{padding:19px 14px;gap:0 14px}.ctrl{padding-bottom:16px;margin-bottom:15px}.ctrl label{font-size:11px}.ctrl select{font-size:11px;padding:8px;min-height:42px}.previews{padding-bottom:15px}.specimen .head{margin-bottom:20px}.wide-example{grid-template-columns:1fr;gap:16px}.title{line-height:1.36}.fake-image{aspect-ratio:16/9}.footer{padding-bottom:25px}}
+</style></head>
+<body>
+<div class="shell">
+<header class="toolbar"><div class="id"><strong>GOOD THINGS,</strong><p>TYPOGRAPHY LAB / VISUAL STUDY 03</p></div><div class="kicker">EDITING, NOT PUBLISHING · ORIGINAL SITE UNCHANGED</div></header>
+<section class="heading"><div class="kicker">01 / TYPE AS IDENTITY</div><h1>把字排得舒服一點。</h1><p>以 GOOD THINGS, 真正會出現的繁體中文內容測試字型、字級、字距和行高。這只是獨立的字體研究頁，沒有更改網站後台或公開頁面。</p></section>
+<main class="layout">
+<aside class="controls" aria-label="排版調整">
+<h2>TYPOGRAPHY CONTROLS <span class="kicker">/ 編排設定</span></h2>
+<div class="ctrl"><label for="font">繁體中文字型</label><select id="font">
+<option value="system">A / 蘋方・系統黑體（清爽）</option>
+<option value="noto">B / Noto Sans TC（穩定）</option>
+<option value="serif">C / Noto Serif TC（刊物感）</option>
+<option value="huninn">D / jf open 粉圓（柔和）</option>
+<option value="iansui">E / 芫荽（溫暖）</option>
+</select><div id="fontstatus" class="status" aria-live="polite">部分字體首次切換須載入網路字型。</div></div>
+<div class="ctrl"><label for="title">文章標題 <output id="titleValue">28px</output></label><input type="range" id="title" min="20" max="40" step="1" value="28"></div>
+<div class="ctrl"><label for="body">內文字級 <output id="bodyValue">16px</output></label><input type="range" id="body" min="14" max="19" step="1" value="16"></div>
+<div class="ctrl"><label for="tracking">中文字距 <output id="trackingValue">0em</output></label><input type="range" id="tracking" min="-0.03" max="0.08" step="0.005" value="0"></div>
+<div class="ctrl"><label for="leading">內文行距 <output id="leadingValue">1.87</output></label><input type="range" id="leading" min="1.6" max="2.15" step="0.05" value="1.85"></div>
+<div class="ctrl"><label for="width">閱讀寬度 <output id="widthValue">桌面</output></label><input type="range" id="width" min="0" max="1" step="1" value="0"><p class="note">切換為手機寬度，觀察中文換行與段落密度。</p></div>
+<div class="ctrl presets-wrap"><label>快速比較</label><div class="presets"><button class="preset" data-preset="quiet">清爽小標</button><button class="preset" data-preset="mag">雜誌風格</button><button class="preset" data-preset="soft">柔和內斂</button><button class="preset" data-preset="reset">回到建議值</button></div></div>
+</aside>
+<div class="previews" id="previews">
+<div class="option-tip">編輯建議：不需要每個分類都使用不同字型。日常文章用同一套主字體，只在專題封面或短標題引入一點變化，反而更有辨識度。</div>
+<section class="specimen" aria-label="首頁標題示意">
+<div class="head"><span>HOME / EDITORIAL LEAD</span><span>參考首頁資訊層級</span></div>
+<div class="micro">CLOTHING / CULTURE / EVERYDAY</div>
+<h2 class="title chinese" id="heroTitle">從一件衣服開始，慢慢看見更多。</h2>
+<p class="body chinese">喜歡衣服的理由有很多。有時是布料和版型，有時只是因為穿起來很自在。GOOD THINGS, 想留下那些值得多看一眼的細節。</p>
+<div class="tags"><b>最新文章</b><b>編輯專題</b><b>品牌索引</b></div></section>
+<section class="specimen" aria-label="文章內頁示意">
+<div class="head"><span>STORIES / READING EXPERIENCE</span><span>中文標點與段落測試</span></div>
+<div class="micro">GOOD PICKUPS　 /　 2026.10</div>
+<h2 class="title chinese">COMOLI 與 Graphpaper，這個秋冬的兩件選擇。</h2>
+<p class="body chinese">這幾年買衣服的方式和以前有點不同。比起單純追求某個品牌，更在意它為什麼這樣設計，還有能不能自然地融入自己的生活。</p>
+<p class="body chinese">同樣一件外套，可以搭配稍微正式一點的褲子，也能換上球鞋和棒球帽。衣服的穿法不需要有太多限制，重要的是穿起來像自己。</p>
+<p class="meta chinese">這段是排版測試文字，並非文章正式內容。觀察逗號、句號、英文品牌名稱與中文字的節奏。</p>
+</section>
+<section class="specimen" aria-label="索引與分類示意">
+<div class="head"><span>THE INDEX / NAVIGATION</span><span>較小的分類字體</span></div>
+<div class="feature-row chinese"><small>01</small><div class="row-title">BEHIND THE BRAND　品牌與設計者</div></div>
+<div class="feature-row chinese"><small>02</small><div class="row-title">GOOD PICKUPS　穿著與選物觀察</div></div>
+<div class="feature-row chinese"><small>03</small><div class="row-title">SEASONAL NOTES　季度筆記</div></div>
+</section>
+<section class="specimen" aria-label="圖片與文案編排示意">
+<div class="head"><span>FEATURED / IMAGE & TEXT</span><span>文字與照片的比例</span></div>
+<div class="wide-example"><div class="fake-image">IMAGE PLACEHOLDER / OWN PHOTOGRAPHY</div><div><div class="micro">EDITOR'S NOTE / 001</div><h2 class="title chinese" style="font-size:calc(var(--title) * .8)">日常穿著，不用太有規則。</h2><p class="body chinese">自在一點，細節還是可以很講究。</p></div></div>
+</section>
+<div class="info"><b>備註：</b>字體首次載入的速度會因網路而異。Apple 裝置會優先顯示蘋方；Windows/Android 無法保證相同效果。芫荽、粉圓為開源字體，但全站正式採用前仍應檢查字形覆蓋、字重與效能。商業字型請確認 Webfont 授權。</div>
+</div>
+</main><footer class="footer">GOOD THINGS, / TYPOGRAPHY EXPERIMENT ONLY.　Sources: Google Noto Sans TC / Noto Serif TC, justfont jf open 粉圓 (SIL OFL 1.1), ButTaiwan 芫荽 (SIL OFL 1.1). No font files are embedded in this repository.</footer>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),root=document.documentElement;
+const sizes={title:[20,40],body:[14,19]};
+const inputs={title:$('title'),body:$('body'),tracking:$('tracking'),leading:$('leading'),width:$('width')};
+function update(){
+ const t=Number(inputs.title.value),b=Number(inputs.body.value),trk=Number(inputs.tracking.value),leading=Number(inputs.leading.value);
+ root.style.setProperty('--title',t+'px');root.style.setProperty('--body',b+'px');root.style.setProperty('--tracking',trk+'em');root.style.setProperty('--leading',leading);
+ $('titleValue').textContent=t+'px';$('bodyValue').textContent=b+'px';$('trackingValue').textContent=trk.toFixed(3).replace(/0+$/,'').replace(/\.$/,'')+'em';$('leadingValue').textContent=leading.toFixed(2);
+ $('previews').classList.toggle('mobile',inputs.width.value==='1');$('widthValue').textContent=inputs.width.value==='1'?'手機':'桌面';
+}
+Object.values(inputs).forEach(input=>input.addEventListener('input',update));
+const faces={
+ huninn:{family:"GT Huninn",url:"https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@master/font/jf-openhuninn-1.1.ttf"},
+ iansui:{family:"GT Iansui",url:"https://cdn.jsdelivr.net/gh/ButTaiwan/iansui@main/fonts/ttf/Iansui-Regular.ttf"}
+};
+const stacks={
+ system:'"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif',
+ noto:'"Noto Sans TC","PingFang TC",sans-serif',
+ serif:'"Noto Serif TC","Songti TC",serif',
+ huninn:'"GT Huninn","Noto Sans TC",sans-serif',
+ iansui:'"GT Iansui","Noto Serif TC",serif'
+};
+const loaded={};
+let latest=0;
+async function fontChanged(){
+ const v=$('font').value,version=++latest,status=$('fontstatus');
+ if(faces[v]&&!loaded[v]){
+  status.textContent='正在載入 '+faces[v].family+'（可能需要較長時間）…';
+  try{
+   const face=new FontFace(faces[v].family,'url("'+faces[v].url+'")', {weight:'400'});
+   await face.load();document.fonts.add(face);loaded[v]=true;
+  }catch(e){if(version!==latest)return;status.textContent='字型載入失敗，已回退至系統字型';root.style.setProperty('--userfont',stacks.system);return}
+ }
+ if(version!==latest)return;
+ root.style.setProperty('--userfont',stacks[v]);
+ status.textContent={
+ system:'Apple 優先顯示蘋方；其他系統會使用替代字型。',
+ noto:'Noto Sans TC / 思源系黑體，適合全站閱讀。',
+ serif:'Noto Serif TC / 思源系明體，更適合專題短標題。',
+ huninn:'jf open 粉圓：有溫度，建議用在少量註記。',
+ iansui:'芫荽：筆畫具手寫感，建議用在短句或刊物標題。'
+ }[v];
+}
+$('font').addEventListener('change',fontChanged);
+const presets={
+ quiet:{font:'system',title:25,body:16,tracking:0,leading:1.9},
+ mag:{font:'noto',title:31,body:16,tracking:-0.01,leading:1.85},
+ soft:{font:'huninn',title:27,body:16,tracking:0.01,leading:1.95},
+ reset:{font:'system',title:28,body:16,tracking:0,leading:1.85}
+};
+document.querySelectorAll('[data-preset]').forEach(btn=>btn.addEventListener('click',()=>{
+ const p=presets[btn.dataset.preset];$('font').value=p.font;
+ inputs.title.value=p.title;inputs.body.value=p.body;inputs.tracking.value=p.tracking;inputs.leading.value=p.leading;
+ update();fontChanged();
+}));
+update();fontChanged();
+})();
+</script></body></html>
