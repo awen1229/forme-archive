@@ -578,7 +578,13 @@ function tick(time){
 function replay(){elapsed=0;played=!reduce;last=0;range.value=0;render();}
 function choose(key){
  if(!configs[key])return;
- mode=key;document.getElementById('name').textContent=configs[key].name;
+ mode=key;
+ const link=new URL(location.href);
+ if(link.searchParams.get('mode')!==key){
+  link.searchParams.set('mode',key);
+  history.replaceState(null,'',link.pathname+link.search+link.hash);
+ }
+ document.getElementById('name').textContent=configs[key].name;
  document.getElementById('blurb').textContent=configs[key].blurb;
  document.getElementById('notes').replaceChildren(...configs[key].notes.map(v=>{
   const li=document.createElement('li');li.textContent=v;return li;
@@ -685,7 +691,8 @@ async function init(){
   tint.fillStyle='#91b096';
   tint.fillRect(0,0,tintTextInk.width,tintTextInk.height);
   tint.globalCompositeOperation='source-over';
-  loading.hidden=true;resize();choose('proof');
+  const requested=new URLSearchParams(location.search).get('mode');
+  loading.hidden=true;resize();choose(configs[requested]?requested:'proof');
   raf=requestAnimationFrame(tick);
  }catch(err){loading.textContent='CAN NOT LOAD ORIGINAL LOGO · '+(err?.message||err)}
 }
