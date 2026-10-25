@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f1eb">
+<title>GOOD THINGS, / OPENING MOTION LAB 03</title>
+<style>
+:root{color-scheme:light;--paper:#f3f1eb;--green:#315f40;--ink:#303d33;--sub:#727d72;--line:#c4cdc1}
+*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:13px/1.65 Arial,"Noto Sans TC","PingFang TC",sans-serif;-webkit-font-smoothing:antialiased}
+button,a,input{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+main{max-width:1440px;padding:clamp(18px,3vw,48px) clamp(20px,5vw,80px);margin:auto;min-height:100dvh}
+header{display:flex;gap:14px;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:0 0 17px}
+.mark{font-weight:700;letter-spacing:.08em;font-size:15px;color:var(--green)}.eyebrow{letter-spacing:.17em;font-size:10px;color:var(--sub)}
+a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}a:hover{color:var(--green)}
+.prelude{text-align:center;padding:clamp(24px,4.5vw,64px) 8px 14px}
+.prelude h1{font:normal clamp(27px,4vw,44px)/1.2 Georgia,serif;letter-spacing:-.01em;color:var(--green);margin:8px 0 12px}
+.prelude p{margin:0;color:var(--sub);font-size:12px}
+.tabbar{display:flex;gap:6px;justify-content:center;margin:20px 0 14px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:transparent;color:var(--ink);padding:10px 17px;min-height:42px;letter-spacing:.07em;font-size:11px;transition:background .2s}
+.tab.active{background:var(--green);border-color:var(--green);color:var(--paper)}
+.scene{position:relative;width:100%;height:min(57vh,630px);min-height:330px;overflow:hidden;background:#f6f5f0;border:1px solid var(--line)}
+.scene canvas{display:block;width:100%;height:100%}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--sub);font-size:12px;letter-spacing:.08em}
+.loading[hidden]{display:none}
+.scene-note{position:absolute;top:16px;left:20px;font-size:10px;letter-spacing:.14em;color:var(--sub);pointer-events:none}
+.scene-note-right{left:auto;right:20px}
+.controls{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:17px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.btn{border:1px solid var(--green);color:var(--green);padding:9px 17px;background:none;font-size:11px;letter-spacing:.07em;min-height:39px}
+.btn:hover{background:var(--green);color:var(--paper)}
+.scrub{display:flex;gap:15px;align-items:center;flex:1;max-width:500px;min-width:220px;color:var(--sub);letter-spacing:.08em;font-size:10px}
+.scrub input{width:100%;accent-color:var(--green);cursor:pointer}
+.description{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;padding:23px 0 28px}
+.description h2{font:normal 28px/1.2 Georgia,serif;color:var(--green);margin:0 0 10px}
+.description p{color:var(--sub);margin:4px 0;max-width:640px}
+.description ul{margin:0;padding-left:18px;color:var(--sub)}
+.bottom{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;font-size:10px;letter-spacing:.13em;color:var(--sub)}
+@media(max-width:680px){main{padding:18px 20px}.prelude{padding:26px 0 10px}.scene{height:49dvh;min-height:340px}.description{grid-template-columns:1fr;gap:15px}.description h2{font-size:24px}.tab{flex:1;padding:9px 10px;font-size:10px}.scene-note{top:12px;left:12px}.scene-note-right{right:12px;left:auto}header .eyebrow{font-size:9px}.controls{gap:11px}}
+@media(prefers-reduced-motion:reduce){.tab{transition:none}}
+
+/* Print-style layout borrows only the restraint of editorial production.
+   All type/folios are canvas annotations; original logo remains the source. */
+.tabbar .tab{min-width:0}
+@media(max-width:680px){.tabbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.tabbar .tab:last-child{grid-column:auto}}
+
+.tabbar{max-width:1000px;margin-left:auto;margin-right:auto}.tab{flex:1 1 165px}
+.scene canvas{cursor:grab}.scene canvas:active{cursor:grabbing}
+.scene.is-interactive canvas{touch-action:none}
+.scene-gesture{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.12em;color:#738374;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s}
+.scene.is-interactive .scene-gesture{opacity:.75}
+@media(max-width:680px){.tabbar .tab{font-size:9px;min-height:43px}.scene{height:50dvh;min-height:345px}}
+</style></head><body>
+<main>
+<header><strong class="mark">GOOD THINGS,</strong><span class="eyebrow">OPENING MOTION LAB / STUDY 03</span><a href="./?intro=pinnedstage21" title="查看已保存的物理逗號開場">BASELINE V21</a></header>
+<div class="prelude"><div class="eyebrow">EIGHT WAYS TO BEGIN A STORY</div><h1>What comes after the comma?</h1><p>新增三種編輯校樣習作：顛倒逗號、出血線、版面定位與套印對位。可輕觸或拖曳體驗，保留原始 LOGO。</p></div>
+<nav class="tabbar" aria-label="選擇開場動畫">
+<button class="tab" type="button" data-mode="ink" aria-pressed="false">01 / INK TRACE</button>
+<button class="tab" type="button" data-mode="letters" aria-pressed="false">02 / LETTER STUDY</button>
+<button class="tab" type="button" data-mode="paper" aria-pressed="false">03 / PAGE REVEAL</button>
+<button class="tab" type="button" data-mode="print" aria-pressed="true">04 / EDITORIAL PRESS</button>
+<button class="tab" type="button" data-mode="offset" aria-pressed="false">05 / OFFSET PROOF</button>
+<button class="tab active" type="button" data-mode="proof" aria-pressed="true">06 / EDITORIAL PROOF</button>
+<button class="tab" type="button" data-mode="anchor" aria-pressed="false">07 / COMMA AS ANCHOR</button>
+<button class="tab" type="button" data-mode="registration" aria-pressed="false">08 / REGISTRATION</button>
+</nav>
+<section class="scene" aria-label="開場動畫展示">
+<canvas id="preview" tabindex="0" aria-label="GOOD THINGS, 動態 Logo。可左右拖曳或向上滑控制進度"></canvas>
+<div class="scene-gesture">SWIPE TO TURN / TAP TO REPLAY</div>
+<div class="scene-note" id="scene-eyebrow">GOOD THINGS, / EDITORIAL STUDIO</div>
+<div class="scene-note scene-note-right" id="counter">06 / 08</div>
+<div class="loading" id="loading">PREPARING ORIGINAL LETTERFORMS...</div>
+</section>
+<div class="controls">
+<button type="button" id="replay" class="btn">REPLAY ↻</button>
+<label class="scrub" for="range"><span>SCRUB</span><input id="range" type="range" min="0" max="1000" step="1" value="0" aria-label="手動調整動畫進度"><span id="percent">0%</span></label>
+<a href="./?intro=pinnedstage21">ORIGINAL PHYSICS V21</a>
+</div>
+<div class="description"><div>
+<h2 id="name">Editorial Proof</h2>
+<p id="blurb">顛倒逗號在校樣紙中央翻正，隨著出血框與裁切記號展開，逐行印出 GOOD THINGS, 原始 LOGO。</p>
+</div><ul id="notes">
+<li>一個顛倒逗號與校樣頁的單一互動</li>
+<li>出血線、裁切記號與獨立刊物頁碼</li><li>原始 LOGO 與字母比例完全保留</li>
+</ul></div>
+<footer class="bottom"><span>UNPUBLISHED EXPERIMENT / ORIGINAL LOGO PRESERVED</span><span>SELECT · PLAY · SWIPE · SCRUB</span></footer>
+</main>
+<script>
+'use strict';
+const canvas=document.getElementById('preview'),ctx=canvas.getContext('2d');
+const loading=document.getElementById('loading'),range=document.getElementById('range');
+const percent=document.getElementById('percent'),counter=document.getElementById('counter');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let model=null,proofInk=null,textInk=null,tintTextInk=null,mode='proof',elapsed=0,played=!reduce,last=0,raf=0;
+let size={w:500,h:390,dpr:1};
+const duration=5400;
+const isNew=()=>['proof','anchor','registration'].includes(mode);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
+const fade=(a,b,x)=>ease((x-a)/(b-a));
+const rand=n=>{let x=Math.sin(n*12.9898+78.233)*43758.5453;return x-Math.floor(x)};
+function getBitmap(img){
+ const width=img.naturalWidth,height=img.naturalHeight;
+ if(width*height>2600000||width<100)return Promise.reject('Unexpected logo dimensions');
+ const base=document.createElement('canvas');base.width=width;base.height=height;
+ const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
+ const data=c.getImageData(0,0,width,height);
+ const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
+ const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
+ for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
+ let id=0;
+ for(let index=0;index<ink.length;index++){
+  if(!ink[index]||seen[index])continue;
+  let count=0,head=0,tail=1,left=width,top=height,right=0,bottom=0;
+  queue[0]=index;seen[index]=1;id++;
+  while(head<tail){
+   const n=queue[head++],x=n%width,y=Math.floor(n/width);count++;
+   labels[n]=id;left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+   const neighbors=[x? n-1:-1,x<width-1?n+1:-1,y?n-width:-1,y<height-1?n+width:-1];
+   for(const v of neighbors)if(v>=0&&ink[v]&&!seen[v]){
+    seen[v]=1;queue[tail++]=v;
+   }
+  }
+  if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
+ }
+ const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
+  const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
+  return rowA-rowB||a.x-b.x;
+ });
+ if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ function cropGlyph(c){
+  const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
+  const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const src=((c.y+y)*width+c.x+x),dest=((y+2)*o.width+x+2)*4;
+   const alpha=data.data[src*4+3];
+   let belonging=labels[src]===c.id;
+   if(!belonging&&alpha&&alpha<40){
+    for(let dy=-1;dy<=1&&!belonging;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=c.x+x+dx,yy=c.y+y+dy;
+     if(xx>=0&&yy>=0&&xx<width&&yy<height&&labels[yy*width+xx]===c.id){belonging=true;break;}
+    }
+   }
+   if(belonging){
+    for(let k=0;k<4;k++)im.data[dest+k]=data.data[src*4+k];
+   }
+  }
+  target.putImageData(im,0,0);return o;
+ }
+ const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
+ for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
+  const n=(comma.y+y)*width+comma.x+x;
+  if(labels[n]===comma.id)cmask[(y+1)*cw+x+1]=1;
+ }
+ const inside=(x,y)=>x>=0&&x<cw&&y>=0&&y<ch&&cmask[Math.floor(y)*cw+Math.floor(x)]===1;
+ // Oriented pixel-edge contours exactly follow the supplied comma's alpha.
+ const outgoing=new Map(),edges=[];
+ const key=(x,y)=>y*(cw+1)+x;
+ function add(ax,ay,bx,by){
+  const id=edges.length,k=key(ax,ay);
+  edges.push({ax,ay,bx,by,used:false});
+  if(!outgoing.has(k))outgoing.set(k,[]);
+  outgoing.get(k).push(id);
+ }
+ for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(inside(x,y)){
+  if(!inside(x,y-1))add(x,y,x+1,y);
+  if(!inside(x+1,y))add(x+1,y,x+1,y+1);
+  if(!inside(x,y+1))add(x+1,y+1,x,y+1);
+  if(!inside(x-1,y))add(x,y+1,x,y);
+ }
+ const loops=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const pts=[],first=key(edges[i].ax,edges[i].ay);
+  let current=i;
+  while(pts.length<edges.length){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push({x:e.ax,y:e.ay});
+   const k=key(e.bx,e.by);
+   if(k===first)break;
+   const next=(outgoing.get(k)||[]).find(i=>!edges[i].used);
+   if(next===undefined)break;current=next;
+  }
+  if(pts.length>20){
+   let area=0;
+   for(let n=0;n<pts.length;n++){
+    const p=pts[n],q=pts[(n+1)%pts.length];area+=p.x*q.y-p.y*q.x;
+   }
+   loops.push({area:Math.abs(area),pts});
+  }
+ }
+ loops.sort((a,b)=>b.area-a.area);
+ if(!loops.length)throw Error('Original comma contour missing');
+ // Cyclic gaussian then sample, preserving the recognisable comma tail.
+ const ring=loops[0].pts,smoothed=[];
+ const sig=2.9;
+ for(let i=0;i<ring.length;i++){
+  let sum=0,x=0,y=0;
+  for(let d=-9;d<=9;d++){
+   const weight=Math.exp(-d*d/(2*sig*sig)),p=ring[(i+d+ring.length)%ring.length];
+   x+=p.x*weight;y+=p.y*weight;sum+=weight;
+  }
+  smoothed.push({x:x/sum,y:y/sum});
+ }
+ const contour=[];
+ let lastPos=smoothed[0];
+ for(let i=0;i<smoothed.length;i++){
+  const pos=smoothed[i];
+  if(contour.length===0||Math.hypot(pos.x-lastPos.x,pos.y-lastPos.y)>=2.4){
+   contour.push(pos);lastPos=pos;
+  }
+ }
+ if(contour.length<30)throw Error('Insufficient original contour points');
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+}
+
+const configs={
+ ink:{name:'Ink Trace',blurb:'從原始綠色逗號的輪廓開始，一筆一筆勾勒，最後才顯露完整 GOOD THINGS,。像一本雜誌封面慢慢留下筆跡。',notes:['先是標點符號，接著才是故事','克制的筆畫與留白，不搶文章內容','適合成為較安靜的第二版開場']},
+ letters:{name:'Letter Study',blurb:'讓十顆真正的原始 LOGO 字母分別從頁面四周回到自己的位置。每個字母保有細微的時間差，最後凝結為完整標誌。',notes:['完全沿用原始 LOGO 的字母裁切','相較物理碰撞版，更強調編輯排版感','很適合手機及低負載的使用情境']},
+ paper:{name:'Page Reveal',blurb:'像雜誌抽出內頁，橫向的細線帶出原本被遮住的標誌。字形不變，視線隨著一個簡單的紙張轉場向前走。',notes:['以裁切與版面位移建立故事節奏','細線、層次和停頓取代過量的特效','最容易延伸到 FEATURES 的封面動畫']},
+ print:{name:'Editorial Press',blurb:'左右往返的印刷頭逐行把原始 LOGO 壓印在紙面上。慢慢成形的油墨、細緻的定位線與期刊編號，像一張剛從編輯室送印的內頁。',notes:['左右交替掃描，逐行留下真正的 LOGO 圖像','奶油紙色、低對比定位線與編輯頁碼','最終恢復完整原始 LOGO，沒有替換字型']},
+ offset:{name:'Offset Proof',blurb:'先刷上一層淡綠色底墨，印刷頭反向補印深綠色字樣；短暫保留一點點套印錯位，最終精準對版成原始 LOGO。',notes:['雙次走紙：淡墨打底、深墨校正','微小的套印錯位，接近印刷打樣而非故障效果','保留逗號、出版編號與完整字形']},
+ proof:{name:'Editorial Proof',blurb:'顛倒逗號在校樣紙中央翻正，隨著出血框與裁切記號展開，逐行印出 GOOD THINGS, 原始 LOGO。',notes:['一本獨立刊物的編輯校樣','滑動控制逗號翻轉，不需理解規則','完整原始 LOGO 與細緻的出血記號']},
+ anchor:{name:'Comma as Anchor',blurb:'讓顛倒的逗號成為編輯稿裡的定位點。翻正後格線向四周展開，十個原始字母依序滑入正確版位。',notes:['逗號不只是標誌，也是整頁編排的起點','細線與字母漸次歸位','像排好一本雜誌，而不是完成解謎']},
+ registration:{name:'Registration Proof',blurb:'顛倒逗號先翻正，淡綠與深綠油墨各自掃過校樣紙。略微錯位的套印層最後精準對齊完整 LOGO。',notes:['出血框、對位十字與期刊標示','兩道油墨層次，保留輕微印刷手感','不讓錯位搶走原始字型的主角地位']}
+};
+function logoLayout(){
+ const natural=model.width/model.height;
+ const fit=Math.min(size.w*.70,650,(size.h*.43)*natural);
+ const H=fit/natural;return {x:(size.w-fit)/2,y:(size.h-H)/2,w:fit,h:H,scale:fit/model.width};
+}
+function commaLayout(){
+ const cw=model.comma.w,ch=model.comma.h;
+ const scale=Math.min(size.w*.57/cw,size.h*.67/ch,1.8);
+ return {scale,x:size.w*.50-cw*scale*.5,y:size.h*.52-ch*scale*.5};
+}
+function drawContour(t){
+ const pts=model.contour,n=pts.length;
+ const show=fade(0,.56,t),active=Math.floor(n*show);
+ const l=commaLayout();
+ if(active<2)return;
+ ctx.save();ctx.translate(l.x,l.y);ctx.scale(l.scale,l.scale);
+ ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+ for(let i=1;i<active;i++)ctx.lineTo(pts[i].x,pts[i].y);
+ ctx.strokeStyle='#347747';ctx.lineWidth=Math.max(1.4,2/l.scale);
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=1-fade(.67,.96,t);
+ ctx.stroke();ctx.restore();
+}
+function drawOriginal(alpha=1,offset=0,scaleFactor=1){
+ const q=logoLayout(),w=q.w*scaleFactor,h=q.h*scaleFactor;
+ ctx.save();ctx.globalAlpha=alpha;
+ ctx.drawImage(model.source,q.x+(q.w-w)/2,q.y+(q.h-h)/2+offset,w,h);
+ ctx.restore();
+}
+function drawInk(t){
+ drawContour(t);
+ const alpha=fade(.55,.96,t);
+ drawOriginal(alpha,(1-alpha)*8,.995+.005*alpha);
+}
+function drawLetters(t){
+ const q=logoLayout(),scale=q.scale;
+ const middle={x:q.x+q.w*.5,y:q.y+q.h*.50};
+ const progress=fade(.03,.90,t);
+ model.glyphs.forEach((g,i)=>{
+  const gx=q.x+(g.x+g.w*.5)*scale,gy=q.y+(g.y+g.h*.5)*scale;
+  const angle=i*Math.PI*2/10+rand(i+6)*1.8;
+  const radius=Math.min(size.w,size.h)*(size.w<650?.26:.39);
+  const sx=middle.x+Math.cos(angle)*radius,sy=middle.y+Math.sin(angle)*radius;
+  const local=fade(.02+i*.024,.74+i*.018,t);
+  const x=lerp(sx,gx,local),y=lerp(sy,gy,local);
+  const tilt=(1-local)*(rand(i+13)-.5)*.64;
+  const w=(g.w+4)*scale,h=(g.h+4)*scale;
+  ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
+  ctx.globalAlpha=Math.min(1,fade(0,.12,t));
+  ctx.drawImage(g.img,-w/2,-h/2,w,h);ctx.restore();
+ });
+ const settle=fade(.83,1,t);
+ if(settle>.001)drawOriginal(settle);
+}
+function drawPaper(t){
+ const q=logoLayout();
+ const p=fade(.03,.88,t),reveal=ease(p);
+ // A moving editorial crop on the actual original source logo.
+ const edge=q.x+(q.w+.1)*reveal;
+ ctx.save();
+ ctx.beginPath();ctx.rect(q.x-1,q.y-5,q.w*reveal+1,q.h+10);ctx.clip();
+ ctx.globalAlpha=.32+.68*fade(.02,.32,t);
+ ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+ ctx.restore();
+ ctx.save();ctx.globalAlpha=Math.sin(Math.PI*reveal)*.7;
+ ctx.beginPath();ctx.moveTo(edge,q.y-25);ctx.lineTo(edge,q.y+q.h+30);
+ ctx.lineWidth=1;ctx.strokeStyle='#315f40';ctx.stroke();ctx.restore();
+ if(p<.99){
+  ctx.save();ctx.globalAlpha=Math.sin(Math.PI*p)*.15;
+  ctx.fillStyle='#315f40';
+  ctx.fillRect(q.x,q.y+q.h+27,q.w*reveal,1);ctx.restore();
+ }
+}
+
+/* Print sheets: microscopic folios & crop marks, never a literal printer. */
+function printPaper(q,t,variant){
+ const pad=Math.max(15,Math.min(33,size.w*.03)),x1=q.x-pad,y1=q.y-pad;
+ const x2=q.x+q.w+pad,y2=q.y+q.h+pad;
+ ctx.save();
+ // Deliberately subtle deterministic paper flecks, not noisy fake ink.
+ ctx.fillStyle='#80927e';
+ for(let i=0;i<150;i++){
+  const x=rand(i+91)*size.w,y=rand(i+540)*size.h;
+  if(x>x1-8&&x<x2+8&&y>y1-8&&y<y2+8)continue;
+  ctx.globalAlpha=.018+.022*rand(i+860);
+  ctx.fillRect(x,y,.65,.65);
+ }
+ ctx.globalAlpha=.49;ctx.lineWidth=.7;ctx.strokeStyle='#9da99a';
+ const c=Math.max(7,Math.min(13,size.w*.017));
+ for(const [x,sgn] of [[x1,-1],[x2,1]]){
+  for(const [y,vs] of [[y1,-1],[y2,1]]){
+   ctx.beginPath();
+   ctx.moveTo(x+sgn*3,y);ctx.lineTo(x+sgn*c,y);
+   ctx.moveTo(x,y+vs*3);ctx.lineTo(x,y+vs*c);
+   ctx.stroke();
+  }
+ }
+ // A tiny magazine folio: a production cue, not a visual headline.
+ ctx.globalAlpha=.75;ctx.fillStyle='#6c806f';
+ ctx.font=(size.w<570?'9px':'10px')+' Arial';
+ ctx.textAlign='left';
+ ctx.fillText('GOOD THINGS,  /  INDEPENDENT JOURNAL',Math.max(15,q.x),Math.min(size.h-40,q.y+q.h+47));
+ ctx.textAlign='right';
+ ctx.fillText((variant==='offset'?'PROOF / 02':'PRESS / 01')+'   ·   2026',Math.min(size.w-13,q.x+q.w),Math.min(size.h-23,q.y+q.h+63));
+ ctx.restore();
+}
+function printingBands(q,progress,source,dx=0,dy=0,alpha=1,showHead=false){
+ const total=size.w<680?9:13;
+ const span=clamp(progress)*total,done=Math.floor(span),fraction=span-done;
+ const bh=q.h/total;
+ ctx.save();
+ ctx.globalAlpha=alpha;
+ for(let i=0;i<Math.min(total,done+1);i++){
+  const portion=i<done?1:fraction;
+  if(portion<=0)continue;
+  const backwards=i%2===1;
+  const left=backwards?q.x+q.w*(1-portion):q.x;
+  ctx.save();ctx.beginPath();
+  ctx.rect(left,q.y+i*bh-.18,q.w*portion,bh+.36);
+  ctx.clip();
+  ctx.drawImage(source,q.x+dx,q.y+dy,q.w,q.h);
+  ctx.restore();
+ }
+ ctx.restore();
+ if(!showHead||done>=total)return;
+ const backwards=done%2===1;
+ const headX=q.x+q.w*(backwards?1-fraction:fraction);
+ const headY=q.y+done*bh,headH=bh;
+ ctx.save();
+ ctx.globalAlpha=.75*Math.sin(Math.PI*clamp(progress))+.10;
+ ctx.strokeStyle='#4d7656';ctx.lineWidth=1.05;
+ ctx.beginPath();ctx.moveTo(headX,headY-3);ctx.lineTo(headX,headY+headH+3);ctx.stroke();
+ ctx.globalAlpha=.45;ctx.fillStyle='#55745c';
+ ctx.fillRect(headX-8,headY+headH+7,16,1);
+ ctx.restore();
+}
+function drawEditorialPress(t){
+ const q=logoLayout();
+ printPaper(q,t,'print');
+ const ink=fade(.05,.87,t);
+ printingBands(q,ink,model.source,0,0,1,ink<.999);
+ // Small pause when the final scan finishes, then settle to true logo.
+ if(t>.865)drawOriginal(fade(.865,.98,t));
+}
+function drawOffsetProof(t){
+ const q=logoLayout(),r=Math.min(2.5,Math.max(1.1,q.w*.003));
+ printPaper(q,t,'offset');
+ const first=fade(.025,.63,t),second=fade(.30,.89,t);
+ // A pale registration pass intentionally misses by just 1-2 CSS pixels.
+ printingBands(q,first,proofInk,r*1.05,-r*.65,.89,t<.63);
+ // Deep original ink travels from the opposite side of the press.
+ printingBands(q,second,model.source,0,0,1,t>=.30&&t<.89);
+ // Gently remove the green ghost once alignment is complete.
+ const settle=fade(.88,.995,t);
+ if(settle>.001){
+  ctx.save();ctx.globalAlpha=settle;
+  // Erase the printed proof with paper only within the logo crop.
+  ctx.fillStyle='#f6f5f0';ctx.fillRect(q.x-5,q.y-6,q.w+10,q.h+12);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+ // Hairline registration marks only while the proof is not complete.
+ if(t<.96){
+  const alpha=(1-fade(.79,.96,t))*.42;
+  ctx.save();ctx.strokeStyle='#5b805e';ctx.globalAlpha=alpha;ctx.lineWidth=.7;
+  for(const x of [q.x-13,q.x+q.w+13]){
+   const y=q.y+q.h*.5;
+   ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+   ctx.moveTo(x-7,y);ctx.lineTo(x+7,y);
+   ctx.moveTo(x,y-7);ctx.lineTo(x,y+7);ctx.stroke();
+  }
+  ctx.restore();
+ }
+}
+function render(){
+ ctx.clearRect(0,0,size.w,size.h);
+ if(!model)return;
+ const t=clamp(elapsed/duration);
+ if(mode==='ink')drawInk(t);
+ else if(mode==='letters')drawLetters(t);
+ else if(mode==='paper')drawPaper(t);
+ else if(mode==='print')drawEditorialPress(t);
+ else if(mode==='offset')drawOffsetProof(t);
+ const small=size.w<600;
+ ctx.save();ctx.fillStyle='#778476';ctx.font=(small?'10':'11')+'px Arial';
+ ctx.textAlign='center';
+ ctx.globalAlpha=.35+.65*fade(.72,1,t);
+ ctx.fillText('GOOD THINGS, — SOMETHING CONTINUES.',size.w*.5,size.h*.89);
+ ctx.restore();
+ percent.textContent=Math.round(t*100)+'%';
+ if(document.activeElement!==range)range.value=Math.round(t*1000);
+}
+function resize(){
+ const r=canvas.getBoundingClientRect();
+ size={w:Math.max(1,r.width),h:Math.max(1,r.height),
+ dpr:Math.min(window.devicePixelRatio||1,Math.sqrt(6000000/Math.max(1,r.width*r.height)),3)};
+ canvas.width=Math.round(size.w*size.dpr);
+ canvas.height=Math.round(size.h*size.dpr);
+ ctx.setTransform(size.dpr,0,0,size.dpr,0,0);
+ ctx.imageSmoothingQuality='high';
+ render();
+}
+function tick(time){
+ if(!last)last=time;
+ let dt=Math.min(70,time-last);last=time;
+ if(played){
+  elapsed=Math.min(duration,elapsed+dt);
+  if(elapsed>=duration)played=false;
+  render();
+ }
+ raf=requestAnimationFrame(tick);
+}
+function replay(){elapsed=0;played=!reduce;last=0;range.value=0;render();}
+function choose(key){
+ if(!configs[key])return;
+ mode=key;document.getElementById('name').textContent=configs[key].name;
+ document.getElementById('blurb').textContent=configs[key].blurb;
+ document.getElementById('notes').replaceChildren(...configs[key].notes.map(v=>{
+  const li=document.createElement('li');li.textContent=v;return li;
+ }));
+ document.querySelectorAll('[data-mode]').forEach(b=>{
+  const selected=b.dataset.mode===key;
+  b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected));
+ });
+ counter.textContent=String(Object.keys(configs).indexOf(key)+1).padStart(2,'0')+' / 05';
+ const brow=document.getElementById('scene-eyebrow');
+ if(brow)brow.textContent=key==='print'||key==='offset'
+  ?'GOOD THINGS, / PRINT STUDIO':'GOOD THINGS, / A VISUAL EXPERIMENT';
+ replay();
+}
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.mode)));
+document.getElementById('replay').addEventListener('click',replay);
+range.addEventListener('input',()=>{
+ played=false;elapsed=+range.value/1000*duration;render();
+});
+window.addEventListener('resize',resize,{passive:true});
+async function init(){
+ try{
+  const res=await fetch('./index.html',{cache:'force-cache'});
+  if(!res.ok)throw Error('Website source unavailable: '+res.status);
+  const doc=new DOMParser().parseFromString(await res.text(),'text/html');
+  const src=doc.querySelector('.site-header .gt-brand-logo')?.getAttribute('src');
+  if(!src||!src.startsWith('data:image/'))throw Error('Authentic GOOD THINGS, logo missing');
+  const img=new Image();img.src=src;
+  if(img.decode)await img.decode();
+  else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+  model=await getBitmap(img);
+  // Offscreen tinted impression of the ORIGINAL bitmap alpha; font stays intact.
+  const proof=document.createElement('canvas');
+  proof.width=model.width;proof.height=model.height;
+  const pc=proof.getContext('2d');
+  pc.drawImage(model.source,0,0);
+  pc.globalCompositeOperation='source-in';
+  pc.fillStyle='#87a08a';
+  pc.fillRect(0,0,proof.width,proof.height);
+  pc.globalCompositeOperation='source-over';
+  proofInk=proof;
+  loading.hidden=true;resize();choose('print');
+  raf=requestAnimationFrame(tick);
+ }catch(err){loading.textContent='CAN NOT LOAD ORIGINAL LOGO · '+(err?.message||err)}
+}
+init();
+</script>
+</body></html>
