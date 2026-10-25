@@ -211,77 +211,40 @@ function commaPosition(q,p){
  const width=lerp(large,c.w*q.scale,slide);
  return {x:cx,y:cy,w:width,h:width*c.h/c.w,angle:Math.PI*(1-flip),slide};
 }
-function printScaffold(q,p,comma){
- const reveal=between(.12,.41,p),out=1-between(.72,.975,p);
- if(reveal<=0||out<=0)return;
- const alpha=reveal*out;
- const m=Math.min(size.w<600?15:34,size.w*.042),v=Math.max(23,q.h*.46);
- const x=q.x-m,y=q.y-v,w=q.w+2*m,h=q.h+2*v;
- const bleed=Math.max(8,Math.min(14,size.w*.014));
- ctx.save();ctx.globalAlpha=.62*alpha;ctx.strokeStyle='#a4b2a2';ctx.lineWidth=.75;
- // The grid extends from the current comma anchor into a page rectangle.
- const weight=between(.15,.58,p);
- ctx.strokeRect(x,y,w*weight,h);
- ctx.setLineDash([3,5]);ctx.globalAlpha=.27*alpha;
- ctx.strokeRect(x-bleed,y-bleed,(w+bleed*2)*weight,h+bleed*2);
- ctx.setLineDash([]);ctx.globalAlpha=.52*alpha;
- const k=Math.min(11,size.w*.019);
- for(const [xx,sx] of [[x,-1],[x+w,1]]){
-  for(const [yy,sy] of [[y,-1],[y+h,1]]){
-   ctx.beginPath();ctx.moveTo(xx+sx*2,yy);ctx.lineTo(xx+sx*(k+5),yy);
-   ctx.moveTo(xx,yy+sy*2);ctx.lineTo(xx,yy+sy*(k+5));ctx.stroke();
-  }
- }
- ctx.globalAlpha=.18*alpha;
- for(const split of [1/3,2/3]){
-  ctx.beginPath();ctx.moveTo(x+w*split,y);
-  ctx.lineTo(x+w*split,y+h);ctx.stroke();
- }
- // The guides are literally registered to the moving comma.
- const goalX=q.x+(model.comma.x+model.comma.w*.5)*q.scale;
- const targetLineY=q.y+q.h*.5;
+
+function editorialMarks(q,p){
+ const visible=between(.12,.29,p)*(1-between(.53,.82,p));
+ if(visible<.001)return;
+ const edge=Math.min(size.w<600?12:24,size.w*.032);
+ const span=Math.max(17,q.h*.34);
+ const x=q.x-edge,y=q.y-span,w=q.w+edge*2,h=q.h+span*2;
+ const cut=Math.max(8,Math.min(13,size.w*.02));
+ ctx.save();
+ ctx.globalAlpha=visible*.40;
+ ctx.strokeStyle='#9baa9b';ctx.lineWidth=.75;
  ctx.beginPath();
- ctx.moveTo(comma.x,comma.y);
- ctx.lineTo(lerp(comma.x,goalX,weight),lerp(comma.y,targetLineY,weight));
+ // Only two understated corners, no bleed box or column grid.
+ ctx.moveTo(x-cut,y);ctx.lineTo(x-2,y);
+ ctx.moveTo(x,y-cut);ctx.lineTo(x,y-2);
+ ctx.moveTo(x+w+2,y+h);ctx.lineTo(x+w+cut,y+h);
+ ctx.moveTo(x+w,y+h+2);ctx.lineTo(x+w,y+h+cut);
  ctx.stroke();
  ctx.restore();
- const textAlpha=alpha*.63;
- micro('GOOD THINGS, / AN INDEPENDENT JOURNAL',x,Math.max(18,y-16),'left',textAlpha);
- micro('GT   /   NO. 001',x+w,Math.min(size.h-30,y+h+25),'right',textAlpha);
 }
-function drawDiecut(q,p){
- // Authentic glyphs: paper contains holes of the exact supplied shapes.
- const align=between(.32,.81,p);
- const ink=between(.19,.54,p);
- const disappear=between(.80,.975,p);
- const dx=(1-align)*(-Math.min(25,q.w*.076));
- const dy=(1-align)*Math.min(14,size.h*.035);
- const pad=Math.min(10,size.w*.02);
- ctx.save();ctx.globalAlpha=1-disappear*.95;
- ctx.shadowColor='rgba(63,64,56,.13)';
- ctx.shadowBlur=11;ctx.shadowOffsetY=3;
- ctx.fillStyle='#eae7dc';
- ctx.fillRect(q.x+dx-pad,q.y+dy-pad,q.w+2*pad,q.h+2*pad);
- ctx.restore();
- // Put REAL source ink under the cut-out before the paper aligns.
- ctx.save();ctx.globalAlpha=.26+.74*ink;
- ctx.drawImage(textInk,q.x,q.y,q.w,q.h);ctx.restore();
- // The negative mask is shifted, so letter visibility depends on registration.
- ctx.save();ctx.globalAlpha=1-disappear;
- ctx.drawImage(textDiecut,q.x+dx,q.y+dy,q.w,q.h);
- ctx.restore();
- // A faint embossed impression visible only before registration.
- const shade=(1-align)*(1-disappear)*.16;
- if(shade>.002){
-  ctx.save();ctx.globalAlpha=shade;
-  ctx.drawImage(softInk,q.x+dx+1,q.y+dy+1,q.w,q.h);
+function revealLetters(q,p){
+ for(let i=0;i<model.glyphs.length;i++){
+  const g=model.glyphs[i];
+  const t=between(.26+i*.030,.56+i*.025,p);
+  if(t<.001)continue;
+  const x=q.x+(g.x+g.w*.5)*q.scale;
+  const y=q.y+(g.y+g.h*.5)*q.scale;
+  const width=(g.w+4)*q.scale,height=(g.h+4)*q.scale;
+  const movement=(1-t)*(size.w<600?3.5:6);
+  ctx.save();
+  ctx.globalAlpha=t*(1-between(.91,1,p)*.92);
+  ctx.drawImage(g.img,x-width*.5,y-height*.5+movement,width,height);
   ctx.restore();
  }
- // A shadowless sheet edge on the white field, not a computer UI.
- ctx.save();ctx.globalAlpha=.27*(1-disappear);
- ctx.strokeStyle='#a9b5a7';ctx.lineWidth=.6;
- ctx.strokeRect(q.x+dx-pad,q.y+dy-pad,q.w+2*pad,q.h+2*pad);
- ctx.restore();
 }
 function drawComma(p,q,pos){
  const c=model.comma;
@@ -294,15 +257,15 @@ function render(){
  ctx.clearRect(0,0,size.w,size.h);
  if(!model)return;
  const p=clamp(elapsed/DURATION),q=fitLogo();
- ctx.fillStyle='#f4f2eb';ctx.fillRect(0,0,size.w,size.h);
- const pos=commaPosition(q,p);
- // Guides come from the anchor, but never cover or redraw the final logo.
- printScaffold(q,p,pos);
- if(p>.15)drawDiecut(q,p);
- drawComma(p,q,pos);
- const finale=between(.90,1,p);
- if(finale>0){
-  ctx.save();ctx.globalAlpha=finale;
+ ctx.fillStyle='#f4f2eb';
+ ctx.fillRect(0,0,size.w,size.h);
+ editorialMarks(q,p);
+ revealLetters(q,p);
+ const comma=commaPosition(q,p);
+ drawComma(p,q,comma);
+ const final=between(.90,1,p);
+ if(final>.001){
+  ctx.save();ctx.globalAlpha=final;
   ctx.fillStyle='#f4f2eb';ctx.fillRect(0,0,size.w,size.h);
   exactFinal(q);
   ctx.restore();
