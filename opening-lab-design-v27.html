@@ -37,7 +37,7 @@ main{max-width:1450px;margin:0 auto;padding:clamp(20px,3vw,48px) clamp(18px,4.5v
 .about p{color:var(--quiet);line-height:1.95;max-width:660px;margin:0}
 .about ul{margin:3px 0 0;padding-left:20px;color:var(--quiet);line-height:2}
 .foot{border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:var(--quiet);font-size:10px;letter-spacing:.12em}
-@media(max-width:700px){main{padding:18px 20px}.header .cap{font-size:9px;letter-spacing:.05em}.intro{padding:31px 0 15px}.tabs{grid-template-columns:1fr;gap:6px}.tab{min-height:41px;padding:9px;font-size:10px}.preview{height:45dvh;min-height:355px}.about{grid-template-columns:1fr;gap:16px}.scene-cap{top:11px;left:12px}.scene-cap.right{right:12px;left:auto}.controls{gap:14px}}
+@media(max-width:700px){main{padding:18px 20px}.header .cap{font-size:9px;letter-spacing:.05em}.intro{padding:31px 0 15px}.tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.tab{min-height:41px;padding:9px;font-size:10px}.preview{height:45dvh;min-height:355px}.about{grid-template-columns:1fr;gap:16px}.scene-cap{top:11px;left:12px}.scene-cap.right{right:12px;left:auto}.controls{gap:14px}}
 @media(prefers-reduced-motion:reduce){.tab{transition:none}}
 </style></head><body><main>
 <header class="header"><strong class="brand">GOOD THINGS,</strong><span class="cap">FORM / LIGHT / MOTION — STUDY 06</span><a href="./?intro=pinnedstage21">V21 ORIGINAL</a></header>
@@ -502,7 +502,16 @@ async function init(){
   if(img.decode)await img.decode();
   else await new Promise((yes,no)=>{img.onload=yes;img.onerror=no});
   model=await getBitmap(img);
-  cutPaper=null;ghostLogo=null;
+  // This is the literal negative of the original LOGO's alpha silhouette.
+  cutPaper=document.createElement('canvas');
+  cutPaper.width=model.width;cutPaper.height=model.height;
+  const paperCtx=cutPaper.getContext('2d');
+  paperCtx.fillStyle='#f8f6f0';
+  paperCtx.fillRect(0,0,model.width,model.height);
+  paperCtx.globalCompositeOperation='destination-out';
+  paperCtx.drawImage(model.source,0,0);
+  paperCtx.globalCompositeOperation='source-over';
+  ghostLogo=coloredLogo('#a7b6a8');
   loading.hidden=true;layout();
   const chosen=new URL(location.href).searchParams.get('mode');
   choose(specs[chosen]?chosen:'magnetic');
