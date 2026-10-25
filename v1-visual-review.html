@@ -46,11 +46,11 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
 <div id="toolbar" role="region" aria-label="GOOD THINGS 視覺比較">
  <div class="title">
   <strong>GOOD THINGS, / V1 VISUAL REVIEW</strong>
-  <small>使用原有網站版型及內容，切換字體、色彩與排版節奏；正式網站不受影響</small>
+  <small>使用預覽站現有版型及內容，切換字體、色彩與排版節奏；正式網站不受影響</small>
  </div>
  <div class="controls">
   <div class="segment" role="group" aria-label="比較視覺風格">
-   <button type="button" data-variant="original" aria-pressed="true">原版 V1</button>
+   <button type="button" data-variant="original" aria-pressed="true">現有版</button>
    <button type="button" data-variant="refine" aria-pressed="false">編輯誌調整版</button>
   </div>
   <div class="navbuttons" role="group" aria-label="瀏覽原站頁面">
@@ -61,7 +61,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
   <span id="status" role="status" aria-live="polite">載入既有網站中</span>
  </div>
 </div>
-<iframe id="frame" title="GOOD THINGS, 第一版原站視覺比較" src="./?intro=off#/" loading="eager"></iframe>
+<iframe id="frame" title="GOOD THINGS, 現有預覽版的視覺比較" src="./?intro=off#/" loading="eager"></iframe>
 <script>
 (()=>{'use strict';
  const frame=document.querySelector('#frame'),toolbar=document.querySelector('#toolbar');
@@ -85,7 +85,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
    link.addEventListener('load',()=>{status.textContent='編輯誌調整版（僅視覺）'});
    link.addEventListener('error',()=>{status.textContent='樣式載入失敗，請重新整理'});
    doc.head.appendChild(link);
-  } else {status.textContent='原版 V1（未套用調整）';}
+  } else {status.textContent='現有版（未套用視覺調整）';}
   applied=true;
  }
  frame.addEventListener('load',()=>{apply();});
