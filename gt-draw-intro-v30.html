@@ -523,6 +523,7 @@ async function init(){
   else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
   model=await getBitmap(img);
   loading.hidden=true;layout();
+  notifyParent('ready');
   raf=requestAnimationFrame(tick);
  }catch(error){
   console.error('GOOD THINGS intro asset could not initialize:',error);
