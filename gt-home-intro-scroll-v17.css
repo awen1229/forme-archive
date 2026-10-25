@@ -15,6 +15,7 @@ html.gt-scroll-entry-scrollstage.gt-scroll-entry-ready .gt-scroll-entry{
  transform:none!important;transition:none!important;
  background:transparent!important;z-index:4;
  touch-action:auto!important;overscroll-behavior:auto!important;
+ pointer-events:none!important;
 }
 html.gt-scroll-entry-scrollstage.gt-scroll-entry-ready .gt-scroll-stage-inner{
  position:sticky;top:0;height:100vh;height:100dvh;min-height:360px;
@@ -22,7 +23,7 @@ html.gt-scroll-entry-scrollstage.gt-scroll-entry-ready .gt-scroll-stage-inner{
  background:#f3f1eb;color:#3c5340;display:flex;flex-direction:column;
  overflow:hidden;isolation:isolate;
  opacity:var(--gt-stage-opacity,1);
- will-change:opacity;
+ will-change:opacity;pointer-events:auto;
 }
 html.gt-scroll-entry-scrollstage.gt-scroll-entry-ready .gt-scroll-entry-center{
  flex:1 1 auto;min-height:0;display:block;position:relative;overflow:hidden;
