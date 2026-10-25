@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light">
-<title>GOOD THINGS, | Soft Edges · Typography & Layout Preview</title>
+<title>GOOD THINGS, | Ink Frame · Editorial Preview</title>
 <style>
 :root{font-family:"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC",sans-serif;background:#fff;color:#242924}
 *{box-sizing:border-box}
@@ -52,7 +52,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
 </head>
 <body>
 <div class="editorial-toolbar" id="toolbar" role="region" aria-label="GOOD THINGS, 編輯視覺提案工具列">
- <div class="identity"><strong>GOOD THINGS, / SOFT EDGES STUDY</strong><p>Clothing first. A softer edge, the same editorial calm.</p></div>
+ <div class="identity"><strong>GOOD THINGS, / INK FRAME STUDY</strong><p>Clothing first. Clean layout with selective ink frames.</p></div>
  <div class="sections" aria-label="查看網站頁面">
    <button type="button" data-route="/" aria-current="true">HOME</button>
    <button type="button" data-route="/journal" aria-current="false">STORIES</button>
@@ -61,13 +61,14 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
    <button type="button" data-route="/about" aria-current="false">ABOUT</button>
  </div>
  <div class="actions">
-   <div class="toggle" role="group" aria-label="圓角、直角與原版比較">
-     <button type="button" data-edition="rounded" aria-pressed="true">微圓角</button>
-     <button type="button" data-edition="curated" aria-pressed="false">清爽直角</button>
+   <div class="toggle" role="group" aria-label="黑細框、微圓角、直角與原版比較">
+     <button type="button" data-edition="ink" aria-pressed="true">黑細框</button>
+     <button type="button" data-edition="rounded" aria-pressed="false">微圓角</button>
+     <button type="button" data-edition="curated" aria-pressed="false">直角</button>
      <button type="button" data-edition="original" aria-pressed="false">原版</button>
    </div>
    <button type="button" id="device" class="device" aria-pressed="false">手機寬度</button>
-   <span class="note" id="state" role="status" aria-live="polite">切換比較微圓角與直角版 / 正式站未修改</span>
+   <span class="note" id="state" role="status" aria-live="polite">黑細框細節預覽 / 正式站未修改</span>
  </div>
 </div>
 <div class="canvas" id="canvas">
@@ -77,15 +78,16 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
 (()=>{
  'use strict';
  const $=s=>document.querySelector(s),frame=$('#site'),toolbar=$('#toolbar'),canvas=$('#canvas'),state=$('#state');
- let active='rounded',targetRoute='/';
+ let active='ink',targetRoute='/';
  const buttons=[...document.querySelectorAll('[data-edition]')],routes=[...document.querySelectorAll('[data-route]')];
  const file='./gt-curated-edition-01.css?v=20261026-c2';
  const roundedFile='./gt-soft-edges-study.css?v=20261026-r1';
+ const inkFile='./gt-ink-frame-study.css?v=20261026-i1';
  const setHeight=()=>{document.documentElement.style.setProperty('--barHeight',Math.ceil(toolbar.getBoundingClientRect().height)+'px')};
  const ro=new ResizeObserver(setHeight);ro.observe(toolbar);setHeight();
  function apply(){
    let doc;try{doc=frame.contentDocument;if(!doc||!doc.head)return}catch(e){state.textContent='需要先登入預覽站';return}
-   for(const id of ['gt-curated-edition-css','gt-soft-edges-css']){
+   for(const id of ['gt-curated-edition-css','gt-soft-edges-css','gt-ink-frame-css']){
      const prev=doc.querySelector('#'+id);if(prev)prev.remove();
    }
    if(active!=='original'){
@@ -93,11 +95,17 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
      const link=doc.createElement('link');link.id='gt-curated-edition-css';link.rel='stylesheet';link.href=file;
      link.onerror=()=>{if(active===mode)state.textContent='無法載入編輯設計樣式'};
      doc.head.append(link);
-     if(active==='rounded'){
+     if(active==='rounded'||active==='ink'){
        const soft=doc.createElement('link');soft.id='gt-soft-edges-css';soft.rel='stylesheet';soft.href=roundedFile;
-       soft.onload=()=>{if(active===mode)state.textContent='微圓角版本 / 正式站未修改'};
+       soft.onload=()=>{if(active===mode && mode==='rounded')state.textContent='微圓角版本 / 正式站未修改'};
        soft.onerror=()=>{if(active===mode)state.textContent='微圓角樣式載入失敗'};
        doc.head.append(soft);
+       if(active==='ink'){
+         const ink=doc.createElement('link');ink.id='gt-ink-frame-css';ink.rel='stylesheet';ink.href=inkFile;
+         ink.onload=()=>{if(active===mode)state.textContent='黑細框提案 / 正式站未修改'};
+         ink.onerror=()=>{if(active===mode)state.textContent='黑細框樣式載入失敗'};
+         doc.head.append(ink);
+       }
      }else state.textContent='清爽直角版本 / 正式站未修改';
    }else state.textContent='預覽站原樣 / 正式站未修改';
  }
