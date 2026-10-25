@@ -52,7 +52,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
 </head>
 <body>
 <div class="editorial-toolbar" id="toolbar" role="region" aria-label="GOOD THINGS, 編輯視覺提案工具列">
- <div class="identity"><strong>GOOD THINGS, / EDITORIAL EDITION 01</strong><p>Clothing first. Calm, but with a little play.</p></div>
+ <div class="identity"><strong>GOOD THINGS, / EDITORIAL EDITION 01</strong><p>Clothing first. Refined, relaxed, a little playful.</p></div>
  <div class="sections" aria-label="查看網站頁面">
    <button type="button" data-route="/" aria-current="true">HOME</button>
    <button type="button" data-route="/journal" aria-current="false">STORIES</button>
@@ -63,10 +63,10 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
  <div class="actions">
    <div class="toggle" role="group" aria-label="新舊設計比較">
      <button type="button" data-edition="curated" aria-pressed="true">這次的提案</button>
-     <button type="button" data-edition="original" aria-pressed="false">現有第一版</button>
+     <button type="button" data-edition="original" aria-pressed="false">預覽站原樣</button>
    </div>
    <button type="button" id="device" class="device" aria-pressed="false">手機寬度</button>
-   <span class="note" id="state" role="status" aria-live="polite">預覽模式 / 正式站未修改</span>
+   <span class="note" id="state" role="status" aria-live="polite">沿用預覽站內容 / 正式站未修改</span>
  </div>
 </div>
 <div class="canvas" id="canvas">
@@ -89,7 +89,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
      link.onload=()=>{state.textContent='編輯誌提案 / 正式站未修改'};
      link.onerror=()=>{state.textContent='無法載入設計樣式'};
      doc.head.append(link);
-   } else state.textContent='原本樣式 / 正式站未修改';
+   } else state.textContent='預覽站原樣 / 正式站未修改';
  }
  frame.addEventListener('load',apply);
  buttons.forEach(btn=>btn.addEventListener('click',()=>{
