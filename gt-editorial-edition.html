@@ -78,7 +78,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2p
  const $=s=>document.querySelector(s),frame=$('#site'),toolbar=$('#toolbar'),canvas=$('#canvas'),state=$('#state');
  let active='curated',targetRoute='/';
  const buttons=[...document.querySelectorAll('[data-edition]')],routes=[...document.querySelectorAll('[data-route]')];
- const file='./gt-curated-edition-01.css?v=20261026-c1';
+ const file='./gt-curated-edition-01.css?v=20261026-c2';
  const setHeight=()=>{document.documentElement.style.setProperty('--barHeight',Math.ceil(toolbar.getBoundingClientRect().height)+'px')};
  const ro=new ResizeObserver(setHeight);ro.observe(toolbar);setHeight();
  function apply(){
