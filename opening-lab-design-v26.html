@@ -281,36 +281,47 @@ function drawMaterial(t){
 }
 function drawSpace(t){
  const w=view.w,h=view.h;
- ctx.fillStyle='#f9f9f6';ctx.fillRect(0,0,w,h);
- const p=fade(.06,.83,t);
- const margin=w<600?27:Math.max(48,w*.09);
- // Architectural reference axes disappear as the aperture takes over.
- ctx.save();ctx.strokeStyle='#d0d5cf';ctx.lineWidth=.7;ctx.globalAlpha=.8*(1-fade(.76,1,t)*.75);
- for(const x of [margin,w-margin]){ctx.beginPath();ctx.moveTo(x,h*.16);ctx.lineTo(x,h*.84);ctx.stroke()}
- ctx.beginPath();ctx.moveTo(margin,h*.5);ctx.lineTo(w-margin,h*.5);ctx.stroke();
- ctx.restore();
- // Two substantial white gallery panels slide off the opening.
- const width=lerp(Math.min(13,w*.025),w*.78,p);
- const center=lerp(w*.37,w*.5,fade(.07,.75,t));
- const bx=center-width*.5,by=h*.19,bh=h*.62;
- ctx.save();ctx.shadowColor='rgba(44,61,47,.055)';
- ctx.shadowBlur=15;ctx.shadowOffsetY=6;
- ctx.fillStyle='#efefeb';rect(bx,by,width,bh,1);ctx.fill();ctx.restore();
- ctx.save();rect(bx,by,width,bh,1);ctx.clip();
- ctx.fillStyle='#ffffff';ctx.fillRect(bx,by,width,bh);
- // Perspective: logo is stationary, observer's spatial window is growing.
- const q=originalLayout(1);
- ctx.globalAlpha=fade(.19,.80,t);
- ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
- ctx.restore();
- const remaining=1-fade(.78,.99,t);
- ctx.save();ctx.globalAlpha=remaining*.7;
- ctx.strokeStyle='#9faea2';ctx.lineWidth=.8;
- ctx.strokeRect(bx,by,width,bh);
- ctx.restore();
- smalltype('WHITE SPACE   /   STUDY 02',margin,34,{size:9,alpha:1-fade(.75,1,t)*.7});
- smalltype('00  :  '+String(Math.round(p*100)).padStart(3,'0'),w-margin,h-24,{align:'right',size:9});
- if(t>.88){ctx.save();ctx.globalAlpha=fade(.88,1,t);ctx.fillStyle='#f9f9f6';ctx.fillRect(0,0,w,h);drawLogo(1);ctx.restore()}
+ ctx.fillStyle='#fafaf7';ctx.fillRect(0,0,w,h);
+ const progress=fade(.05,.86,t),settle=fade(.84,1,t);
+ const q=originalLayout();
+ const count=4,pad=Math.min(15,view.w*.022);
+ const dxArray=[-1,1,-.65,.85],dyArray=[-.42,.55,-.25,.35];
+ const amount=Math.min(w*.21,100);
+ smalltype('04 PANELS  /  ONE MARK',w*.08,32,
+  {size:9,alpha:1-settle});
+ // Each architectural panel carries an ORIGINAL piece of the logo image.
+ // The logo is visibly fragmented at the beginning and physically
+ // reassembled when the panels slide into precise alignment.
+ for(let i=0;i<count;i++){
+  const sourceX=model.width*i/count,sourceW=model.width/count;
+  const targetX=q.x+q.w*i/count,panelW=q.w/count;
+  const dx=(1-progress)*dxArray[i]*amount;
+  const dy=(1-progress)*dyArray[i]*Math.min(50,h*.14);
+  const px=targetX+dx,py=q.y+dy;
+  ctx.save();ctx.globalAlpha=1-settle*.98;
+  ctx.shadowColor='rgba(50,57,49,.10)';
+  ctx.shadowBlur=12*(1-progress);
+  ctx.shadowOffsetY=3*(1-progress);
+  ctx.fillStyle='#f3f5f1';
+  rect(px-pad,py-38,panelW+pad*2,q.h+76,1);
+  ctx.fill();ctx.restore();
+  ctx.save();ctx.globalAlpha=1-settle*.91;
+  ctx.strokeStyle='#bfc8bf';ctx.lineWidth=.7;
+  ctx.strokeRect(px-pad,py-38,panelW+pad*2,q.h+76);
+  ctx.drawImage(model.source,sourceX,0,sourceW,model.height,
+   px,py,panelW+.2,q.h);
+  ctx.restore();
+  if(progress<.85)
+   smalltype('0'+(i+1),px,py+q.h+24,{size:9,alpha:(1-progress)*.7});
+ }
+ if(settle>.001){
+  ctx.save();ctx.globalAlpha=settle;
+  ctx.fillStyle='#fafaf7';ctx.fillRect(0,0,w,h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+ smalltype('MOVEMENT / NEGATIVE SPACE',w*.92,h-23,
+  {size:9,align:'right',alpha:1-settle*.65});
 }
 function drawIndex(t){
  const w=view.w,h=view.h;
