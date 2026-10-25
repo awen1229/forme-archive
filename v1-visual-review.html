@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f5f6f3">
+<title>GOOD THINGS, / V1 Visual Review</title>
+<style>
+:root{font-family:"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC",sans-serif;color:#242824;background:#fafbf9}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+button,a{font:inherit}
+a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #315f40;outline-offset:2px}
+#toolbar{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#f6f7f4;border-bottom:1px solid #dfe4dc;padding:9px clamp(12px,2.3vw,25px);min-height:63px}
+.title{display:flex;flex-direction:column;gap:2px}
+.title strong{font-size:12px;letter-spacing:.065em}
+.title small{font-size:10px;color:#6a726a;line-height:1.35}
+.controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.segment{background:#e8ebe5;padding:3px;display:flex;gap:2px;border-radius:3px}
+.segment button{font-size:11px;letter-spacing:.015em;border:0;border-radius:2px;background:transparent;padding:9px 13px;color:#4b594d;min-width:96px}
+.segment button[aria-pressed=true]{background:#315f40;color:#fff}
+.navbuttons{display:flex;gap:5px}
+.navbuttons button{background:#fff;border:1px solid #dce2d9;color:#4b584c;padding:9px 10px;font-size:11px;border-radius:3px;min-height:36px}
+.navbuttons button:hover{background:#eef3eb}
+#frame{display:block;border:0;width:100%;height:calc(100dvh - var(--toolbar-height,63px));background:#fff}
+#status{font-size:10px;color:#617062}
+.bottombar{display:none}
+@media(max-width:750px){
+ #toolbar{padding:9px 11px;gap:9px;min-height:0}
+ .title{flex:1 0 100%}
+ .title strong{font-size:11px}
+ .title small{font-size:9px}
+ .controls{width:100%;justify-content:space-between;gap:8px}
+ .segment{flex:1}
+ .segment button{flex:1;min-width:0;padding:9px 9px}
+ .navbuttons{flex:0 0 auto}
+ .navbuttons button{padding:9px 9px}
+ #status{display:none}
+}
+</style>
+</head>
+<body>
+<div id="toolbar" role="region" aria-label="GOOD THINGS 視覺比較">
+ <div class="title">
+  <strong>GOOD THINGS, / V1 VISUAL REVIEW</strong>
+  <small>使用原有網站版型及內容，切換字體、色彩與排版節奏；正式網站不受影響</small>
+ </div>
+ <div class="controls">
+  <div class="segment" role="group" aria-label="比較視覺風格">
+   <button type="button" data-variant="original" aria-pressed="true">原版 V1</button>
+   <button type="button" data-variant="refine" aria-pressed="false">編輯誌調整版</button>
+  </div>
+  <div class="navbuttons" role="group" aria-label="瀏覽原站頁面">
+   <button type="button" data-route="/">首頁</button>
+   <button type="button" data-route="/journal">文章</button>
+   <button type="button" data-route="/index">索引</button>
+  </div>
+  <span id="status" role="status" aria-live="polite">載入既有網站中</span>
+ </div>
+</div>
+<iframe id="frame" title="GOOD THINGS, 第一版原站視覺比較" src="./?intro=off#/" loading="eager"></iframe>
+<script>
+(()=>{'use strict';
+ const frame=document.querySelector('#frame'),toolbar=document.querySelector('#toolbar');
+ const status=document.querySelector('#status'),buttons=[...document.querySelectorAll('[data-variant]')];
+ let variant='original'; let applied=false;
+ function resize(){
+  const h=Math.ceil(toolbar.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--toolbar-height',h+'px');
+ }
+ const observer=new ResizeObserver(resize);observer.observe(toolbar);resize();
+ function apply(){
+  let doc;
+  try {doc=frame.contentDocument; if(!doc||!doc.head)return;}
+  catch(e){status.textContent='無法存取預覽頁面';return;}
+  const previous=doc.getElementById('gt-refine-review-css');
+  if(previous)previous.remove();
+  if(variant==='refine'){
+   const link=doc.createElement('link');
+   link.id='gt-refine-review-css'; link.rel='stylesheet';
+   link.href='./gt-v1-editorial-refine-study.css?v=20261025-1';
+   link.addEventListener('load',()=>{status.textContent='編輯誌調整版（僅視覺）'});
+   link.addEventListener('error',()=>{status.textContent='樣式載入失敗，請重新整理'});
+   doc.head.appendChild(link);
+  } else {status.textContent='原版 V1（未套用調整）';}
+  applied=true;
+ }
+ frame.addEventListener('load',()=>{apply();});
+ buttons.forEach(button=>button.addEventListener('click',()=>{
+   variant=button.dataset.variant;
+   buttons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+   apply();
+ }));
+ document.querySelectorAll('[data-route]').forEach(button=>button.addEventListener('click',()=>{
+   try {frame.contentWindow.location.hash='#'+button.dataset.route;}
+   catch(e){status.textContent='頁面切換失敗';}
+ }));
+ window.addEventListener('pageshow',()=>{resize();if(!applied)apply()});
+})();
+</script>
+</body></html>
