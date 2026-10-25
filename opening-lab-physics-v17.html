@@ -1089,8 +1089,11 @@ window.addEventListener('message',e=>{
   report('ready',{phase:mode});
  }else if(m.action==='seek'&&scrollScrub){
   const next=clamp(Number(m.progress)||0);
-  // Returning all the way to the top restores individual original glyphs
-  // and permits a new physical tumble.
+  // Physics isn't reversible. Rebuild the original individual glyph bodies
+  // on a backward scrub past the full-rotation / rolling threshold.
+  if(next<.998&&['drain','guided','done'].includes(mode)){
+   replay();handoffProgress=0;
+  }
   if(next<.002&&(mode==='pour'||mode==='settle')){
    if(mode==='pour')replay();
    scrubProgress=0;
