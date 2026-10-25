@@ -1,0 +1,62 @@
+
+/* GOOD THINGS, / V30: compact first-visit integration for the live site.
+   No existing editorial or admin styles are overridden outside the active intro. */
+html.gt-draw-entry-active,
+html.gt-draw-entry-active body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+.gt-draw-entry-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: #f5f3ed;
+  opacity: 1;
+  transition: opacity .28s ease;
+}
+.gt-draw-entry-overlay.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+.gt-draw-entry-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #f5f3ed;
+}
+.gt-draw-entry-skip {
+  position: absolute;
+  right: clamp(20px,5vw,78px);
+  bottom: clamp(22px,4vw,46px);
+  z-index: 2;
+  background: #f5f3ed;
+  color: #657967;
+  border: 0;
+  border-bottom: 1px solid #abb8ab;
+  border-radius: 0;
+  padding: 8px 2px 6px;
+  font: 11px/1.25 Arial,"Noto Sans TC",sans-serif;
+  letter-spacing: .13em;
+  cursor: pointer;
+}
+.gt-draw-entry-skip:focus-visible,
+.gt-draw-entry-replay:focus-visible {
+  outline: 2px solid #315f40;
+  outline-offset: 4px;
+}
+.gt-draw-entry-replay {
+  display: inline-block;
+  font: 10px/1.6 Arial,"Noto Sans TC",sans-serif;
+  letter-spacing: .12em;
+  text-decoration: none;
+  color: #546f59;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+@media (max-width:700px){
+  .gt-draw-entry-skip {right:20px;bottom:28px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .gt-draw-entry-overlay {transition:none}
+}
