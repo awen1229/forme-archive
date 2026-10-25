@@ -63,7 +63,7 @@
     const frame=document.createElement('iframe');
     frame.className='gt-draw-entry-frame';
     frame.title='GOOD THINGS, / Draw a comma';
-    frame.src='./gt-draw-intro-v30.html?v=20261025b';
+    frame.src='./gt-draw-intro-v30.html?v=20261025c';
     frame.addEventListener('error',complete);
     frame.setAttribute('loading','eager');
     const skip=document.createElement('button');
