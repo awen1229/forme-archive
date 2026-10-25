@@ -325,49 +325,70 @@ function drawSpace(t){
 }
 function drawIndex(t){
  const w=view.w,h=view.h;
- const mobile=w<650,top=mobile?h*.15:h*.19;
- ctx.fillStyle='#f1f1ec';ctx.fillRect(0,0,w,h);
- const left=mobile?26:w*.12,right=w-left;
- const blockW=right-left,blockH=Math.min(h*.56,390);
- // Disciplined archive columns. Text, not logo glyph fragments.
- const order=['OBJECTS','PEOPLE','PLACES','NOTES'];
- const d=['01 / THINGS','02 / PEOPLE','03 / PLACES','04 / IDEAS'];
- ctx.save();ctx.strokeStyle='#cbd0c8';ctx.lineWidth=.7;
- ctx.strokeRect(left,top,blockW,blockH);
- for(let i=1;i<4;i++){
-  const x=left+blockW*i/4;
-  ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+blockH);ctx.stroke();
+ ctx.fillStyle='#f2f2ed';ctx.fillRect(0,0,w,h);
+ const q=originalLayout(),cols=5,rows=2;
+ const gridW=Math.min(w*.90,770),gridH=Math.min(h*.56,290);
+ const gridX=(w-gridW)/2,gridY=(h-gridH)/2;
+ const cw=gridW/cols,ch=gridH/rows;
+ const retire=fade(.44,.84,t);
+ ctx.save();ctx.globalAlpha=1-retire;
+ ctx.strokeStyle='#cbd1c9';ctx.lineWidth=.68;
+ ctx.strokeRect(gridX,gridY,gridW,gridH);
+ for(let k=1;k<cols;k++){
+  const xx=gridX+k*cw;
+  ctx.beginPath();ctx.moveTo(xx,gridY);
+  ctx.lineTo(xx,gridY+gridH);ctx.stroke();
  }
+ ctx.beginPath();ctx.moveTo(gridX,gridY+ch);
+ ctx.lineTo(gridX+gridW,gridY+ch);ctx.stroke();
  ctx.restore();
- smalltype('THE INDEX / CONTENTS',left,top-15,{size:10,color:'#536756'});
- const finish=fade(.58,.90,t);
- for(let i=0;i<4;i++){
-  const slotX=left+i*blockW/4,sw=blockW/4;
-  const p=fade(.05+i*.067,.47+i*.06,t);
-  const scroll=1-fade(.38+i*.035,.76+i*.035,t);
-  const entry=lerp(blockH*.70,blockH*.19+i*(mobile?3:7),p);
-  const number=String(i+1).padStart(2,'0');
-  ctx.save();ctx.beginPath();ctx.rect(slotX,top,sw,blockH);ctx.clip();
-  ctx.globalAlpha=scroll*(1-finish);
-  smalltype(number,slotX+9,top+25,{size:11,color:'#355e41'});
-  ctx.fillStyle='#526d56';
-  ctx.font=(mobile?Math.max(10,Math.min(15,sw*.17)):Math.min(22,sw*.18))+'px Arial';
-  ctx.fillText(order[i],slotX+9,top+entry);
-  ctx.fillStyle='#a0a69e';ctx.fillRect(slotX+9,top+entry+14,sw-18,.75);
-  smalltype('GT / '+number,slotX+9,top+blockH-15,{size:9});
+ smalltype('THE INDEX   /   TEN LETTERFORMS',gridX,gridY-14,
+  {size:9,alpha:1-retire});
+ // The letters are the site's actual ten source-bitmap glyphs.
+ // They start as individual archived specimens, then occupy their exact
+ // original GOOD THINGS, positions. Nothing is typeset in a new font.
+ for(let i=0;i<model.glyphs.length;i++){
+  const g=model.glyphs[i],r=Math.floor(i/cols),col=i%cols;
+  const fromX=gridX+(col+.5)*cw,fromY=gridY+(r+.53)*ch;
+  const toX=q.x+(g.x+g.w*.5)*q.w/model.width;
+  const toY=q.y+(g.y+g.h*.5)*q.h/model.height;
+  const move=fade(.18+i*.024,.70+i*.020,t);
+  const gx=lerp(fromX,toX,move),gy=lerp(fromY,toY,move);
+  const rawW=(g.w+4)*q.w/model.width;
+  const rawH=(g.h+4)*q.h/model.height;
+  const initialScale=Math.min(1,cw*.68/Math.max(rawW,1));
+  const scale=lerp(initialScale,1,move);
+  ctx.save();
+  ctx.translate(gx,gy);
+  ctx.globalAlpha=1-fade(.92,1,t)*.85;
+  ctx.drawImage(g.img,-rawW*scale/2,-rawH*scale/2,
+   rawW*scale,rawH*scale);
+  ctx.restore();
+  const labelAlpha=(1-fade(.32,.63,t))*(1-retire*.6);
+  if(labelAlpha>.005)smalltype(String(i+1).padStart(2,'0'),
+   gridX+col*cw+9,gridY+r*ch+19,
+   {size:9,alpha:labelAlpha,color:'#65816a'});
+ }
+ // The only separate punctuation mark enters last as the final letter.
+ const comma=model.comma,commaProgress=fade(.67,.90,t);
+ if(commaProgress>.001){
+  const commaW=comma.w*q.w/model.width;
+  const commaH=comma.h*q.h/model.height;
+  const xx=q.x+comma.x*q.w/model.width;
+  const yy=q.y+comma.y*q.h/model.height;
+  ctx.save();ctx.globalAlpha=commaProgress;
+  ctx.drawImage(model.source,comma.x,comma.y,comma.w,comma.h,
+   xx,yy,commaW,commaH);ctx.restore();
+ }
+ const complete=fade(.88,1,t);
+ if(complete>.001){
+  ctx.save();ctx.globalAlpha=complete;
+  ctx.fillStyle='#f2f2ed';ctx.fillRect(0,0,w,h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
   ctx.restore();
  }
- // A compressed editorial line grows into the actual source logo.
- const next=fade(.60,.99,t);
- if(next>.005){
-  ctx.save();ctx.globalAlpha=next;
-  ctx.fillStyle='#f1f1ec';ctx.fillRect(0,0,w,h);
-  const q=originalLayout(.58+.42*next);
-  const yOffset=(1-next)*30;
-  ctx.drawImage(model.source,q.x,q.y+yOffset,q.w,q.h);
-  ctx.restore();
- }
- smalltype('GOOD THINGS,    AN INDEPENDENT JOURNAL',left,h-23,{size:9,color:'#788175',alpha:1-fade(.72,.99,t)*.8});
+ smalltype('ARCHIVE  /  GOOD THINGS,',w*.5,h-23,
+  {size:9,align:'center',alpha:1-complete*.55});
 }
 function draw(){
  ctx.clearRect(0,0,view.w,view.h);
