@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f3ee">
+<title>GOOD THINGS, / OBJECTS & SPACE / MOTION LAB V27</title>
+<style>
+:root{color-scheme:light;--paper:#f5f3ee;--ink:#273b2c;--line:#c9cec5;--quiet:#788276;--green:#315f40}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink)}
+body{font:13px/1.6 Arial,"Noto Sans TC","PingFang TC",sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}a:hover{color:var(--green)}
+main{max-width:1450px;margin:0 auto;padding:clamp(20px,3vw,48px) clamp(18px,4.5vw,72px);min-height:100dvh}
+.header{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding-bottom:18px}
+.brand{font-weight:700;font-size:15px;letter-spacing:.075em;color:var(--green)}
+.cap{font-size:10px;letter-spacing:.15em;color:var(--quiet)}
+.intro{padding:clamp(28px,4vw,58px) 12px 22px;text-align:center}
+.intro h1{font:normal clamp(27px,4vw,48px)/1.14 Georgia,serif;color:var(--green);margin:10px 0 14px}
+.intro p{color:var(--quiet);margin:0 auto;max-width:690px;line-height:1.85}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:18px auto 16px}
+.tab{padding:14px 12px;min-height:49px;background:transparent;border:1px solid var(--line);letter-spacing:.085em;font-size:11px;text-transform:uppercase;color:var(--ink);transition:background .2s,border-color .2s}
+.tab.active{background:var(--green);color:#f5f3ee;border-color:var(--green)}
+.preview{height:clamp(360px,55vh,620px);position:relative;overflow:hidden;border:1px solid var(--line);background:#e9e4d8}
+#screen{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#screen:active{cursor:grabbing}
+.scene-cap{position:absolute;pointer-events:none;top:16px;left:20px;font-size:9px;letter-spacing:.18em;color:#6e7a6d;mix-blend-mode:multiply}
+.scene-cap.right{left:auto;right:20px}
+.loading{position:absolute;inset:0;background:#f3f1eb;display:grid;place-items:center;color:var(--quiet);font-size:12px;letter-spacing:.1em}
+.loading[hidden]{display:none}
+.controls{border-bottom:1px solid var(--line);display:flex;align-items:center;gap:24px;justify-content:space-between;padding:18px 0;flex-wrap:wrap}
+.replay{border:1px solid var(--green);background:transparent;color:var(--green);padding:8px 20px;min-height:42px;letter-spacing:.08em;font-size:11px}
+.replay:hover{color:var(--paper);background:var(--green)}
+.scrubber{flex:1;max-width:540px;min-width:210px;display:flex;align-items:center;gap:12px;color:var(--quiet);font-size:10px;letter-spacing:.1em}
+.scrubber input{width:100%;accent-color:var(--green)}
+.about{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:start;padding:26px 0 34px}
+.about h2{font:normal clamp(24px,3vw,31px)/1.2 Georgia,serif;color:var(--green);margin:0 0 12px}
+.about p{color:var(--quiet);line-height:1.95;max-width:660px;margin:0}
+.about ul{margin:3px 0 0;padding-left:20px;color:var(--quiet);line-height:2}
+.foot{border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:var(--quiet);font-size:10px;letter-spacing:.12em}
+@media(max-width:700px){main{padding:18px 20px}.header .cap{font-size:9px;letter-spacing:.05em}.intro{padding:31px 0 15px}.tabs{grid-template-columns:1fr;gap:6px}.tab{min-height:41px;padding:9px;font-size:10px}.preview{height:45dvh;min-height:355px}.about{grid-template-columns:1fr;gap:16px}.scene-cap{top:11px;left:12px}.scene-cap.right{right:12px;left:auto}.controls{gap:14px}}
+@media(prefers-reduced-motion:reduce){.tab{transition:none}}
+</style></head><body><main>
+<header class="header"><strong class="brand">GOOD THINGS,</strong><span class="cap">FORM / LIGHT / MOTION — STUDY 06</span><a href="./?intro=pinnedstage21">V21 ORIGINAL</a></header>
+<div class="intro"><div class="cap">FOUR MORE STUDIES OF A SINGLE MARK</div><h1>A different kind of movement.</h1>
+<p>四種截然不同的 LOGO 動態實驗：磁力字母、紙張鏤空、光影顯影與彈性波動。字型不重新繪製，動畫直接發生在標誌本身。</p></div>
+<nav class="tabs" role="tablist" aria-label="三種不同風格的開場動畫">
+<button class="tab active" role="tab" aria-selected="true" data-kind="magnetic">15 / MAGNETIC TYPE</button>
+<button class="tab" role="tab" aria-selected="false" data-kind="diecut">16 / PAPER DIE-CUT</button>
+<button class="tab" role="tab" aria-selected="false" data-kind="exposure">17 / LIGHT EXPOSURE</button>
+<button class="tab" role="tab" aria-selected="false" data-kind="ripple">18 / ELASTIC TYPE</button>
+</nav>
+<section class="preview" aria-label="GOOD THINGS, 原始標誌動畫預覽">
+<canvas id="screen" tabindex="0" aria-label="開場動畫，拖動可調整進度，點一下重新播放"></canvas>
+<div class="scene-cap">GOOD THINGS, / VISUAL STUDY</div><div class="scene-cap right" id="count">KINETIC STUDY / 01</div>
+<div class="loading" id="loading">LOADING THE AUTHENTIC LOGO...</div>
+</section>
+<div class="controls">
+<button id="replay" class="replay" type="button">REPLAY ↻</button>
+<label class="scrubber" for="range"><span>PROGRESS</span><input type="range" min="0" max="1000" value="0" id="range" aria-label="動畫進度"><span id="percent">0%</span></label>
+<a href="./opening-lab-design-v26.html">PREVIOUS MOTION LAB</a>
+</div>
+<div class="about"><div><h2 id="title">Magnetic Type</h2><p id="description">十個原始字母受磁場牽引，沿不同軌道逐步對準彼此，最後落在 GOOD THINGS, 原本的字距與位置。</p></div>
+<ul id="notes"><li>字母沿不同弧線靠近正確位置</li><li>細緻的磁力軌道與吸附感</li><li>最終仍是完整原始 LOGO</li></ul></div>
+<footer class="foot"><span>UNPUBLISHED STUDIES / GOOD THINGS,</span><span>SELECT · TAP · DRAG TO SCRUB</span></footer>
+</main><script>
+'use strict';
+const canvas=document.getElementById('screen'),ctx=canvas.getContext('2d');
+const slider=document.getElementById('range'),loading=document.getElementById('loading');
+const percent=document.getElementById('percent'),mark=document.getElementById('count');
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const duration=4300,clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+const fade=(a,b,x)=>smooth((x-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const random=i=>{const x=Math.sin(i*19.517+23.71)*43758.546;return x-Math.floor(x)};
+const specs={
+ magnetic:{title:'Magnetic Type',caption:'KINETIC STUDY / 01',details:'十個原始字母從不同軌道被看不見的磁力牽引，慢慢靠近原本的位置。比自由落體更理性，像被精準校正的動態字體。',notes:['十個原始字母保持原樣','沿弧線帶著慣性逐漸吸附','最後完全對準原始 LOGO']},
+ diecut:{title:'Paper Die-Cut',caption:'NEGATIVE STUDY / 02',details:'不是把 LOGO 印在紙上，而是從一張紙中把原始字形鏤空。綠色底層透過切口顯露，紙張慢慢滑離後留下完整原始標誌。',notes:['以真正 LOGO 的輪廓做鏤空','紙材厚度與負空間為視覺重心','不是普通的圖片揭露']},
+ exposure:{title:'Light Exposure',caption:'LIGHT STUDY / 03',details:'LOGO 的淡影先隱約留在紙上，一束柔和的光橫移，經過的地方顯影成完整的原始綠色。光線會直接改變標誌的可見程度。',notes:['低對比的底片顯影質感','柔和光線避免刺眼閃爍','最後呈現完整原始 LOGO']},
+ ripple:{title:'Elastic Type',caption:'TYPE STUDY / 04',details:'原始 LOGO 沿著柔軟基準線產生微小起伏，波紋從左向右穿過字母筆畫，最後歸回精準的原始 LOGO。',notes:['原始筆畫直接參與波形','不用突然飛入的替代文字','兼具當代動態字體與編輯設計感']}
+};
+let model=null,cutPaper=null,ghostLogo=null,mode='magnetic',elapsed=0,playing=!reduced,last=0,raf=0;
+let view={w:800,h:500,dpr:1},drag=null;
+function getBitmap(img){
+ const width=img.naturalWidth,height=img.naturalHeight;
+ if(width*height>2600000||width<100)return Promise.reject('Unexpected logo dimensions');
+ const base=document.createElement('canvas');base.width=width;base.height=height;
+ const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
+ const data=c.getImageData(0,0,width,height);
+ const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
+ const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
+ for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
+ let id=0;
+ for(let index=0;index<ink.length;index++){
+  if(!ink[index]||seen[index])continue;
+  let count=0,head=0,tail=1,left=width,top=height,right=0,bottom=0;
+  queue[0]=index;seen[index]=1;id++;
+  while(head<tail){
+   const n=queue[head++],x=n%width,y=Math.floor(n/width);count++;
+   labels[n]=id;left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+   const neighbors=[x? n-1:-1,x<width-1?n+1:-1,y?n-width:-1,y<height-1?n+width:-1];
+   for(const v of neighbors)if(v>=0&&ink[v]&&!seen[v]){
+    seen[v]=1;queue[tail++]=v;
+   }
+  }
+  if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
+ }
+ const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
+  const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
+  return rowA-rowB||a.x-b.x;
+ });
+ if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ function cropGlyph(c){
+  const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
+  const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const src=((c.y+y)*width+c.x+x),dest=((y+2)*o.width+x+2)*4;
+   const alpha=data.data[src*4+3];
+   let belonging=labels[src]===c.id;
+   if(!belonging&&alpha&&alpha<40){
+    for(let dy=-1;dy<=1&&!belonging;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=c.x+x+dx,yy=c.y+y+dy;
+     if(xx>=0&&yy>=0&&xx<width&&yy<height&&labels[yy*width+xx]===c.id){belonging=true;break;}
+    }
+   }
+   if(belonging){
+    for(let k=0;k<4;k++)im.data[dest+k]=data.data[src*4+k];
+   }
+  }
+  target.putImageData(im,0,0);return o;
+ }
+ const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
+ for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
+  const n=(comma.y+y)*width+comma.x+x;
+  if(labels[n]===comma.id)cmask[(y+1)*cw+x+1]=1;
+ }
+ const inside=(x,y)=>x>=0&&x<cw&&y>=0&&y<ch&&cmask[Math.floor(y)*cw+Math.floor(x)]===1;
+ // Oriented pixel-edge contours exactly follow the supplied comma's alpha.
+ const outgoing=new Map(),edges=[];
+ const key=(x,y)=>y*(cw+1)+x;
+ function add(ax,ay,bx,by){
+  const id=edges.length,k=key(ax,ay);
+  edges.push({ax,ay,bx,by,used:false});
+  if(!outgoing.has(k))outgoing.set(k,[]);
+  outgoing.get(k).push(id);
+ }
+ for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(inside(x,y)){
+  if(!inside(x,y-1))add(x,y,x+1,y);
+  if(!inside(x+1,y))add(x+1,y,x+1,y+1);
+  if(!inside(x,y+1))add(x+1,y+1,x,y+1);
+  if(!inside(x-1,y))add(x,y+1,x,y);
+ }
+ const loops=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const pts=[],first=key(edges[i].ax,edges[i].ay);
+  let current=i;
+  while(pts.length<edges.length){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push({x:e.ax,y:e.ay});
+   const k=key(e.bx,e.by);
+   if(k===first)break;
+   const next=(outgoing.get(k)||[]).find(i=>!edges[i].used);
+   if(next===undefined)break;current=next;
+  }
+  if(pts.length>20){
+   let area=0;
+   for(let n=0;n<pts.length;n++){
+    const p=pts[n],q=pts[(n+1)%pts.length];area+=p.x*q.y-p.y*q.x;
+   }
+   loops.push({area:Math.abs(area),pts});
+  }
+ }
+ loops.sort((a,b)=>b.area-a.area);
+ if(!loops.length)throw Error('Original comma contour missing');
+ // Cyclic gaussian then sample, preserving the recognisable comma tail.
+ const ring=loops[0].pts,smoothed=[];
+ const sig=2.9;
+ for(let i=0;i<ring.length;i++){
+  let sum=0,x=0,y=0;
+  for(let d=-9;d<=9;d++){
+   const weight=Math.exp(-d*d/(2*sig*sig)),p=ring[(i+d+ring.length)%ring.length];
+   x+=p.x*weight;y+=p.y*weight;sum+=weight;
+  }
+  smoothed.push({x:x/sum,y:y/sum});
+ }
+ const contour=[];
+ let lastPos=smoothed[0];
+ for(let i=0;i<smoothed.length;i++){
+  const pos=smoothed[i];
+  if(contour.length===0||Math.hypot(pos.x-lastPos.x,pos.y-lastPos.y)>=2.4){
+   contour.push(pos);lastPos=pos;
+  }
+ }
+ if(contour.length<30)throw Error('Insufficient original contour points');
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+}
+
+
+function rect(x,y,w,h,r=0){
+ ctx.beginPath();
+ if(r<=.2){ctx.rect(x,y,w,h);return}
+ const rr=Math.max(0,Math.min(r,w*.5,h*.5));
+ ctx.moveTo(x+rr,y);ctx.lineTo(x+w-rr,y);ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+ ctx.lineTo(x+w,y+h-rr);ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+ ctx.lineTo(x+rr,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+ ctx.lineTo(x,y+rr);ctx.quadraticCurveTo(x,y,x+rr,y);ctx.closePath();
+}
+function originalLayout(mult=1){
+ const aspect=model.width/model.height;
+ const width=Math.min(view.w*.75,690,(view.h*.41)*aspect)*mult;
+ const height=width/aspect;
+ return {x:(view.w-width)*.5,y:(view.h-height)*.5,w:width,h:height};
+}
+function drawLogo(alpha=1,wScale=1,dy=0){
+ const q=originalLayout(wScale);
+ ctx.save();ctx.globalAlpha=clamp(alpha);ctx.drawImage(model.source,q.x,q.y+dy,q.w,q.h);
+ ctx.restore();
+}
+function smalltype(str,x,y,opt={}){
+ ctx.save();ctx.globalAlpha=opt.alpha??1;ctx.fillStyle=opt.color||'#738171';
+ ctx.textAlign=opt.align||'left';ctx.font=(opt.size||10)+'px Arial';
+ ctx.fillText(str,x,y);ctx.restore();
+}
+function coloredLogo(color){
+ const surface=document.createElement('canvas');
+ surface.width=model.width;surface.height=model.height;
+ const brush=surface.getContext('2d');
+ brush.drawImage(model.source,0,0);
+ brush.globalCompositeOperation='source-in';
+ brush.fillStyle=color;
+ brush.fillRect(0,0,surface.width,surface.height);
+ brush.globalCompositeOperation='source-over';
+ return surface;
+}
+function drawMagnetic(t){drawLogo(fade(.15,.92,t));}
+function drawDiecut(t){drawLogo(fade(.15,.92,t));}
+function drawExposure(t){drawLogo(fade(.15,.92,t));}
+function drawRipple(t){drawLogo(fade(.15,.92,t));}
+function draw(){
+ ctx.clearRect(0,0,view.w,view.h);
+ if(!model)return;
+ const t=clamp(elapsed/duration);
+ if(mode==='magnetic')drawMagnetic(t);
+ else if(mode==='diecut')drawDiecut(t);
+ else if(mode==='exposure')drawExposure(t);
+ else if(mode==='ripple')drawRipple(t);
+ percent.textContent=Math.round(t*100)+'%';
+ if(document.activeElement!==slider)slider.value=Math.round(t*1000);
+}
+function layout(){
+ const r=canvas.getBoundingClientRect(),dpr=Math.min(3,window.devicePixelRatio||1,Math.sqrt(7000000/Math.max(1,r.width*r.height)));
+ view={w:Math.max(1,r.width),h:Math.max(1,r.height),dpr};
+ canvas.width=Math.round(view.w*dpr);canvas.height=Math.round(view.h*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';draw();
+}
+function tick(ms){
+ if(!last)last=ms;
+ const dt=Math.min(72,ms-last);last=ms;
+ if(playing){elapsed=Math.min(duration,elapsed+dt);if(elapsed>=duration)playing=false;draw()}
+ raf=requestAnimationFrame(tick);
+}
+function replay(){elapsed=reduced?duration:0;playing=!reduced;last=0;slider.value=Math.round(elapsed/duration*1000);draw();}
+function choose(key){
+ if(!specs[key])return;
+ mode=key;
+ document.querySelectorAll('[data-kind]').forEach(b=>{
+  const selected=b.dataset.kind===key;
+  b.classList.toggle('active',selected);
+  b.setAttribute('aria-selected',String(selected));
+ });
+ const spec=specs[key];
+ document.getElementById('title').textContent=spec.title;
+ document.getElementById('description').textContent=spec.details;
+ const ul=document.getElementById('notes');
+ ul.replaceChildren(...spec.notes.map(note=>{const li=document.createElement('li');li.textContent=note;return li}));
+ mark.textContent=spec.caption;
+ const u=new URL(location.href);
+ if(u.searchParams.get('mode')!==key){
+  u.searchParams.set('mode',key);history.replaceState(null,'',u.pathname+u.search+u.hash);
+ }
+ replay();
+}
+document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.kind)));
+document.getElementById('replay').addEventListener('click',replay);
+slider.addEventListener('input',()=>{playing=false;elapsed=Number(slider.value)/1000*duration;draw()});
+let movement=null;
+canvas.addEventListener('pointerdown',e=>{
+ if(!model)return;
+ movement={id:e.pointerId,x:e.clientX,y:e.clientY,time:performance.now(),start:elapsed/duration,moved:false};
+ try{canvas.setPointerCapture(e.pointerId)}catch{}
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!movement||movement.id!==e.pointerId)return;
+ const dx=e.clientX-movement.x,dy=e.clientY-movement.y;
+ if(Math.abs(dx)>5||Math.abs(dy)>5)movement.moved=true;
+ if(!movement.moved)return;
+ playing=false;
+ const amount=Math.abs(dx)>Math.abs(dy)*.82?dx/Math.max(190,view.w*.7):-dy/Math.max(190,view.h*.7);
+ elapsed=clamp(movement.start+amount)*duration;draw();
+});
+canvas.addEventListener('pointerup',e=>{
+ if(!movement||movement.id!==e.pointerId)return;
+ const click=!movement.moved;
+ movement=null;if(click)replay();
+});
+canvas.addEventListener('pointercancel',()=>movement=null);
+canvas.addEventListener('wheel',e=>{
+ if(!model||Math.abs(e.deltaY)<3)return;
+ if(elapsed>=duration-.3&&e.deltaY>0)return;
+ if(e.cancelable)e.preventDefault();
+ playing=false;
+ const unit=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*view.h:e.deltaY;
+ elapsed=clamp(elapsed+unit*2.5,0,duration);draw();
+},{passive:false});
+canvas.addEventListener('keydown',e=>{
+ let n=0;if(e.key==='ArrowRight'||e.key==='ArrowDown')n=.08;
+ if(e.key==='ArrowLeft'||e.key==='ArrowUp')n=-.08;
+ if(!n)return;e.preventDefault();playing=false;elapsed=duration*clamp(elapsed/duration+n);draw();
+});
+window.addEventListener('resize',layout,{passive:true});
+async function init(){
+ try{
+  const res=await fetch('./index.html',{cache:'force-cache'});
+  if(!res.ok)throw Error('Source website missing');
+  const doc=new DOMParser().parseFromString(await res.text(),'text/html');
+  const original=doc.querySelector('.site-header .gt-brand-logo')?.getAttribute('src');
+  if(!original||!original.startsWith('data:image/'))throw Error('Authentic GOOD THINGS, logo not found');
+  const img=new Image();img.src=original;
+  if(img.decode)await img.decode();
+  else await new Promise((yes,no)=>{img.onload=yes;img.onerror=no});
+  model=await getBitmap(img);
+  cutPaper=null;ghostLogo=null;
+  loading.hidden=true;layout();
+  const chosen=new URL(location.href).searchParams.get('mode');
+  choose(specs[chosen]?chosen:'magnetic');
+  raf=requestAnimationFrame(tick);
+ }catch(e){loading.textContent='ORIGINAL LOGO COULD NOT LOAD · '+(e?.message||String(e))}
+}
+init();
+</script></body></html>
