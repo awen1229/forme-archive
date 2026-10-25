@@ -71,6 +71,7 @@ function update(){
   send('handoff',{progress:p,target});
  }
  stage.style.setProperty('--gt-stage-opacity',String(1-smooth((p-.12)/.88)));
+ stage.style.pointerEvents=p>.83?'none':'auto';
  shell.style.setProperty('--gt-home-opacity',String(morph));
  shell.style.pointerEvents=(p>.52||skipped)?'auto':'none';
  if(!completed&&!skipped){
@@ -118,7 +119,8 @@ function onMessage(e){
   case 'gt-physics-ready':
    ready=true;lastSeek=-1;lastMorph=-1;updateSoon();break;
   case 'gt-physics-reset':
-   if(!skipped)progress(0);break;
+   if(!skipped){completed=false;progress(0);}
+   break;
   case 'gt-physics-progress':
    if(!skipped&&Number.isFinite(m.progress))
     progress(Math.max(clamp((window.scrollY-opening.offsetTop)/Math.max(1,rotateEnd()-opening.offsetTop))*.2,m.progress));
