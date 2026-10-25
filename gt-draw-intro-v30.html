@@ -68,6 +68,9 @@ header,.headline,.actions,.summary,footer{display:none!important}
   background:transparent;border:0;border-bottom:1px solid #a3b0a4;color:#637566;
   font-size:10px;letter-spacing:.13em;padding:5px 1px;cursor:pointer}
 .stage.is-finished .gt-entry-skip{display:none}
+/* A single skip control belongs to the parent overlay in production. */
+.gt-entry-skip{display:none}
+html.gt-draw-standalone .gt-entry-skip{display:block}
 @media(max-width:700px){
  .stage{height:100dvh;height:100svh;min-height:0;max-height:none}
  .stage-folio{top:23px;left:19px}.stage-folio.right{right:19px;left:auto}
@@ -477,6 +480,7 @@ function notifyParent(action){
   window.location.replace('./#/');
  }
 }
+if(window.parent===window)document.documentElement.classList.add('gt-draw-standalone');
 document.getElementById('gt-entry-skip').addEventListener('click',()=>notifyParent('skip'));
 document.querySelector('.enter-link').addEventListener('click',e=>{
  e.preventDefault();notifyParent('enter');
