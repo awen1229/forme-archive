@@ -1,0 +1,120 @@
+/*
+GOOD THINGS, / INK FRAME STUDY 01
+Optional layer after editorial edition + soft edges.
+Inspired by discreet black editorial rules / frame details in Japanese independent magazines.
+Only certain editorial focal points receive a thin ink frame.
+Original brand logo, intro, content, dark vertical MENU, warm drawer and publishing remain untouched.
+*/
+
+/* 01. A near-square, hairline ink outline anchors the featured spread.
+       Preserve the existing carousel's controls and image cropping. */
+.gt-editorial-home .gt-mag-stage {
+  border:1px solid rgba(32,35,32,.82);
+  border-radius:5px;
+  box-sizing:border-box;
+  box-shadow:none!important;
+  background:#f6f7f3;
+}
+.gt-editorial-home .gt-mag-sheet{border-radius:3px}
+
+/* 02. Main editorial marker, only one per home rather than chips everywhere. */
+.gt-editorial-home .gt-feature-intro span:first-child {
+  display:inline-flex;
+  align-items:center;
+  flex-wrap:wrap;
+  max-width:100%;
+  width:auto;
+  padding:7px 13px 6px 12px;
+  border:1px solid #313632;
+  border-radius:999px;
+  background:#fff;
+  color:#262a26;
+  font:500 10px/1.55 "Helvetica Neue",Arial,"PingFang TC",sans-serif;
+  letter-spacing:.035em;
+}
+.gt-editorial-home .gt-feature-intro span:first-child::before {
+  content:"";
+  display:block;
+  width:5px;height:5px;
+  margin-right:9px;
+  background:#315f40;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+/* 03. The small CATEGORY eyebrow becomes an outlined archival tag.
+       The reader can still distinguish it from button-shaped links. */
+.gt-mag-copy .gt-mag-type {
+  display:inline-block;
+  align-self:flex-start;
+  max-width:100%;
+  width:max-content;
+  font:500 10px/1.55 "Helvetica Neue",Arial,"PingFang TC",sans-serif;
+  letter-spacing:.035em;
+  color:#303630;
+  background:transparent;
+  border:1px solid #424842;
+  border-radius:999px;
+  padding:6px 12px;
+  margin:0 0 17px;
+  overflow-wrap:anywhere;
+}
+/* Base version's little green line needs its own space; no overlap. */
+.gt-mag-copy::before{width:19px;height:2px}
+.gt-mag-copy .gt-mag-type{margin-top:19px;padding-top:6px}
+
+/* 04. Only the first cover of each actually-published FEATURES series gets
+       a framed, printed-card feel. The other issues stay airy and unboxed. */
+.gt-issue-series .gt-issue-card:first-child{
+  border:1px solid #353a35;
+  border-radius:5px;
+  padding:12px 12px 17px;
+  background:#fff;
+  transition:border-color .18s,background-color .18s;
+}
+.gt-issue-series .gt-issue-card:first-child:hover,
+.gt-issue-series .gt-issue-card:first-child:focus-visible {
+  border-color:#315f40;
+  background:#fafcf9;
+}
+.gt-issue-series .gt-issue-card:first-child .gt-issue-cover-frame,
+.gt-issue-series .gt-issue-card:first-child .gt-issue-placeholder {
+  border-radius:2px;
+  overflow:hidden;
+}
+.gt-issue-series .gt-issue-card:first-child > small {
+  display:inline-block;
+  margin-top:15px;
+}
+
+/* 05. Editor notes / quotations are real content, not empty decorative boxes. */
+.article-body blockquote{
+  border:1px solid #323832;
+  border-radius:4px;
+  padding:18px 21px;
+  background:#fff;
+  color:#343934;
+  margin:34px 0;
+}
+.article-body blockquote p:last-child{margin-bottom:0}
+
+/* 06. Keep ARTICLE LIST, A–Z DIRECTORY and original dark MENU flat/unframed.
+       These deliberate absences preserve editorial white space. */
+
+/* Mobile typography & responsiveness. No overflowing tags. */
+@media(max-width:700px){
+ .gt-editorial-home .gt-mag-stage{border-radius:4px}
+ .gt-editorial-home .gt-feature-intro span:first-child{
+   font-size:9px;line-height:1.5;padding:6px 10px 5px;
+ }
+ .gt-mag-copy .gt-mag-type{
+   font-size:9px;max-width:100%;margin:13px 0 9px;
+   padding:5px 10px;letter-spacing:.01em;
+ }
+ .gt-mag-copy::before{top:12px}
+ .gt-issue-series .gt-issue-card:first-child{padding:10px 10px 16px}
+ .article-body blockquote{padding:15px 17px}
+}
+@media(prefers-reduced-motion:reduce){
+ .gt-issue-series .gt-issue-card:first-child{transition:none}
+}
