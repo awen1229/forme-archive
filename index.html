@@ -800,6 +800,20 @@ body.gt-drawer-open{overflow:hidden}
  }catch(e){}
 })();
 </script>
+<script>
+/* Selected editorial ink edition on protected preview only.
+   The comparison frame passes edition=none to preserve its original-vs-study controls. */
+(function(){
+ if(location.hostname!=='feature-secure-editor-cloud.forme-archive.pages.dev'||new URLSearchParams(location.search).get('edition')==='none')return;
+ [
+  './gt-curated-edition-01.css?v=20261028-integrated',
+  './gt-soft-edges-study.css?v=20261028-integrated',
+  './gt-ink-frame-study.css?v=20261028-integrated'
+ ].forEach(function(href){
+  var link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);
+ });
+})();
+</script>
 <link rel="stylesheet" href="./gt-index-profile-v2.css?v=20261028-a1">
 </head>
 <body>
