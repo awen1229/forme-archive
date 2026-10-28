@@ -1,0 +1,86 @@
+<!doctype html><html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>GOOD THINGS, / RELEASE PREVIEW / OPENING QA</title>
+<style>
+:root{color-scheme:light;--paper:#f5f5f0;--ink:#27372a;--green:#315f40;--line:#cbd3c9;font:13px/1.6 Arial,"PingFang TC","Noto Sans TC",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;color:var(--ink);background:var(--paper)}
+button,a{font:inherit}button{cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+header{padding:19px clamp(14px,3.5vw,55px);display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);background:white}
+.logo{font-weight:800;font-size:20px;letter-spacing:-1px;color:var(--green)}
+.sub{font-size:10px;letter-spacing:.1em;color:#778276}a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}
+main{max-width:1600px;margin:auto;padding:clamp(16px,2.6vw,40px) clamp(14px,3.5vw,55px) 70px}
+h1{font-size:clamp(28px,3.4vw,44px);font-weight:500;letter-spacing:-.035em;margin:9px 0}
+.lead{max-width:750px;color:#69776a;line-height:1.8;margin:0 0 22px}
+.layout{display:grid;grid-template-columns:minmax(240px,.3fr) minmax(0,1fr);gap:clamp(16px,2.4vw,35px)}
+.catalog{display:grid;gap:7px;max-height:70dvh;overflow:auto;padding-right:5px}
+.category{font-size:10px;letter-spacing:.12em;margin:19px 0 4px;color:#819083;font-weight:bold}
+.item{display:grid;grid-template-columns:28px 1fr;align-items:center;text-align:left;gap:8px;background:white;padding:11px 13px;min-height:62px;border:1px solid var(--line);border-left:3px solid transparent}
+.item:hover{border-color:#83a08a}.item[aria-pressed="true"]{border-left-color:var(--green);background:#eaf0e9}
+.item .idx{font-size:10px;color:#88978a}.item strong{display:block;font-size:13px}.item small{display:block;font-size:10px;color:#8c948c}
+.viewer{position:sticky;top:15px;min-width:0}.viewerhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}
+.viewerhead h2{font-size:24px;font-weight:500;margin:0}
+.actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.actions button,.actions a{border:1px solid var(--line);background:white;padding:9px 11px;font-size:11px;min-height:36px}
+.actions button[aria-pressed="true"]{background:var(--green);color:white}
+.surface{border:1px solid var(--line);background:#dde3db;display:flex;align-items:stretch;justify-content:center;height:clamp(460px,73dvh,820px);min-width:0;overflow:hidden;transition:background .2s}
+.surface.mobile{padding:9px;background:#d9ded7}
+.surface iframe{display:block;border:0;width:100%;height:100%;background:#f4f1e9}
+.surface.mobile iframe{max-width:390px;width:100%;box-shadow:0 7px 25px #101e132c}
+.disclaimer{font-size:11px;color:#778579;line-height:1.85;margin-top:15px;border-top:1px solid var(--line);padding-top:12px}
+@media(max-width:780px){header{padding:15px}main{padding:18px 15px}.layout{grid-template-columns:1fr}.catalog{max-height:230px}.viewer{position:static}.viewerhead{align-items:start;flex-direction:column}.surface{height:65dvh;min-height:400px}}
+</style></head><body>
+<header><span class="logo">GOOD THINGS,<span class="sub" style="display:block;font-weight:400;letter-spacing:.09em">RELEASE ACCEPTANCE / NOT LIVE</span></span>
+ <a href="https://github.com/awen1229/forme-archive/pull/7" target="_blank" rel="noopener noreferrer">REVIEW PR #7 ↗</a></header>
+<main><span class="sub">OFFICIAL SITE LAYOUT / PRE-RELEASE TEST</span><h1>Check the opening. Keep the journal.</h1>
+<p class="lead">這裡使用正式站原本的首頁排版和 LOGO，只替換預設開場動畫。選擇動畫後可直接在完整網站預覽、模擬手機寬度、重新播放。<strong>這不是正式網站，設定也不會發布給讀者。</strong></p>
+<div class="layout"><div><span class="sub">24 SELECTABLE OPENINGS</span><div class="catalog" id="catalog" aria-label="動畫版本"></div></div>
+<section class="viewer"><div class="viewerhead"><h2 id="name">手繪逗號</h2><div class="actions"><button id="again" type="button">↻ 重新播放</button><button id="phone" type="button" aria-pressed="false">手機寬度</button><a id="full" href="./?openingQA=1&mode=draw#/" target="_blank" rel="noopener">獨立開啟 ↗</a></div></div>
+<div class="surface" id="surface"><iframe id="page" title="正式站候選版本動畫預覽" loading="eager" src="./?openingQA=1&mode=draw#/" referrerpolicy="same-origin"></iframe></div>
+<div class="disclaimer">測試建議：滑鼠／觸控操作、SKIP、再進首頁、手機返回與頁面滑動、主選單、文章與品牌內頁。若動畫沒有出現或卡住，請不要將這份版本合併正式站。這裡不會讀取雲端草稿。</div></section></div>
+</main><script>
+(()=>{
+'use strict';
+const catalog=[
+ ['互動識別',[
+ ['draw','V30','手繪逗號'],['physics21','V21','滑動物理翻轉'],['physics10','V10','重力字母']]],
+ ['印刷與編輯',[
+ ['ink','V24','墨跡描繪'],['letters','V24','字母回位'],['paper','V24','雜誌揭頁'],['print','V24','左右印刷'],['offset','V24','套色校樣'],['proof','V24','編輯校樣'],['anchor','V24','倒置逗號'],['registration','V24','套印對位']]],
+ ['材質與空間',[
+ ['v25-material','V25','材質折疊'],['v25-space','V25','空間字母'],['v25-index','V25','索引翻動'],
+ ['v26-material','V26','材質壓印'],['v26-space','V26','立體折線'],['v26-index','V26','版面重組'],
+ ['magnetic','V27','磁力字母'],['diecut','V27','紙張鏤空'],['exposure','V27','光影顯影'],['ripple','V27','彈性字形']]],
+ ['極簡編輯',[['editorial28','V28','編輯錨點'],['editorial29','V29','簡約逗號']]],
+ ['設定',[['none','OFF','直接進站']]]
+];
+let current='draw',refresh=0;
+const list=document.getElementById('catalog'),view=document.getElementById('page'),surface=document.getElementById('surface');
+const buttons=[];
+for(const [heading,items] of catalog){
+ const caption=document.createElement('div');caption.className='category';caption.textContent=heading;list.append(caption);
+ for(const [mode,version,title] of items){
+  const b=document.createElement('button');b.type='button';b.className='item';b.dataset.mode=mode;
+  b.innerHTML='<span class="idx"></span><span><strong></strong><small></small></span>';
+  b.querySelector('.idx').textContent=String(buttons.length+1).padStart(2,'0');
+  b.querySelector('strong').textContent=title;b.querySelector('small').textContent=version;
+  b.addEventListener('click',()=>select(mode,title));
+  buttons.push(b);list.append(b);
+ }
+}
+function select(mode,label){
+ current=mode;document.getElementById('name').textContent=label;
+ buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
+ const url=new URL('./',location.href);
+ url.searchParams.set('openingQA','1');url.searchParams.set('mode',mode);url.searchParams.set('qaRun',String(++refresh));url.hash='#/';
+ view.src=url.toString();
+ const full=new URL(url);full.searchParams.delete('qaRun');document.getElementById('full').href=full.toString();
+}
+document.getElementById('again').addEventListener('click',()=>select(current,document.getElementById('name').textContent));
+document.getElementById('phone').addEventListener('click',e=>{
+ const mobile=surface.classList.toggle('mobile');
+ e.currentTarget.setAttribute('aria-pressed',String(mobile));
+ e.currentTarget.textContent=mobile?'還原桌面':'手機寬度';
+});
+select('draw','手繪逗號');
+})();
+</script></body></html>
