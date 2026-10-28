@@ -798,6 +798,7 @@ body.gt-drawer-open{overflow:hidden}
  }catch(e){}
 })();
 </script>
+<link rel="stylesheet" href="./gt-index-profile-v2.css?v=20261028-a1">
 </head>
 <body>
   <section class="gt-scroll-entry" id="gt-scroll-entry" aria-label="GOOD THINGS, 互動式入口">
@@ -1223,7 +1224,7 @@ async function gtSaveBrandCloud(record){
 }
 let gtPublicBrandLoadState='loading';
 async function gtLoadCloudPublishedBrands(){
- const query='*[_type == "brand" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}';
+ const query='*[_type == "brand" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{name,slug,founder,foundedYear,summary,editorNoteTitle,editorNote,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}';
  const isPreview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev';
  const url=isPreview?'/api/public/brands':'https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query='+encodeURIComponent(query);
  try{
@@ -1238,7 +1239,7 @@ async function gtLoadCloudPublishedBrands(){
   for(const [slug,original] of gtOriginalBrands)gtPublishedBrandRecords.set(slug,original);
   for(const d of records){
    if(!d?.name||!d.slug?.current)continue;
-   const b={slug:d.slug.current,name:d.name,founder:d.founder||'',founded:d.foundedYear==null?'—':String(d.foundedYear),desc:d.summary||'',tags:Array.isArray(d.tags)?d.tags:[],url:d.website||null,logo:d.logoUrl||'',logoDisplay:{scale:d.logoScale??100,x:d.logoOffsetX??0,y:d.logoOffsetY??0}};
+   const b={slug:d.slug.current,name:d.name,founder:d.founder||'',founded:d.foundedYear==null?'—':String(d.foundedYear),desc:d.summary||'',editorNoteTitle:d.editorNoteTitle||'',editorNote:d.editorNote||'',tags:Array.isArray(d.tags)?d.tags:[],url:d.website||null,logo:d.logoUrl||'',logoDisplay:{scale:d.logoScale??100,x:d.logoOffsetX??0,y:d.logoOffsetY??0}};
    gtPublishedBrandRecords.set(b.slug,b);
    gtSanityPublishedBrandSlugs.add(b.slug);
    if(localBrands.some(x=>x.slug===b.slug))continue;
@@ -1325,6 +1326,12 @@ function editorForm(){
   <label>設計師／主理人<input id="f-founder" placeholder="日文 / 英文姓名"></label>
   <label>創立年份<input id="f-founded" placeholder="例如：2021"></label>
   <label>品牌故事、理念與風格<textarea id="f-desc" placeholder="請以自己的方式整理品牌的設計理念…"></textarea></label>
+  <details class="gt-editor-fold gt-brand-note-fold">
+    <summary>EDITOR'S NOTE / 編輯筆記 <span>選填・品牌內頁的專屬黑框筆記</span></summary>
+    <p class="cms-hint">這是 GOOD THINGS, 的編輯觀點，不是官方品牌介紹。留空就不會在品牌頁出現黑框；儲存草稿不會公開。</p>
+    <label>筆記標題 / EDITOR'S NOTE TITLE<input id="f-editorNoteTitle" maxlength="180" placeholder="例如：真正耐看的衣服，未必最先被注意"></label>
+    <label>筆記內文 / OUR PERSPECTIVE<textarea id="f-editorNote" maxlength="3000" style="min-height:150px" placeholder="寫下你的觀察、感受，或為什麼想把這個品牌收進 THE INDEX…"></textarea></label>
+  </details>
   <label>風格標籤（半形逗號分隔）<input id="f-tags" placeholder="Everyday Wear, Textiles, Tailoring"></label>
   <label>官方網站<input id="f-url" type="url" placeholder="https://..."></label>
   <label>品牌 LOGO / 上傳 PNG、JPG、WebP<input id="f-logo" type="file" accept="image/png,image/jpeg,image/webp"><small class="cms-file-status" id="logo-status" role="status">${esc(editorLogoNote|| (editorLogo?'已有 LOGO，可調整顯示比例；如圖片有大片留白可點清理按鈕。':'選檔後會自動偵測留白、保留字標原比例。'))}</small></label>
@@ -1403,7 +1410,7 @@ function updatePreview(){
 }
 function resetEditor(){editingId='';editorCover='';editorLogo='';editorLogoNote='';gtBrandPendingSlug='';gtBrandDirty=false;gtCloudImageError='';gtCloudImageChoice.logo++;gtCloudImageChoice.cover++;render()}
 function fillEditor(x){
- const map=editorKind==='brand'?{name:x.name,founder:x.founder,founded:x.founded,desc:x.desc,tags:(x.tags||[]).join(', '),url:x.url}:
+ const map=editorKind==='brand'?{name:x.name,founder:x.founder,founded:x.founded,desc:x.desc,editorNoteTitle:x.editorNoteTitle||'',editorNote:x.editorNote||'',tags:(x.tags||[]).join(', '),url:x.url}:
  editorKind==='article'?{title:x.title,brand:x.brand,writer:x.writer||'',editor:x.editor||'',subject:x.subject||'clothing',category:x.category,publishedAt:gtPublicationDate(x),excerpt:x.excerpt,body:(x.body||[]).join('\n\n'),source:x.source,sourceTitle:x.sourceTitle,publisher:x.publisher,sourceAuthor:x.sourceAuthor,sourceDate:x.sourceDate,coverFit:x.coverFit||'cover',coverMobileFit:x.coverMobileFit||'cover',coverMobileZoom:x.coverMobileZoom??100,coverZoom:x.coverZoom??100,coverX:x.coverX??50,coverY:x.coverY??50,coverMobileX:x.coverMobileX??x.coverX??50,coverMobileY:x.coverMobileY??x.coverY??50,publicationSection:x.publicationSection||'both'}:
  {title:x.title,brand:x.brand,category:x.type,excerpt:x.summary,season:x.season,publisher:x.publisher,date:x.date,source:x.url};
  for(const [k,v] of Object.entries(map)){const el=document.getElementById('f-'+k);if(el)el.value=v||''}
@@ -1435,7 +1442,7 @@ async function saveEditor(){
  if(editorKind==='brand'){
   if(!fval('name'))return alert('請輸入品牌名稱');
   if(brands.some(b=>b.name.trim().toLocaleLowerCase()===fval('name').toLocaleLowerCase()&&b.slug!==editingId))return alert('品牌名稱已存在，請避免重複新增；請從下方品牌列表選擇「編輯」。');
-  x={slug:editingId||(gtCloudEditorEnabled?(gtBrandPendingSlug||(gtBrandPendingSlug=basicSlug())):basicSlug()),name:fval('name'),founder:fval('founder'),founded:fval('founded'),desc:fval('desc'),tags:fval('tags').split(',').map(s=>s.trim()).filter(Boolean),url:fval('url')||null,logo:editorLogo,logoDisplay:{scale:Number(fval('logoScale')||100),x:Number(fval('logoX')||0),y:Number(fval('logoY')||0)}};
+  x={slug:editingId||(gtCloudEditorEnabled?(gtBrandPendingSlug||(gtBrandPendingSlug=basicSlug())):basicSlug()),name:fval('name'),founder:fval('founder'),founded:fval('founded'),desc:fval('desc'),editorNoteTitle:fval('editorNoteTitle'),editorNote:fval('editorNote'),tags:fval('tags').split(',').map(s=>s.trim()).filter(Boolean),url:fval('url')||null,logo:editorLogo,logoDisplay:{scale:Number(fval('logoScale')||100),x:Number(fval('logoX')||0),y:Number(fval('logoY')||0)}};
  }else if(editorKind==='article'){
   if(!fval('title')||!fval('excerpt')||!fval('body'))return alert('請填寫標題、摘要與正文');
   x={slug:editingId||basicSlug(),title:fval('title'),brand:fval('brand'),writer:fval('writer'),editor:fval('editor'),subject:fval('subject')||'clothing',category:fval('category'),publishedAt:fval('publishedAt')||gtLocalDate(),createdAt:(articles.find(a=>a.slug===editingId)||{}).createdAt||new Date().toISOString(),updatedAt:new Date().toISOString(),excerpt:fval('excerpt'),body:fval('body').split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean),source:fval('source')||null,sourceTitle:fval('sourceTitle'),publisher:fval('publisher'),sourceAuthor:fval('sourceAuthor'),sourceDate:fval('sourceDate'),reviewedAt:new Date().toLocaleDateString('en-CA'),cover:editorCover,coverFit:fval('coverFit')||'cover',coverMobileFit:fval('coverMobileFit')||'cover',coverMobileZoom:Number(fval('coverMobileZoom')||100),coverZoom:Number(fval('coverZoom')||100),coverX:Number(fval('coverX')??50),coverY:Number(fval('coverY')??50),coverMobileX:Number(fval('coverMobileX')??50),coverMobileY:Number(fval('coverMobileY')??50),publicationSection:fval('publicationSection')||'stories'};
@@ -2118,5 +2125,6 @@ gtLoadCloudPublishedBrands();
 <script src="./gt-home-intro-scroll-v19.js?v=pinned19" defer></script>
 <script src="./gt-home-intro-scroll-v20.js?v=pinned20" defer></script>
 <script src="./gt-home-intro-scroll-v21.js?v=pinned21" defer></script>
+<script src="./gt-index-profile-v2.js?v=20261028-a1" defer></script>
 </body>
 </html>
