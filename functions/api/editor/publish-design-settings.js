@@ -4,7 +4,7 @@ const CHOICES={headingFont:['original','sans','serif','mixed'],textScale:['compa
 export async function onRequestPost({request,env}){
  try{
   await requireEditor(request,env)
-  if(env.ENABLE_PRODUCTION_PUBLISH!=='true'||env.ENABLE_DESIGN_SETTINGS_PUBLISH!=='true')throw new AuthError(403,'視覺設定正式發布尚未開放；請先部署主站樣式支援')
+  if(env.ENABLE_PRODUCTION_PUBLISH!=='true')throw new AuthError(403,'正式發布尚未在編輯器環境啟用')
   if(request.headers.get('Origin')!==new URL(request.url).origin)throw new AuthError(403,'來源驗證失敗')
   if(!request.headers.get('content-type')?.startsWith('application/json'))throw new AuthError(415,'必須使用 JSON')
   const token=env.SANITY_EDITOR_TOKEN
