@@ -76,10 +76,18 @@ function complete(){
 function onKey(e){if(e.key==='Escape'&&overlay){e.preventDefault();complete()}}
 function onRoute(){if(!home()&&overlay)complete()}
 function onMessage(e){
- if(!overlay||leaving||active?.mode!=='draw'||e.origin!==ORIGIN||e.source!==frame?.contentWindow)return;
- if(e.data?.type!==TYPE)return;
- if(e.data.action==='ready'){ready=true;clearTimeout(timeout)}
- else if(['done','skip','enter','error'].includes(e.data.action))complete();
+ if(!overlay||leaving||e.origin!==ORIGIN||e.source!==frame?.contentWindow)return;
+ if(active?.mode==='draw'){
+  if(e.data?.type!==TYPE)return;
+  if(e.data.action==='ready'){ready=true;clearTimeout(timeout)}
+  else if(['done','skip','enter','error'].includes(e.data.action))complete();
+  return;
+ }
+ if(!['physics10','physics21'].includes(active?.mode))return;
+ if(e.data?.type==='gt-physics-ready'){ready=true;clearTimeout(timeout)}
+ else if(e.data?.type==='gt-physics-complete'){
+  clearTimeout(finishTimer);finishTimer=setTimeout(complete,900);
+ }else if(e.data?.type==='gt-physics-fail')complete();
 }
 function attach(){
  if(listenersAttached)return;listenersAttached=true;
@@ -101,6 +109,7 @@ function studyUrl(setting){
  const spec=modes[setting.mode];
  const url=new URL('./'+spec.file,location.href);
  if(spec.param)url.searchParams.set(spec.param,spec.value);
+ if(['physics10','physics21'].includes(setting.mode))url.searchParams.set('embed','1');
  return url.toString();
 }
 function watchLab(){
@@ -127,7 +136,7 @@ function watchLab(){
     ready=true;
     // Physical simulations are gesture-led. Never auto-close before the visitor can play.
     if(active.mode==='physics21'||active.mode==='physics10'){
-     timeout=setTimeout(complete,28000);clearInterval(loaderTimer);return;
+     timeout=setTimeout(complete,45000);clearInterval(loaderTimer);return;
     }
    }
    const input=inner?.getElementById('range')||inner?.getElementById('scrub');
