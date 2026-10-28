@@ -3,7 +3,7 @@
    page-level touch interceptor. It unmounts at full homepage handoff. */
 (()=>{'use strict';
 const query=new URLSearchParams(location.search);
-if(query.get('intro')!=='pinnedstage21')return;
+if(query.get('intro')!=='pinnedstage21'&&document.documentElement.dataset.gtOpeningSelected!=='physics21')return;
 const root=document.documentElement,opening=document.getElementById('gt-scroll-entry');
 const shell=document.querySelector('.site-shell');
 const home=()=>!location.hash||location.hash==='#'||location.hash==='#/';
@@ -96,6 +96,8 @@ function unbindBlockingInput(keepTouch=false){
 function finishHomepage(extraScroll=0){
  if(dead||phase==='home')return;
  phase='home';turn=1;blend=1;
+ window.GTOpening?.markSeen('physics21');
+ window.GTOpening?.cleanUrl();
  // Order matters on iOS: release document CSS locks and take the fixed
  // touch-action:none scene out of hit-testing *before* the next gesture.
  root.classList.remove('gt-scroll-entry-ready','gt-scroll-entry-pinnedstage21');
