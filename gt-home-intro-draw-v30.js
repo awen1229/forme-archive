@@ -56,6 +56,7 @@
  function end(){
   if(completed)return;completed=true;
   try{sessionStorage.setItem('gt-draw-entry-v30','done')}catch(_){}
+  window.GTOpening?.markSeen('draw');
   overlay.classList.add('is-completing');
   const cleanup=()=>{
    root.classList.remove('gt-scroll-entry-ready','gt-draw-opening');
@@ -64,6 +65,7 @@
    window.removeEventListener('keydown',onKey);
    window.removeEventListener('hashchange',onRoute);
    clearTimeout(cleanupTimer);clearTimeout(finishTimer);clearTimeout(watchdog);
+   window.GTOpening?.cleanUrl();
    if(requested){
     const url=new URL(location.href);
     if(['draw','draw-replay','replay'].includes(url.searchParams.get('intro'))) {
