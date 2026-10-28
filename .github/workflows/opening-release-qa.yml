@@ -1,0 +1,42 @@
+name: Opening release remote acceptance
+on:
+  push:
+    branches:
+      - release/opening-selector-safe-20261028
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  remote-acceptance:
+    name: Sanity CORS and candidate resources
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check controller syntax
+        run: node --check gt-opening-public-controller.js
+      - name: Check variant selector syntax
+        run: node --check gt-opening-study-param.js
+      - name: Check Sanity CORS, Cloudflare candidate, and official site
+        run: node .github/scripts/opening-remote-qa.mjs
+
+  browser-acceptance:
+    name: Local Chromium opening smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium test runner
+        run: |
+          npm install --no-save playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Start isolated local website
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/opening-site.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/ > /dev/null && exit 0; sleep 1; done
+          cat /tmp/opening-site.log
+          exit 1
+      - name: Test original homepage handoff in Chromium
+        run: node .github/scripts/opening-browser-qa.mjs

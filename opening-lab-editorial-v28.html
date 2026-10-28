@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f2eb">
+<title>GOOD THINGS, / EDITORIAL ANCHOR / OPENING STUDY V28</title>
+<style>
+:root{--paper:#f4f2eb;--green:#315f40;--ink:#39483c;--sub:#788374;--rule:#c2cabe;--sheet:#eae7dc}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:13px/1.65 Arial,"Noto Sans TC","PingFang TC",sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}a:hover{color:var(--green)}
+main{max-width:1380px;min-height:100dvh;margin:0 auto;padding:clamp(18px,3vw,45px) clamp(20px,5vw,76px)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:17px;border-bottom:1px solid var(--rule)}
+.brand{font-weight:700;color:var(--green);font-size:15px;letter-spacing:.07em}
+.micro{font-size:10px;color:var(--sub);letter-spacing:.15em}
+.intro{text-align:center;padding:clamp(22px,4vw,48px) 5px 24px}
+.intro h1{font:normal clamp(27px,4vw,47px)/1.2 Georgia,serif;letter-spacing:-.018em;color:var(--green);margin:9px 0 13px}
+.intro p{color:var(--sub);margin:0 auto;max-width:720px;font-size:12px;line-height:1.85}
+.stage-wrap{position:relative;overflow:hidden;border:1px solid var(--rule);background:var(--paper);height:min(60vh,630px);min-height:350px}
+.stage-wrap canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.stage-wrap canvas:active{cursor:grabbing}
+.stage-label{position:absolute;top:18px;left:22px;pointer-events:none;font-size:10px;letter-spacing:.16em;color:var(--sub)}
+.stage-label.right{left:auto;right:22px}
+.stage-hint{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);white-space:nowrap;pointer-events:none;font-size:9px;letter-spacing:.13em;color:var(--sub);opacity:.74}
+.loader{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--sub);font-size:11px;letter-spacing:.11em;text-align:center;padding:30px}
+.loader[hidden]{display:none}
+.control-row{display:flex;gap:15px;justify-content:space-between;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding:18px 0}
+.control-row button{background:transparent;border:1px solid var(--green);color:var(--green);min-height:42px;padding:8px 17px;font-size:11px;letter-spacing:.08em}
+.control-row button:hover{background:var(--green);color:var(--paper)}
+.control-row .quiet{border-color:var(--rule);color:var(--sub)}
+.slider{display:flex;align-items:center;gap:13px;flex:1;min-width:190px;max-width:520px;color:var(--sub);font-size:10px;letter-spacing:.1em}
+.slider input{flex:1;min-width:75px;accent-color:var(--green)}
+.notes{padding:25px 0 29px;display:grid;grid-template-columns:1fr 1.08fr;gap:40px}
+.notes h2{margin:0 0 9px;font:normal 26px Georgia,serif;color:var(--green)}
+.notes p{margin:0;color:var(--sub);line-height:1.9;max-width:520px}
+.notes ul{margin:0;padding-left:18px;color:var(--sub);line-height:2.1}
+footer{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;padding-top:15px;border-top:1px solid var(--rule);font-size:10px;letter-spacing:.14em;color:var(--sub)}
+@media(max-width:700px){main{padding:17px 19px}.top .micro{font-size:9px;letter-spacing:.05em}.brand{font-size:13px}.intro{padding:24px 0 18px}.intro p{font-size:11px}.stage-wrap{height:48dvh;min-height:345px}.stage-label{left:12px;top:13px;font-size:9px}.stage-label.right{right:12px;left:auto}.control-row{gap:11px}.control-row button{padding:8px 12px}.control-row .slider{order:3;flex-basis:100%;max-width:none}.notes{grid-template-columns:1fr;gap:12px}.notes h2{font-size:24px}.stage-hint{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.stage-hint{display:none}}
+</style></head><body>
+<main>
+<header class="top"><strong class="brand">GOOD THINGS,</strong><span class="micro">OPENING MOTION STUDY / V28</span><a href="./?intro=pinnedstage21">ORIGINAL V21</a></header>
+<section class="intro"><div class="micro">THE MARK, THE PAGE, THE CONTINUATION</div><h1>Editorial Anchor.</h1>
+<p>一個逗號，帶出整份版面。原始字母在紙張鏤空中逐漸對準位置，最後只留下完整的 GOOD THINGS,。</p></section>
+<div class="stage-wrap">
+<canvas id="artboard" tabindex="0" aria-label="GOOD THINGS, 原始標誌開場動畫：拖曳調整進度，輕觸重新播放"></canvas>
+<div class="stage-label">GOOD THINGS,  /  EDITORIAL PROOF</div>
+<div class="stage-label right">ISSUE 001</div>
+<div class="stage-hint">DRAG TO EXPLORE · TAP TO REPLAY</div>
+<div class="loader" id="loader">PREPARING THE ORIGINAL LETTERFORMS...</div>
+</div>
+<div class="control-row">
+<button id="replay" type="button">REPLAY</button>
+<button id="skip" class="quiet" type="button">VIEW FINAL</button>
+<label class="slider" for="scrub"><span>PROGRESS</span><input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="手動控制動畫進度"><span id="progress">0%</span></label>
+<a href="./opening-lab-alternatives-v24.html?mode=anchor">COMPARE V24</a>
+</div>
+<section class="notes"><div><h2>One comma. A continuing story.</h2><p>逗號不是裝飾，而是版面秩序的起點。印刷的裁切記號和紙張質感只短暫存在，為原始 LOGO 留出最清楚的位置。</p></div><ul><li>原始逗號翻轉並移向真正的 LOGO 位置</li><li>出血框、裁切線與格線跟隨逗號建立版面</li><li>真正的原始字母鏤空對位，最後完整收束</li><li>單一手勢、可重播、無額外操作關卡</li></ul></section>
+<footer><span>GOOD THINGS, / UNPUBLISHED EXPERIMENT</span><span>ORIGINAL MARK PRESERVED · MOBILE FIRST</span></footer>
+</main><script>
+'use strict';
+const canvas=document.getElementById('artboard'),ctx=canvas.getContext('2d');
+const loading=document.getElementById('loader'),slider=document.getElementById('scrub'),percent=document.getElementById('progress');
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DURATION=3400;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=p=>{p=clamp(p);return p*p*(3-2*p)};
+const between=(a,b,p)=>ease((p-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p;
+let model=null,textInk=null,textDiecut=null,softInk=null,size={w:800,h:460,dpr:1};
+let elapsed=reduceMotion?DURATION:0,running=!reduceMotion,last=0,raf=0,drag=null;
+function getBitmap(img){
+ const width=img.naturalWidth,height=img.naturalHeight;
+ if(width*height>2600000||width<100)return Promise.reject('Unexpected logo dimensions');
+ const base=document.createElement('canvas');base.width=width;base.height=height;
+ const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
+ const data=c.getImageData(0,0,width,height);
+ const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
+ const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
+ for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
+ let id=0;
+ for(let index=0;index<ink.length;index++){
+  if(!ink[index]||seen[index])continue;
+  let count=0,head=0,tail=1,left=width,top=height,right=0,bottom=0;
+  queue[0]=index;seen[index]=1;id++;
+  while(head<tail){
+   const n=queue[head++],x=n%width,y=Math.floor(n/width);count++;
+   labels[n]=id;left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+   const neighbors=[x? n-1:-1,x<width-1?n+1:-1,y?n-width:-1,y<height-1?n+width:-1];
+   for(const v of neighbors)if(v>=0&&ink[v]&&!seen[v]){
+    seen[v]=1;queue[tail++]=v;
+   }
+  }
+  if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
+ }
+ const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
+  const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
+  return rowA-rowB||a.x-b.x;
+ });
+ if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ function cropGlyph(c){
+  const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
+  const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const src=((c.y+y)*width+c.x+x),dest=((y+2)*o.width+x+2)*4;
+   const alpha=data.data[src*4+3];
+   let belonging=labels[src]===c.id;
+   if(!belonging&&alpha&&alpha<40){
+    for(let dy=-1;dy<=1&&!belonging;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=c.x+x+dx,yy=c.y+y+dy;
+     if(xx>=0&&yy>=0&&xx<width&&yy<height&&labels[yy*width+xx]===c.id){belonging=true;break;}
+    }
+   }
+   if(belonging){
+    for(let k=0;k<4;k++)im.data[dest+k]=data.data[src*4+k];
+   }
+  }
+  target.putImageData(im,0,0);return o;
+ }
+ const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
+ for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
+  const n=(comma.y+y)*width+comma.x+x;
+  if(labels[n]===comma.id)cmask[(y+1)*cw+x+1]=1;
+ }
+ const inside=(x,y)=>x>=0&&x<cw&&y>=0&&y<ch&&cmask[Math.floor(y)*cw+Math.floor(x)]===1;
+ // Oriented pixel-edge contours exactly follow the supplied comma's alpha.
+ const outgoing=new Map(),edges=[];
+ const key=(x,y)=>y*(cw+1)+x;
+ function add(ax,ay,bx,by){
+  const id=edges.length,k=key(ax,ay);
+  edges.push({ax,ay,bx,by,used:false});
+  if(!outgoing.has(k))outgoing.set(k,[]);
+  outgoing.get(k).push(id);
+ }
+ for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(inside(x,y)){
+  if(!inside(x,y-1))add(x,y,x+1,y);
+  if(!inside(x+1,y))add(x+1,y,x+1,y+1);
+  if(!inside(x,y+1))add(x+1,y+1,x,y+1);
+  if(!inside(x-1,y))add(x,y+1,x,y);
+ }
+ const loops=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const pts=[],first=key(edges[i].ax,edges[i].ay);
+  let current=i;
+  while(pts.length<edges.length){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push({x:e.ax,y:e.ay});
+   const k=key(e.bx,e.by);
+   if(k===first)break;
+   const next=(outgoing.get(k)||[]).find(i=>!edges[i].used);
+   if(next===undefined)break;current=next;
+  }
+  if(pts.length>20){
+   let area=0;
+   for(let n=0;n<pts.length;n++){
+    const p=pts[n],q=pts[(n+1)%pts.length];area+=p.x*q.y-p.y*q.x;
+   }
+   loops.push({area:Math.abs(area),pts});
+  }
+ }
+ loops.sort((a,b)=>b.area-a.area);
+ if(!loops.length)throw Error('Original comma contour missing');
+ // Cyclic gaussian then sample, preserving the recognisable comma tail.
+ const ring=loops[0].pts,smoothed=[];
+ const sig=2.9;
+ for(let i=0;i<ring.length;i++){
+  let sum=0,x=0,y=0;
+  for(let d=-9;d<=9;d++){
+   const weight=Math.exp(-d*d/(2*sig*sig)),p=ring[(i+d+ring.length)%ring.length];
+   x+=p.x*weight;y+=p.y*weight;sum+=weight;
+  }
+  smoothed.push({x:x/sum,y:y/sum});
+ }
+ const contour=[];
+ let lastPos=smoothed[0];
+ for(let i=0;i<smoothed.length;i++){
+  const pos=smoothed[i];
+  if(contour.length===0||Math.hypot(pos.x-lastPos.x,pos.y-lastPos.y)>=2.4){
+   contour.push(pos);lastPos=pos;
+  }
+ }
+ if(contour.length<30)throw Error('Insufficient original contour points');
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+}
+
+
+function makeAssets(){
+ const c=model.comma;
+ textInk=document.createElement('canvas');
+ textInk.width=model.width;textInk.height=model.height;
+ const ic=textInk.getContext('2d');
+ ic.drawImage(model.source,0,0);
+ // Only the original ten glyphs may show through the die-cut sheet:
+ // this eliminates a second comma while the original comma rotates.
+ ic.clearRect(c.x-4,c.y-4,c.w+8,c.h+8);
+ textDiecut=document.createElement('canvas');
+ textDiecut.width=model.width;textDiecut.height=model.height;
+ const dc=textDiecut.getContext('2d');
+ dc.fillStyle='#eae7dc';
+ dc.fillRect(0,0,model.width,model.height);
+ dc.globalCompositeOperation='destination-out';
+ dc.drawImage(textInk,0,0);
+ dc.globalCompositeOperation='source-over';
+ softInk=document.createElement('canvas');
+ softInk.width=model.width;softInk.height=model.height;
+ const sc=softInk.getContext('2d');
+ sc.drawImage(textInk,0,0);
+ sc.globalCompositeOperation='source-in';sc.fillStyle='#aab7a5';
+ sc.fillRect(0,0,model.width,model.height);sc.globalCompositeOperation='source-over';
+}
+function fitLogo(){
+ const aspect=model.width/model.height;
+ const width=Math.min(size.w*(size.w<600?.78:.69),690,size.h*.36*aspect);
+ const height=width/aspect;
+ return {x:(size.w-width)/2,y:(size.h-height)/2,w:width,h:height,scale:width/model.width};
+}
+function exactFinal(q){ctx.drawImage(model.source,q.x,q.y,q.w,q.h)}
+function micro(text,x,y,align='left',alpha=1){
+ ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#788c7c';
+ ctx.font=(size.w<600?8:9)+'px Arial';ctx.textAlign=align;
+ ctx.fillText(text,x,y);ctx.restore();
+}
+function commaPosition(q,p){
+ const c=model.comma;
+ const slide=between(.19,.72,p),flip=between(.06,.43,p);
+ const targetX=q.x+(c.x+c.w*.5)*q.scale,targetY=q.y+(c.y+c.h*.5)*q.scale;
+ const firstX=size.w*.50,firstY=size.h*.48;
+ const cx=lerp(firstX,targetX,slide),cy=lerp(firstY,targetY,slide);
+ const large=Math.min(112,size.w*.22,size.h*.31);
+ const width=lerp(large,c.w*q.scale,slide);
+ return {x:cx,y:cy,w:width,h:width*c.h/c.w,angle:Math.PI*(1-flip),slide};
+}
+function printScaffold(q,p,comma){
+ const reveal=between(.12,.41,p),out=1-between(.72,.975,p);
+ if(reveal<=0||out<=0)return;
+ const alpha=reveal*out;
+ const m=Math.min(size.w<600?15:34,size.w*.042),v=Math.max(23,q.h*.46);
+ const x=q.x-m,y=q.y-v,w=q.w+2*m,h=q.h+2*v;
+ const bleed=Math.max(8,Math.min(14,size.w*.014));
+ ctx.save();ctx.globalAlpha=.62*alpha;ctx.strokeStyle='#a4b2a2';ctx.lineWidth=.75;
+ // The grid extends from the current comma anchor into a page rectangle.
+ const weight=between(.15,.58,p);
+ ctx.strokeRect(x,y,w*weight,h);
+ ctx.setLineDash([3,5]);ctx.globalAlpha=.27*alpha;
+ ctx.strokeRect(x-bleed,y-bleed,(w+bleed*2)*weight,h+bleed*2);
+ ctx.setLineDash([]);ctx.globalAlpha=.52*alpha;
+ const k=Math.min(11,size.w*.019);
+ for(const [xx,sx] of [[x,-1],[x+w,1]]){
+  for(const [yy,sy] of [[y,-1],[y+h,1]]){
+   ctx.beginPath();ctx.moveTo(xx+sx*2,yy);ctx.lineTo(xx+sx*(k+5),yy);
+   ctx.moveTo(xx,yy+sy*2);ctx.lineTo(xx,yy+sy*(k+5));ctx.stroke();
+  }
+ }
+ ctx.globalAlpha=.18*alpha;
+ for(const split of [1/3,2/3]){
+  ctx.beginPath();ctx.moveTo(x+w*split,y);
+  ctx.lineTo(x+w*split,y+h);ctx.stroke();
+ }
+ // The guides are literally registered to the moving comma.
+ const goalX=q.x+(model.comma.x+model.comma.w*.5)*q.scale;
+ const targetLineY=q.y+q.h*.5;
+ ctx.beginPath();
+ ctx.moveTo(comma.x,comma.y);
+ ctx.lineTo(lerp(comma.x,goalX,weight),lerp(comma.y,targetLineY,weight));
+ ctx.stroke();
+ ctx.restore();
+ const textAlpha=alpha*.63;
+ micro('GOOD THINGS, / AN INDEPENDENT JOURNAL',x,Math.max(18,y-16),'left',textAlpha);
+ micro('GT   /   NO. 001',x+w,Math.min(size.h-30,y+h+25),'right',textAlpha);
+}
+function drawDiecut(q,p){
+ // Authentic glyphs: paper contains holes of the exact supplied shapes.
+ const align=between(.32,.81,p);
+ const ink=between(.19,.54,p);
+ const disappear=between(.80,.975,p);
+ const dx=(1-align)*(-Math.min(25,q.w*.076));
+ const dy=(1-align)*Math.min(14,size.h*.035);
+ const pad=Math.min(10,size.w*.02);
+ ctx.save();ctx.globalAlpha=1-disappear*.95;
+ ctx.shadowColor='rgba(63,64,56,.13)';
+ ctx.shadowBlur=11;ctx.shadowOffsetY=3;
+ ctx.fillStyle='#eae7dc';
+ ctx.fillRect(q.x+dx-pad,q.y+dy-pad,q.w+2*pad,q.h+2*pad);
+ ctx.restore();
+ // Put REAL source ink under the cut-out before the paper aligns.
+ ctx.save();ctx.globalAlpha=.26+.74*ink;
+ ctx.drawImage(textInk,q.x,q.y,q.w,q.h);ctx.restore();
+ // The negative mask is shifted, so letter visibility depends on registration.
+ ctx.save();ctx.globalAlpha=1-disappear;
+ ctx.drawImage(textDiecut,q.x+dx,q.y+dy,q.w,q.h);
+ ctx.restore();
+ // A faint embossed impression visible only before registration.
+ const shade=(1-align)*(1-disappear)*.16;
+ if(shade>.002){
+  ctx.save();ctx.globalAlpha=shade;
+  ctx.drawImage(softInk,q.x+dx+1,q.y+dy+1,q.w,q.h);
+  ctx.restore();
+ }
+ // A shadowless sheet edge on the white field, not a computer UI.
+ ctx.save();ctx.globalAlpha=.27*(1-disappear);
+ ctx.strokeStyle='#a9b5a7';ctx.lineWidth=.6;
+ ctx.strokeRect(q.x+dx-pad,q.y+dy-pad,q.w+2*pad,q.h+2*pad);
+ ctx.restore();
+}
+function drawComma(p,q,pos){
+ const c=model.comma;
+ ctx.save();ctx.globalAlpha=1-between(.91,.995,p);
+ ctx.translate(pos.x,pos.y);ctx.rotate(pos.angle);
+ ctx.drawImage(model.source,c.x,c.y,c.w,c.h,-pos.w*.5,-pos.h*.5,pos.w,pos.h);
+ ctx.restore();
+}
+function render(){
+ ctx.clearRect(0,0,size.w,size.h);
+ if(!model)return;
+ const p=clamp(elapsed/DURATION),q=fitLogo();
+ ctx.fillStyle='#f4f2eb';ctx.fillRect(0,0,size.w,size.h);
+ const pos=commaPosition(q,p);
+ // Guides come from the anchor, but never cover or redraw the final logo.
+ printScaffold(q,p,pos);
+ if(p>.15)drawDiecut(q,p);
+ drawComma(p,q,pos);
+ const finale=between(.90,1,p);
+ if(finale>0){
+  ctx.save();ctx.globalAlpha=finale;
+  ctx.fillStyle='#f4f2eb';ctx.fillRect(0,0,size.w,size.h);
+  exactFinal(q);
+  ctx.restore();
+ }
+ percent.textContent=Math.round(p*100)+'%';
+ if(document.activeElement!==slider)slider.value=Math.round(p*1000);
+}
+function layout(){
+ const r=canvas.getBoundingClientRect();
+ const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,3,Math.sqrt(6500000/Math.max(1,r.width*r.height))));
+ size={w:Math.max(1,r.width),h:Math.max(1,r.height),dpr};
+ canvas.width=Math.round(size.w*dpr);canvas.height=Math.round(size.h*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ render();
+}
+function play(ms){
+ raf=requestAnimationFrame(play);
+ if(!last)last=ms;
+ const dt=Math.min(65,ms-last);last=ms;
+ if(running){elapsed=Math.min(DURATION,elapsed+dt);render();
+  if(elapsed>=DURATION)running=false}
+}
+function restart(){
+ elapsed=reduceMotion?DURATION:0;
+ running=!reduceMotion;last=0;
+ slider.value=Math.round(elapsed/DURATION*1000);
+ render();
+}
+function skip(){running=false;elapsed=DURATION;slider.value=1000;render()}
+document.getElementById('replay').addEventListener('click',restart);
+document.getElementById('skip').addEventListener('click',skip);
+slider.addEventListener('input',()=>{
+ running=false;elapsed=Number(slider.value)/1000*DURATION;render();
+});
+canvas.addEventListener('pointerdown',e=>{
+ if(!model)return;
+ drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:elapsed/DURATION,moved:false};
+ running=false;
+ try{canvas.setPointerCapture(e.pointerId)}catch{}
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!drag||drag.id!==e.pointerId)return;
+ const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+ if(Math.abs(dx)>5||Math.abs(dy)>5)drag.moved=true;
+ if(!drag.moved)return;
+ const amount=Math.abs(dx)>Math.abs(dy)*.78
+  ?dx/Math.max(size.w*.73,190):-dy/Math.max(size.h*.75,190);
+ elapsed=DURATION*clamp(drag.start+amount);
+ render();
+});
+canvas.addEventListener('pointerup',e=>{
+ if(!drag||drag.id!==e.pointerId)return;
+ const wasTap=!drag.moved;
+ drag=null;
+ if(wasTap)restart();
+ else if(!reduceMotion&&elapsed<DURATION){running=true;last=0}
+});
+canvas.addEventListener('pointercancel',()=>{
+ drag=null;if(!reduceMotion&&elapsed<DURATION){running=true;last=0}
+});
+canvas.addEventListener('keydown',e=>{
+ let change=0;
+ if(e.key==='ArrowRight'||e.key==='ArrowDown')change=.07;
+ if(e.key==='ArrowLeft'||e.key==='ArrowUp')change=-.07;
+ if(!change)return;
+ e.preventDefault();running=false;
+ elapsed=DURATION*clamp(elapsed/DURATION+change);render();
+});
+window.addEventListener('resize',layout,{passive:true});
+async function init(){
+ try{
+  const res=await fetch('./index.html',{cache:'force-cache'});
+  if(!res.ok)throw Error('Site source unavailable: '+res.status);
+  const dom=new DOMParser().parseFromString(await res.text(),'text/html');
+  const src=dom.querySelector('.site-header .gt-brand-logo')?.getAttribute('src');
+  if(!src||!src.startsWith('data:image/'))throw Error('Original site logo missing');
+  const img=new Image();img.src=src;
+  if(img.decode)await img.decode();
+  else await new Promise((yes,no)=>{img.onload=yes;img.onerror=no});
+  model=await getBitmap(img);
+  makeAssets();loading.hidden=true;
+  layout();raf=requestAnimationFrame(play);
+ }catch(e){loading.textContent='ORIGINAL LOGO COULD NOT LOAD · '+(e?.message||e)}
+}
+init();
+</script></body></html>
