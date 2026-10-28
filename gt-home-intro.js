@@ -3,6 +3,8 @@
    replacing the authentic original letterforms or comma outline. */
 (()=>{'use strict';
 const root=document.documentElement;
+// The selected V30 drawing intro owns the overlay on the protected preview.
+if(root.classList.contains('gt-draw-opening'))return;
 // The reversible scroll-lab owns this intro only on its opt-in preview URL.
 if(['scrolllab','scrollstage','pinnedstage','pinnedstage19','pinnedstage20','pinnedstage21'].includes(new URLSearchParams(location.search).get('intro')))return;
 const overlay=document.getElementById('gt-scroll-entry');
