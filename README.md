@@ -193,3 +193,11 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 4. Then the protected Studio enables the button; user saves desired mode and repeat settings, compares preview, explicitly confirms one-click publish, and the public runtime reads the newly published Sanity document. Keep a record of the previous chosen mode for a quick reversal.
 
 **Safeguard:** No merge to main, no Sanity production mutation, no Cloudflare flag changes and no live official opening switch were performed by this request. Static JS checks passed for the new client, functions and index. Browser/server authentication and full end-to-end publication remain unverified.
+
+## GOOD THINGS, editorial side drawer motion · 2026-10-28
+
+- Owner requested AH.H-like *motion* (a visible right-hand sheet sliding in and retracting), while preserving the existing GOOD THINGS, menu structure, typography and warm-paper colors.
+- Preview branch only: added `gt-drawer-motion.css`; `index.html` links the new sheet styles and updates `setGtDrawer` to keep the backdrop mounted throughout the closing fade. The panel runs a 620 ms translateX transition; the backdrop fades, while header/body/footer settle in softly. Mobile right-swipe closes the menu without interfering with vertical scrolling. Reduced-motion preference remains respected.
+- Source commits: `c1a901be485996dfa66670ffefb5614002b6aa22` and `631de5a3b56c2806b93f87fb563a91a4362e37cc`.
+- GitHub file contents were re-read and changes verified; **live Cloudflare preview, iOS Safari interaction and production deployment were not verified**. Production `main` was not modified. Do not claim the public site has the animation until the branch is accepted and released.
+- Preview for owner: https://feature-secure-editor-cloud.forme-archive.pages.dev/ . Test MENU open/close, tap outside, swipe right, repeat quick taps, and reduced-motion settings on iPhone.
