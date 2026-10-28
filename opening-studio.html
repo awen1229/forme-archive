@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f5f6f2">
+<title>OPENING STUDIO / GOOD THINGS,</title>
+<style>
+:root{--ink:#29342b;--green:#315f40;--paper:#f8faf7;--line:#d9e0d8;--soft:#78847b;font-family:"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--paper);color:var(--ink)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #315f40;outline-offset:3px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px clamp(16px,3.5vw,55px);border-bottom:1px solid var(--line);background:#fff}
+.top .mark{font-size:22px;letter-spacing:-.07em;font-weight:800;color:var(--green)}.top .mark small{display:block;font:500 9px/1.65 Arial,sans-serif;letter-spacing:.16em;color:#808a80}
+.top a:last-child{font-size:11px;letter-spacing:.065em;border-bottom:1px solid var(--ink);padding-bottom:5px}
+.shell{max-width:1630px;margin:0 auto;padding:clamp(18px,3vw,46px) clamp(16px,3.5vw,55px) 80px}
+.heading{display:flex;align-items:end;justify-content:space-between;gap:22px;padding-bottom:24px;border-bottom:1px solid var(--ink)}
+.label{font-size:10px;letter-spacing:.15em;color:var(--green);font-weight:650}
+.heading h1{font-size:clamp(30px,4vw,52px);letter-spacing:-.045em;line-height:1.15;font-weight:500;margin:12px 0 10px}
+.heading p{font-size:13px;line-height:1.9;color:#69746a;margin:0;max-width:670px}
+.selected{font-size:11px;line-height:1.8;min-width:190px;color:#68786b}
+.selected b{display:block;font-size:15px;color:#293a2d;font-weight:600}
+.workspace{display:grid;grid-template-columns:minmax(275px,.42fr) minmax(0,1fr);gap:clamp(24px,3vw,52px);padding-top:28px;align-items:start}
+.sidebar{min-width:0}
+.search{display:block;font-size:10px;letter-spacing:.1em;color:var(--soft);margin-bottom:16px}
+.search input{display:block;width:100%;margin-top:8px;border:1px solid var(--line);border-radius:0;padding:12px;background:#fff;color:var(--ink);font-size:12px}
+.groups{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:15px}
+.groups button{border:1px solid #cdd7cb;background:transparent;color:#5d6c60;font-size:11px;padding:8px 10px}
+.groups button[aria-pressed=true]{background:var(--green);color:#fff;border-color:var(--green)}
+.mode-list{display:grid;gap:6px;max-height:66dvh;overflow:auto;padding-right:5px;scrollbar-color:#c9d5c7 transparent}
+.mode{display:grid;width:100%;grid-template-columns:38px 1fr auto;gap:10px;align-items:start;text-align:left;background:white;border:1px solid var(--line);border-left:2px solid transparent;padding:13px 12px;min-height:75px}
+.mode:hover{border-color:#a2b5a3}.mode[aria-current=true]{border-color:#56715b;border-left:3px solid var(--green);background:#f2f5ef}
+.mode .num{font:500 10px/1.7 Arial,sans-serif;color:#879186}.mode strong{display:block;font-size:14px;line-height:1.4;font-weight:600}
+.mode .en{display:block;font-size:10px;margin-top:3px;color:#89928a;line-height:1.6}.mode .chosen{font-size:9px;color:var(--green);white-space:nowrap;font-weight:600}
+.viewer{position:sticky;top:12px;min-width:0}
+.viewer-top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding-bottom:13px}
+.viewer-top h2{margin:5px 0 0;font-size:clamp(23px,2.5vw,33px);font-weight:500;letter-spacing:-.03em}
+.viewer-top span{font:10px/1.5 Arial,sans-serif;letter-spacing:.1em;color:var(--soft)}
+.canvas{background:#ecefe9;border:1px solid #cdd7ca;position:relative;display:flex;justify-content:center;align-items:stretch;height:clamp(450px,65dvh,720px);padding:0;overflow:hidden}
+.canvas.mobile{padding:10px}.canvas iframe{width:100%;height:100%;border:0;background:#f3f1eb;display:block}
+.canvas.mobile iframe{width:min(390px,100%);box-shadow:0 8px 30px #202f251d;border:1px solid #dbe2d8}
+.canvas .empty{display:grid;place-items:center;width:100%;padding:30px;text-align:center;font-size:14px;color:#738074}
+.detail{padding:15px 0 0;display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.detail p{margin:0;font-size:12px;line-height:1.8;color:#68746a;max-width:600px}
+.detail small{font:10px/1.5 Arial,sans-serif;letter-spacing:.085em;color:#869187;white-space:nowrap}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.btn{border:1px solid #bfcbbf;padding:11px 16px;background:#fff;color:#344538;font-size:12px;min-height:42px}
+.btn.primary{background:#315f40;border-color:#315f40;color:#fff}
+.btn.primary:hover{background:#244c31}
+.btn:hover{background:#edf3eb}.btn:disabled{opacity:.45;cursor:not-allowed}
+.actions .spacer{flex:1}
+.check{display:flex;align-items:center;gap:10px;margin-top:17px;padding-top:15px;border-top:1px solid var(--line);font-size:11px;line-height:1.6;color:#6a786b}
+.check input{accent-color:#315f40;width:17px;height:17px}
+.status{min-height:23px;padding:10px 0 0;color:#315f40;font-size:12px;line-height:1.7}
+.bottom{font-size:11px;line-height:1.9;color:#748075;border-top:1px solid var(--line);margin-top:65px;padding-top:22px}
+@media(max-width:1000px){.workspace{grid-template-columns:270px minmax(0,1fr);gap:20px}.mode-list{max-height:58dvh}}
+@media(max-width:750px){.top{padding:16px}.heading{align-items:start;flex-direction:column}.selected{min-width:0}.workspace{grid-template-columns:1fr;gap:28px}.mode-list{max-height:235px;grid-template-columns:1fr}.viewer{position:static}.canvas{height:min(61dvh,590px);min-height:400px}.viewer-top h2{font-size:25px}.detail{flex-direction:column;gap:3px}.actions .spacer{display:none}.actions .btn{flex:1;min-width:136px}.groups{gap:4px}.groups button{font-size:10px;padding:8px}.heading h1{font-size:33px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+<script src="./gt-opening-registry.js?v=20261028-studio1"></script>
+</head>
+<body>
+<header class="top"><a class="mark" href="./?intro=off#/">GOOD THINGS,<small>THE OPENING STUDIO / TEST SITE ONLY</small></a><a href="./?intro=off#/">BACK TO SITE ↗</a></header>
+<div class="shell">
+ <div class="heading">
+  <div><span class="label">VISUAL EXPERIMENTS / 2026</span><h1>Choose how a story begins.</h1><p>把之前的開場動畫放在一起。先選擇、立即預覽，再設成這台瀏覽器的測試站首頁版本；不用修改程式碼，也不會影響正式網站。</p></div>
+  <div class="selected">CURRENT OPENING <b id="current">讀取設定中</b><span id="current-version"></span></div>
+ </div>
+ <div class="workspace">
+  <aside class="sidebar" aria-label="開場動畫列表">
+   <label class="search">SEARCH / 找動畫<input id="query" type="search" placeholder="例如：印刷、手繪、V27"></label>
+   <div class="groups" id="groups" aria-label="動畫類別"></div>
+   <div class="mode-list" id="mode-list"></div>
+  </aside>
+  <section class="viewer" aria-label="動畫預覽與設定">
+   <div class="viewer-top"><div><span class="label" id="active-version">STUDY</span><h2 id="active-name">選擇一個動畫</h2></div><span id="active-category">GOOD THINGS,</span></div>
+   <div class="canvas" id="canvas"><div class="empty">SELECT AN OPENING / 選擇動畫開始預覽</div></div>
+   <div class="detail"><p id="active-description"></p><small>ORIGINAL LOGO PRESERVED</small></div>
+   <div class="actions">
+    <button class="btn" id="replay" type="button">↻ 重新預覽</button>
+    <button class="btn" id="device" type="button" aria-pressed="false">手機寬度</button>
+    <span class="spacer"></span>
+    <button class="btn primary" id="apply" type="button">設為測試站首頁動畫</button>
+    <button class="btn" id="test" type="button">到首頁試播 ↗</button>
+   </div>
+   <label class="check"><input id="repeat" type="checkbox"><span>每次開啟首頁都播放動畫（取消勾選時，每個分頁只播放第一次）</span></label>
+   <p class="status" id="status" role="status" aria-live="polite"></p>
+  </section>
+ </div>
+ <footer class="bottom">GOOD THINGS, / PRIVATE VISUAL STUDIES · 所有設定只保存在這台瀏覽器的此測試網域。已完成的品牌內頁 BLACK FRAME 設計、已發布內容及編輯後台不受影響。正式公開前仍需測試手機觸控與動畫銜接。</footer>
+</div>
+<script>
+(()=>{
+'use strict';
+const reg=window.GTOpening,el=id=>document.getElementById(id);
+if(!reg){el('status').textContent='動畫設定模組未載入，請重新整理。';return}
+const groups=['全部','互動識別','印刷與編輯','材質與空間','極簡編輯','設定'];
+const modes=reg.modes;
+let group='全部',query='',active=reg.selected();
+let saved=reg.selected();
+const mode=()=>reg.get(active);
+const frameCanvas=el('canvas');
+const text=(id,v)=>{el(id).textContent=v};
+const groupButton=g=>{const button=document.createElement('button');button.type='button';button.textContent=g;button.setAttribute('aria-pressed',String(group===g));button.addEventListener('click',()=>{group=g;drawGroups();drawModes()});return button};
+function drawGroups(){el('groups').replaceChildren(...groups.map(groupButton))}
+function drawCurrent(){
+ const value=reg.get(saved);
+ text('current',value?.cn||'手繪逗號');
+ text('current-version',value?' · '+value.version:'');
+ el('apply').disabled=active===saved;
+}
+function drawModes(){
+ const shown=modes.filter(m=>(group==='全部'||m.group===group)&&[m.name,m.cn,m.desc,m.version].join(' ').toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+ const nodes=shown.map((m,i)=>{
+  const button=document.createElement('button');button.type='button';button.className='mode';
+  button.setAttribute('aria-current',String(active===m.id));
+  button.innerHTML='<span class="num">'+String(modes.indexOf(m)+1).padStart(2,'0')+'</span><span><strong></strong><span class="en"></span></span><span class="chosen"></span>';
+  button.querySelector('strong').textContent=m.cn;
+  button.querySelector('.en').textContent=m.name+' / '+m.version;
+  button.querySelector('.chosen').textContent=saved===m.id?'已選用':'';
+  button.addEventListener('click',()=>select(m.id));
+  return button;
+ });
+ if(!nodes.length){const p=document.createElement('p');p.className='status';p.textContent='沒有符合的動畫。';nodes.push(p)}
+ el('mode-list').replaceChildren(...nodes);
+}
+function previewUrl(m){
+ if(!m?.study)return '';
+ const url=new URL('./'+m.study,location.href);
+ if(m.param&&m.value)url.searchParams.set(m.param,m.value);
+ return url.toString();
+}
+function preview(){
+ const m=mode();if(!m)return;
+ text('active-version',m.version+' / '+m.name.toUpperCase());
+ text('active-name',m.cn);
+ text('active-category',m.group);
+ text('active-description',m.desc);
+ const url=previewUrl(m);
+ frameCanvas.replaceChildren();
+ if(url){
+  const frame=document.createElement('iframe');frame.src=url;frame.title=m.cn+' 動畫預覽';
+  frame.loading='eager';frameCanvas.appendChild(frame);
+ }else{
+  const empty=document.createElement('div');empty.className='empty';empty.textContent='NO OPENING / 直接進首頁';frameCanvas.appendChild(empty);
+ }
+ drawCurrent();
+}
+function select(id){
+ if(!reg.get(id))return;
+ active=id;drawModes();preview();text('status','正在預覽 '+mode().cn+'；按「設為」才會變更首頁設定。');
+}
+function setSelected(){
+ if(!reg.save(active)){text('status','無法儲存瀏覽器設定，請檢查無痕模式或封鎖設定。');return}
+ saved=active;
+ drawModes();drawCurrent();
+ text('status','已選用「'+mode().cn+'」。只影響此測試站在你這台瀏覽器的開場動畫。');
+}
+function viewSite(){
+ // This overrides the session's already-seen animation for a reliable test run.
+ location.assign(reg.urlFor(active,true));
+}
+function repeatInit(){
+ try{el('repeat').checked=localStorage.getItem('gt-opening-repeat-v1')==='always'}catch(_){}
+}
+el('query').addEventListener('input',e=>{query=e.target.value;drawModes()});
+el('replay').addEventListener('click',preview);
+el('device').addEventListener('click',()=>{
+ const on=frameCanvas.classList.toggle('mobile');
+ el('device').setAttribute('aria-pressed',String(on));
+ el('device').textContent=on?'還原桌面寬度':'手機寬度';
+});
+el('apply').addEventListener('click',setSelected);
+el('test').addEventListener('click',viewSite);
+el('repeat').addEventListener('change',e=>{
+ try{localStorage.setItem('gt-opening-repeat-v1',e.target.checked?'always':'once');text('status',e.target.checked?'已設為每次進首頁都播放。':'已設為每個分頁播放一次。')}
+ catch(_){text('status','無法儲存播放頻率設定。')}
+});
+drawGroups();drawModes();preview();repeatInit();
+})();
+</script>
+</body>
+</html>
