@@ -22,6 +22,9 @@ if(params.get('intro')==='off')return;
 const api='https://8nqupq9u.api.sanity.io/v2025-02-19/data/query/production';
 const query='*[_id=="gt-opening-settings"&&!(_id in path("drafts.**"))][0]{settingsJson}';
 const uri=api+'?perspective=published&query='+encodeURIComponent(query);
+// Prefer the Pages published-only reader after initial main-site installation;
+// fall back to Sanity's public CDN when the endpoint is unreachable. No credentials.
+const proxy='https://forme-archive.pages.dev/api/public/opening-settings';
 let dead=false;
 const cancel=()=>{dead=true;root.classList.remove('gt-opening-production-pending')};
 window.addEventListener('hashchange',()=>{if(!['','#','#/'].includes(location.hash))cancel()},{once:true});
@@ -30,11 +33,22 @@ async function boot(){
  const guard=setTimeout(()=>timeout.abort(),3500);
  let selected=null;
  try{
-  const response=await fetch(uri,{cache:'no-store',credentials:'omit',signal:timeout.signal});
-  if(!response.ok)throw Error('published settings unavailable');
-  const data=(await response.json()).result;
-  if(!data?.settingsJson)return;
-  const value=JSON.parse(data.settingsJson);
+  let value=null;
+  try{
+   const response=await fetch(proxy,{cache:'no-store',credentials:'omit',signal:timeout.signal});
+   if(response.ok){
+    const result=await response.json();
+    if(result.ok&&result.published&&result.settings)value=result.settings;
+    if(result.ok&&!result.published)return;
+   }
+  }catch(_){}
+  if(!value){
+   const response=await fetch(uri,{cache:'no-store',credentials:'omit',signal:timeout.signal});
+   if(!response.ok)throw Error('published settings unavailable');
+   const data=(await response.json()).result;
+   if(!data?.settingsJson)return;
+   value=JSON.parse(data.settingsJson);
+  }
   if(!modes.has(value?.mode)||!['once','always'].includes(value?.repeat))return;
   selected=value;
  }catch(error){console.warn('Opening configuration unavailable:',error?.message);return}
