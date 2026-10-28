@@ -141,3 +141,14 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 - Existing Delete safeguards, single-font retry, local-only font test and custom font preview remain. Full-site preview uses the secured host and GET of protected font catalog; no production font release action was created.
 - Source deployment passed Cloudflare Pages check for commit 4c4c7da39743dacfba31217fd077cb2bbce61d59. JS syntax and frontend/backend wiring checked statically. Real authenticated rename, category filter, save/read, full-site visual parity, and mobile behavior still need hands-on owner verification.
 - Preview: https://feature-secure-editor-cloud.forme-archive.pages.dev/font-library.html. Do not claim production GitHub Pages main was updated.
+
+### THE INDEX Profile 02 / Black Frame handoff · 2026-10-28
+
+- User selected A: single black-framed EDITOR'S NOTE. Keep uploaded brand LOGO and dark MENU; metadata, brand story, related articles remain unboxed.
+- Preview-only source: gt-index-profile-v2.css, gt-index-profile-v2.js, and references in index.html. The JS renderer is restricted to the protected preview hostname. GitHub main was not modified.
+- Brand layout: breadcrumb, logo/name, founder/year/tags/official link, THE STORY, optional black-framed Editor's Note, genuine related published stories or next-brand fallback.
+- Authenticated BRAND editor now exposes optional editorNoteTitle (max 180 chars) and editorNote (max 3000 chars). Both pass through brand draft save and published-only reader. Empty notes hide the frame. No Sanity records were changed or published by this commit.
+- Responsive review: https://feature-secure-editor-cloud.forme-archive.pages.dev/index-profile-v2-review.html . Static sample index-profile-v2-demo.html loads the same CSS and is not a published Sanity record.
+- Syntax checks passed for preview JS, Pages Functions and inline index HTML. Mock render assertions passed for present/absent note, safe escaping, and missing brand.
+- Cloudflare Pages check concluded successful for commit ac98e389cb035c33b834aaf3778b043bc6fd7d41. This confirms build/deployment, not browser acceptance or authentication.
+- Next: owner visually checks desktop/mobile, opens authenticated brand editor, saves and reloads draft-only editor note, checks brand logo positioning, verifies public published-only behavior. Do not publish testing content, merge to main or alter production without explicit approval.
