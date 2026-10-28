@@ -176,8 +176,11 @@ el('repeat').addEventListener('change',e=>{
  try{localStorage.setItem('gt-opening-repeat-v1',e.target.checked?'always':'once');text('status',e.target.checked?'已設為每次進首頁都播放。':'已設為每個分頁播放一次。')}
  catch(_){text('status','無法儲存播放頻率設定。')}
 });
+window.gtOpeningStudioGet=()=>({mode:active,repeat:el('repeat').checked?'always':'once'});
+window.gtOpeningStudioSelect=id=>select(id);
 drawGroups();drawModes();preview();repeatInit();
 })();
 </script>
+<script src="./gt-opening-cloud-editor.js?v=20261028-cloud1" defer></script>
 </body>
 </html>
