@@ -772,31 +772,54 @@ body.gt-drawer-open{overflow:hidden}
 <link rel="stylesheet" href="./gt-home-intro-scroll-v19.css?v=pinned19">
 <link rel="stylesheet" href="./gt-home-intro-scroll-v20.css?v=pinned20">
 <link rel="stylesheet" href="./gt-home-intro-scroll-v21.css?v=pinned21">
+<script src="./gt-opening-registry.js?v=20261028-studio1"></script>
 <script>
 (function(){
  try{
-  var h=location.hash;
-  var home=!h||h==='#'||h==='#/';
+  var h=location.hash,home=!h||h==='#'||h==='#/';
   var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var introMode=new URLSearchParams(location.search).get('intro');
-  var preview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev' && location.protocol==='https:';
-  var lab=['scrolllab','scrollstage','pinnedstage','pinnedstage19','pinnedstage20','pinnedstage21'].includes(introMode);
-  var manualDraw=preview&&['draw','draw-replay','replay'].includes(introMode);
-  var useDraw=preview&&(introMode===null||manualDraw);
-  var seenDraw=false,seenPhysics=false;
-  try{seenDraw=sessionStorage.getItem('gt-draw-entry-v30')==='done';seenPhysics=sessionStorage.getItem('gt-scroll-entry-physics10')==='done';}catch(_){}
-  var showDraw=useDraw&&(manualDraw||!seenDraw);
-  var showPhysics=!useDraw&&introMode!=='off'&&(lab||introMode==='physics'||introMode==='replay'||!seenPhysics);
-  if(home&&!reduced&&(showDraw||showPhysics)){
-   document.documentElement.classList.add('gt-scroll-entry-ready');
-   if(showDraw)document.documentElement.classList.add('gt-draw-opening');
-   if(introMode==='scrolllab')document.documentElement.classList.add('gt-scroll-entry-scrolllab');
-   if(introMode==='scrollstage')document.documentElement.classList.add('gt-scroll-entry-scrollstage');
-   if(introMode==='pinnedstage')document.documentElement.classList.add('gt-scroll-entry-pinnedstage');
-   if(introMode==='pinnedstage19')document.documentElement.classList.add('gt-scroll-entry-pinnedstage19');
-   if(introMode==='pinnedstage20')document.documentElement.classList.add('gt-scroll-entry-pinnedstage20');
-   if(introMode==='pinnedstage21')document.documentElement.classList.add('gt-scroll-entry-pinnedstage21');
+  var params=new URLSearchParams(location.search),intro=params.get('intro');
+  var preview=location.hostname==='feature-secure-editor-cloud.forme-archive.pages.dev'&&location.protocol==='https:';
+  var legacy=['scrolllab','scrollstage','pinnedstage','pinnedstage19','pinnedstage20','pinnedstage21'].includes(intro);
+  var root=document.documentElement;
+  if(!preview){
+   var seen=sessionStorage.getItem('gt-scroll-entry-physics10')==='done';
+   if(home&&!reduced&&(legacy||intro==='replay'||(!seen&&intro!=='off'))){
+    root.classList.add('gt-scroll-entry-ready');
+    if(intro==='scrolllab')root.classList.add('gt-scroll-entry-scrolllab');
+    if(intro==='scrollstage')root.classList.add('gt-scroll-entry-scrollstage');
+    if(intro==='pinnedstage')root.classList.add('gt-scroll-entry-pinnedstage');
+    if(intro==='pinnedstage19')root.classList.add('gt-scroll-entry-pinnedstage19');
+    if(intro==='pinnedstage20')root.classList.add('gt-scroll-entry-pinnedstage20');
+    if(intro==='pinnedstage21')root.classList.add('gt-scroll-entry-pinnedstage21');
+   }
+   return;
   }
+  var reg=window.GTOpening;
+  var explicit=params.get('opening');
+  var selected=reg?.get(explicit)?.id||reg?.selected()||'draw';
+  var force=params.get('replay')==='1';
+  if(intro==='off')selected='none';
+  else if(intro==='physics')selected='physics10';
+  else if(intro==='pinnedstage21')selected='physics21';
+  else if(['draw','draw-replay','replay'].includes(intro))selected='draw';
+  else if(legacy)selected=intro==='pinnedstage21'?'physics21':'physics10';
+  if(intro||explicit)force=true;
+  if(selected==='none'||!home||reduced)return;
+  var repeat=false;
+  try{repeat=localStorage.getItem('gt-opening-repeat-v1')==='always'}catch(_){}
+  if(!force&&!repeat&&reg?.seen(selected))return;
+  root.classList.add('gt-scroll-entry-ready');
+  root.dataset.gtOpeningSelected=selected;
+  if(selected==='draw')root.classList.add('gt-draw-opening');
+  else if(selected==='physics21')root.classList.add('gt-scroll-entry-pinnedstage21');
+  else if(selected==='physics10'){}
+  else if(reg?.get(selected)?.type==='lab')root.classList.add('gt-opening-lab');
+  if(intro==='scrolllab')root.classList.add('gt-scroll-entry-scrolllab');
+  if(intro==='scrollstage')root.classList.add('gt-scroll-entry-scrollstage');
+  if(intro==='pinnedstage')root.classList.add('gt-scroll-entry-pinnedstage');
+  if(intro==='pinnedstage19')root.classList.add('gt-scroll-entry-pinnedstage19');
+  if(intro==='pinnedstage20')root.classList.add('gt-scroll-entry-pinnedstage20');
  }catch(e){}
 })();
 </script>
@@ -2136,6 +2159,8 @@ gtLoadCloudPublishedBrands();
 <script src="./gt-design-site.js" defer></script>
 <script src="./gt-home-intro.js?v=20261024-physics10" defer></script>
 <script src="./gt-home-intro-draw-v30.js?v=20261028-a1" defer></script>
+<script src="./gt-home-intro-lab.js?v=20261028-studio1" defer></script>
+<script src="./gt-opening-studio-access.js?v=20261028-studio1" defer></script>
 <script src="./gt-home-intro-scroll-v16.js?v=scrolllab16" defer></script>
 <script src="./gt-home-intro-scroll-v17.js?v=scrollstage17" defer></script>
 <script src="./gt-home-intro-scroll-v18.js?v=pinned18" defer></script>
