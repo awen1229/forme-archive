@@ -5,7 +5,10 @@
 (()=>{
 'use strict';
 const HOST='awen1229.github.io',SUBDIR=/^\/forme-archive(?:\/|$)/;
-if(location.hostname!==HOST||!SUBDIR.test(location.pathname)||location.protocol!=='https:')return;
+const QA_HOST='release-opening-selector-saf.forme-archive.pages.dev';
+const qa=new URLSearchParams(location.search).get('openingQA')==='1'&&location.hostname===QA_HOST;
+const official=location.hostname===HOST&&SUBDIR.test(location.pathname);
+if((!official&&!qa)||location.protocol!=='https:')return;
 const TYPE='gt-draw-intro-v30',KEY='gt-draw-comma-intro-v30-seen',ORIGIN=location.origin;
 const NO_ANIMATION={mode:'none',repeat:'once'};
 const modes={
@@ -100,7 +103,8 @@ function addReplay(){
  const footer=document.querySelector('footer');
  if(!footer)return;
  const a=document.createElement('a');
- a.className='gt-draw-entry-replay';a.href='./?intro=replay#/';
+ a.className='gt-draw-entry-replay';
+ a.href=qa?'./?openingQA=1&mode='+encodeURIComponent(q.get('mode')||'draw')+'#/':'./?intro=replay#/';
  a.textContent='REPLAY OPENING';
  a.setAttribute('aria-label','重新觀看 GOOD THINGS, 首頁動畫');
  footer.append(a);
@@ -187,7 +191,9 @@ async function boot(){
  if(!home())return;
  addReplay();
  if(suppress||motionReduced)return;
- const configured=await published();
+ const configured=qa?
+   {mode:Object.hasOwn(modes,q.get('mode'))?q.get('mode'):'draw',repeat:'always'}:
+   await published();
  if(!home())return;
  let selected=configured||{mode:'draw',repeat:'once'}; // preserve legacy V30 only when no published setting exists
  if(force)selected={mode:'draw',repeat:'always'}; // existing direct link remains functional
