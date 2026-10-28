@@ -1,0 +1,21 @@
+/* Injected only into same-origin archived animation iframes when mounted as an
+   opening, never loaded by the standalone experiments or production website. */
+html,body{height:100%!important;min-height:0!important;overflow:hidden!important}
+body{margin:0!important;display:flex!important;flex-direction:column!important}
+body>main{
+ display:flex!important;flex-direction:column!important;
+ flex:1 1 auto!important;width:100%!important;max-width:none!important;
+ height:100%!important;min-height:0!important;
+ padding:0!important;margin:0!important;
+}
+main>header,main>.header,main>.top,
+main>.prelude,main>.intro,main>.headline,main>.tabbar,main>.tabs,
+main>.controls,main>.control-row,main>.about,main>.description,
+main>.summary,main>.notes,main>.bottom,main>footer,body>footer{display:none!important}
+main>.scene,main>.preview,main>.stage,main>.stage-wrap{
+ flex:1 1 auto!important;width:100%!important;
+ min-height:0!important;max-height:none!important;height:100%!important;
+ border:0!important;margin:0!important;overflow:hidden!important;
+}
+main>.scene>canvas,main>.preview>canvas,
+main>.stage>canvas,main>.stage-wrap>canvas{width:100%!important;height:100%!important}
