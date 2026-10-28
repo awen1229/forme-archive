@@ -5,7 +5,7 @@
 (()=>{
  'use strict';
  const secureHost='feature-secure-editor-cloud.forme-archive.pages.dev';
- if(location.hostname!==secureHost || location.protocol!=='https:')return;
+ if(location.protocol!=='https:' || !(location.hostname===secureHost || (location.hostname==='awen1229.github.io' && /^\/forme-archive(?:\/|$)/.test(location.pathname))))return;
  const root=document.documentElement, params=new URLSearchParams(location.search);
  const intro=params.get('intro');
  const requested=['draw','draw-replay','replay'].includes(intro);
