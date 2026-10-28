@@ -1,7 +1,7 @@
 // Published-only, token-free browser-facing opening configuration for Pages.
 // Draft documents are never returned. This endpoint changes no data.
 const API='https://8nqupq9u.api.sanity.io/v2025-02-19';
-const HEADERS={'Cache-Control':'no-store'}
+const HEADERS={'Cache-Control':'no-store','Access-Control-Allow-Origin':'https://awen1229.github.io','Vary':'Origin'}
 const ALLOWED=new Set(['draw','physics21','physics10','ink','letters','paper','print','offset','proof','anchor','registration',
 'v25-material','v25-space','v25-index','v26-material','v26-space','v26-index',
 'magnetic','diecut','exposure','ripple','editorial28','editorial29','none'])
