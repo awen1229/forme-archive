@@ -116,6 +116,8 @@ function watchLab(){
    if(!overlay||leaving)return clearInterval(loaderTimer);
    let inner;
    try{inner=frame.contentDocument}catch(_){return complete()}
+   const errorNode=inner?.getElementById('error');
+   if(errorNode&&getComputedStyle(errorNode).display!=='none')return complete();
    const loader=inner?.getElementById('loading')||inner?.getElementById('loader');
    if(loader&&!loader.hidden){
     if(Date.now()-started>12000)return complete();
