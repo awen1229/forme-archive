@@ -68,7 +68,7 @@ async function api(path, token, options={}) {
 }
 
 async function findBrand(slug, token) {
-  const query = '*[_type == "brand" && slug.current == $slug]{_id,_type,name,slug,founder,foundedYear,country,japaneseName,summary,story,logo,cover,logoScale,logoOffsetX,logoOffsetY,tags,website}[0...20]'
+  const query = '*[_type == "brand" && slug.current == $slug]{_id,_type,name,slug,founder,foundedYear,country,japaneseName,summary,story,editorNoteTitle,editorNote,logo,cover,logoScale,logoOffsetX,logoOffsetY,tags,website}[0...20]'
   const params = new URLSearchParams({query, '$slug': JSON.stringify(slug), perspective:'raw'})
   const {result} = await api('/data/query/' + DATASET + '?' + params, token)
   const docs = Array.isArray(result) ? result : []
@@ -131,7 +131,7 @@ export async function onRequestPost({request, env}) {
     const tags = (Array.isArray(input.tags) ? input.tags : []).slice(0, 20).map(x => str(x, 45)).filter(Boolean)
     const values = {
       name, slug: {_type:'slug',current:slug}, founder:str(input.founder, 180),
-      summary:str(input.desc, 10_000), tags, website,
+      summary:str(input.desc, 10_000), editorNoteTitle:str(input.editorNoteTitle, 180), editorNote:str(input.editorNote, 3000), tags, website,
       logoScale:safeInteger(input.logoDisplay?.scale ?? 100,50,190),
       logoOffsetX:safeInteger(input.logoDisplay?.x ?? 0,-60,60),
       logoOffsetY:safeInteger(input.logoDisplay?.y ?? 0,-45,45),
