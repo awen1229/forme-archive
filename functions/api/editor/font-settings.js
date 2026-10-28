@@ -22,12 +22,24 @@ async function read(token){
  const result=(await response.json()).result
  return result||null
 }
+async function readPublished(token){
+ const u=new URL(API+'/data/query/production')
+ u.searchParams.set('perspective','raw')
+ u.searchParams.set('query','*[_id=="gt-font-assignments" && _type=="gtFontAssignments"][0]{_rev,roles}')
+ const response=await fetch(u,{headers:{Authorization:'Bearer '+token},cache:'no-store'})
+ if(!response.ok)throw new AuthError(502,'已發布字型設定讀取失敗')
+ return (await response.json()).result||null
+}
 export async function onRequestGet({request,env}){
  try{
   await requireEditor(request,env)
   if(!env.SANITY_EDITOR_TOKEN)throw new AuthError(503,'字型庫服務尚未設定')
-  const doc=await read(env.SANITY_EDITOR_TOKEN)
-  return Response.json({ok:true,roles:doc?normalized(doc.roles||{}):normalized({}),revision:doc?._rev||'',published:false},{headers:HEADERS})
+  const [draft,published]=await Promise.all([read(env.SANITY_EDITOR_TOKEN),readPublished(env.SANITY_EDITOR_TOKEN)])
+  const current=draft||published
+  return Response.json({
+   ok:true,roles:normalized(current?.roles||{}),revision:draft?._rev||'',
+   hasDraft:!!draft,published:!!published,publishedRoles:normalized(published?.roles||{})
+  },{headers:HEADERS})
  }catch(error){return errorResponse(error)}
 }
 export async function onRequestPost({request,env}){
