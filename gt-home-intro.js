@@ -4,7 +4,7 @@
 (()=>{'use strict';
 const root=document.documentElement;
 // The selected V30 drawing intro owns the overlay on the protected preview.
-if(root.classList.contains('gt-draw-opening'))return;
+if(root.classList.contains('gt-draw-opening')||root.classList.contains('gt-opening-lab')||root.classList.contains('gt-scroll-entry-pinnedstage21'))return;
 // The reversible scroll-lab owns this intro only on its opt-in preview URL.
 if(['scrolllab','scrollstage','pinnedstage','pinnedstage19','pinnedstage20','pinnedstage21'].includes(new URLSearchParams(location.search).get('intro')))return;
 const overlay=document.getElementById('gt-scroll-entry');
@@ -29,6 +29,7 @@ function finish(){
  if(completed)return;
  completed=true;
  try{sessionStorage.setItem('gt-scroll-entry-physics10','done')}catch(e){}
+ window.GTOpening?.markSeen('physics10');
  overlay.classList.add('is-completing');
  const cleanup=()=>{
   root.classList.remove('gt-scroll-entry-ready');
@@ -36,7 +37,7 @@ function finish(){
   window.removeEventListener('message',onMessage);
   window.removeEventListener('keydown',onKey);
   window.removeEventListener('hashchange',onRoute);
-  clearTimeout(timeout);window.scrollTo(0,0);
+  clearTimeout(timeout);window.GTOpening?.cleanUrl();window.scrollTo(0,0);
  };
  overlay.addEventListener('transitionend',e=>{if(e.target===overlay)cleanup()},{once:true});
  timeout=setTimeout(cleanup,650);
