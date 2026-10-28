@@ -1,0 +1,49 @@
+/* GOOD THINGS, / Draw The Comma V30 on protected preview only.
+   Inherits the site's original scroll-entry backdrop, MENU and logo art.
+   No permanent scroll hijacking once the opening is finished/skipped. */
+html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry{
+ background:#f3f1eb;
+ touch-action:auto;
+}
+html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-center{
+ display:flex;align-items:stretch;justify-content:stretch;
+ width:100%;flex:1 1 auto;min-height:0;overflow:hidden;
+}
+html.gt-draw-opening.gt-scroll-entry-ready .gt-draw-stage-frame{
+ display:block;width:100%;height:100%;border:0;
+ touch-action:auto;background:#f3f1eb;
+}
+html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-foot{
+ grid-template-columns:minmax(0,1fr) minmax(70px,160px) auto;
+}
+html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-hint{
+ letter-spacing:.12em;
+}
+.gt-draw-replay{
+ display:inline-flex;align-items:center;border:0;border-bottom:1px solid currentColor;
+ padding:2px 0;margin-left:clamp(9px,1.6vw,20px);
+ border-radius:0;background:transparent;color:inherit;
+ font:inherit;letter-spacing:.045em;font-size:10px;opacity:.78;
+ cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.gt-draw-replay:hover{opacity:1}
+.gt-draw-replay:focus-visible{outline:2px solid #315f40;outline-offset:3px}
+@media(max-width:700px){
+ html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry{
+  padding:17px 18px max(20px,env(safe-area-inset-bottom));
+ }
+ html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-foot{
+  grid-template-columns:minmax(0,1fr) 65px 34px;gap:10px;
+ }
+ html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-hint{font-size:9px;white-space:normal}
+ .gt-draw-replay{font-size:9px;margin-left:9px;white-space:nowrap}
+}
+@media(max-height:500px) and (orientation:landscape){
+ html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry{padding:10px 20px}
+ html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-top{padding-bottom:6px}
+ html.gt-draw-opening.gt-scroll-entry-ready .gt-scroll-entry-foot{padding-top:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ html.gt-draw-opening .gt-scroll-entry{display:none!important}
+ html.gt-draw-opening,html.gt-draw-opening body{overflow:auto!important}
+}
