@@ -8,7 +8,7 @@ const draftButton=document.getElementById('gt-design-draft-load');
 const publishedButton=document.getElementById('gt-design-published-load');
 const publishButton=document.getElementById('gt-design-publish');
 let cloud={draft:null,published:null},loaded=false,busy=false;
-const PUBLISH_READY=false; // Unlock only after the public GitHub Pages site deploys these presets.
+const PUBLISH_READY=true; // Public main already includes the published-only design runtime and stylesheet.
 let lastLoadedSettings=null;
 const defaults={headingFont:'original',textScale:'standard',paper:'original'};
 const current=()=>Object.fromEntries(Object.keys(defaults).map(k=>[k,document.querySelector('input[name="'+k+'"]:checked')?.value||defaults[k]]));
@@ -29,7 +29,7 @@ function unsaved(){
 function refreshButtons(){
  draftButton.hidden=!cloud.draft;publishedButton.hidden=!cloud.published;
  publishButton.disabled=!PUBLISH_READY||!cloud.draft||busy||unsaved();
- publishButton.title=!PUBLISH_READY?'正式主站尚未整合視覺樣式；目前可先儲存雲端草稿':unsaved()?'請先儲存最新設定，才可發布':'';
+ publishButton.title=!PUBLISH_READY?'請先儲存設定草稿':unsaved()?'請先儲存最新設定，才可發布':'';
 }
 async function api(path,options={}){
  const response=await fetch(path,{credentials:'same-origin',cache:'no-store',...options});
@@ -60,7 +60,7 @@ async function save(){
   });
   cloud.draft=result.draft;
   lastLoadedSettings=window.gtDesignSafe(cloud.draft?.settings||current());
-  message('已儲存雲端草稿。主站尚未啟用視覺設定發布，公開網站沒有改變。');
+  message('已儲存視覺設定草稿。確認預覽後，可按「正式發布」套用至網站。');
  }catch(error){message('儲存失敗：'+error.message,true)}
  finally{busy=false;refreshButtons()}
 }
