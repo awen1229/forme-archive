@@ -55,12 +55,14 @@ else for(const path of ['gt-opening-public-controller.js','opening-lab-physics-v
   return body.length+' chars';
  });
 }
-await report('Official main site still on legacy V30 before approval',async()=>{
+await report('Official main site serves a recognized V30 or released controller',async()=>{
  const r=await fetchResource(ORIGIN+'/forme-archive/');
  assert.equal(r.status,200,'Official home HTTP '+r.status);
  const html=await r.text();
- assert.ok(html.includes('gt-draw-intro-v30.js?v=20261025e'),'main changed unexpectedly or site not serving intended HTML');
- return 'Original live intro still present';
+ const legacy=html.includes('gt-draw-intro-v30.js?v=20261025e');
+ const released=html.includes('gt-opening-public-controller.js?v=20261028-release-candidate1');
+ assert.ok(legacy||released,'unexpected public homepage script; inspect before deploying');
+ return legacy?'Original legacy V30 active':'Published-only controller deployed';
 });
 await report('Local branch only replaces official intro script',async()=>{
  const text=await readFile('index.html','utf8');
