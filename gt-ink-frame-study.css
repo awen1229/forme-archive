@@ -118,3 +118,38 @@ Original brand logo, intro, content, dark vertical MENU, warm drawer and publish
 @media(prefers-reduced-motion:reduce){
  .gt-issue-series .gt-issue-card:first-child{transition:none}
 }
+
+/* GOOD THINGS, / 2026-10-28 mobile visual finalization.
+   Featured caption: plain editorial type, no decorative dot or capsule.
+   MENU tab: quieter deep olive-charcoal; original warm drawer untouched. */
+.gt-editorial-home .gt-feature-intro > span:first-child {
+  display:block;
+  width:auto;
+  max-width:100%;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#303630;
+  font:500 11px/1.5 "Helvetica Neue",Arial,"PingFang TC",sans-serif;
+  letter-spacing:.035em;
+}
+.gt-editorial-home .gt-feature-intro > span:first-child::before {
+  content:none !important;
+  display:none !important;
+}
+.gt-side-tab {
+  background:#2e342d;
+  color:#f3f0e7;
+}
+.gt-side-tab:hover,
+.gt-side-tab:focus-visible {
+  background:#404a3f;
+  color:#fffdf7;
+}
+@media(max-width:700px){
+  .gt-editorial-home .gt-feature-intro > span:first-child{
+    font-size:10px;
+    padding:0;
+  }
+}
