@@ -1,0 +1,53 @@
+/* GOOD THINGS, | Right-side editorial sheet motion | preview 2026-10-28
+   A deliberate, AH.H-inspired sliding-panel rhythm with original GOOD THINGS, layout.
+   No changes to the site's branding, colors or existing menu content. */
+:root{--gt-drawer-slide-time:620ms}
+.gt-drawer{
+  transform:translate3d(102%,0,0);
+  visibility:hidden;
+  will-change:transform;
+  overscroll-behavior:contain;
+  transition:transform var(--gt-drawer-slide-time) cubic-bezier(.23,.82,.2,1),
+             visibility 0s linear var(--gt-drawer-slide-time);
+}
+.gt-drawer.is-open{
+  transform:translate3d(0,0,0);
+  visibility:visible;
+  transition:transform var(--gt-drawer-slide-time) cubic-bezier(.23,.82,.2,1),
+             visibility 0s linear 0s;
+}
+.gt-drawer-backdrop{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity 480ms ease,visibility 0s linear 480ms;
+}
+body.gt-drawer-open .gt-drawer-backdrop{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity 480ms ease,visibility 0s linear 0s;
+}
+/* The sheet arrives first; its content catches up softly instead of popping. */
+.gt-drawer-header,.gt-drawer-inner,.gt-drawer-footer{
+  transform:translate3d(18px,0,0);
+  opacity:.6;
+  transition:transform 460ms cubic-bezier(.2,.8,.2,1),opacity 420ms ease;
+  transition-delay:0ms;
+}
+.gt-drawer.is-open .gt-drawer-header,
+.gt-drawer.is-open .gt-drawer-inner,
+.gt-drawer.is-open .gt-drawer-footer{
+  transform:translate3d(0,0,0);
+  opacity:1;
+}
+.gt-drawer.is-open .gt-drawer-header{transition-delay:90ms}
+.gt-drawer.is-open .gt-drawer-inner{transition-delay:135ms}
+.gt-drawer.is-open .gt-drawer-footer{transition-delay:185ms}
+@media(prefers-reduced-motion:reduce){
+  .gt-drawer,.gt-drawer-backdrop,.gt-drawer-header,
+  .gt-drawer-inner,.gt-drawer-footer{
+    transition:none!important;
+    will-change:auto!important;
+  }
+}
