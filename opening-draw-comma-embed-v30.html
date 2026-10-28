@@ -1,0 +1,500 @@
+<!doctype html><html lang="zh-Hant">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f3ed">
+<meta name="robots" content="noindex,nofollow"><title>GOOD THINGS, / Draw the Comma / Embedded Opening V30</title><style>
+:root{--paper:#f5f3ed;--green:#315f40;--ink:#2e4033;--sub:#7f897c;--line:#c5cec3}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink)}
+body{font:13px/1.6 Arial,"Noto Sans TC","PingFang TC",sans-serif;-webkit-font-smoothing:antialiased}
+button,a,input{font:inherit}button{cursor:pointer}
+button:focus-visible,a:focus-visible,canvas:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}a:hover{color:var(--green)}
+main{width:100%;min-height:100dvh;display:flex;flex-direction:column;padding:clamp(18px,3vw,39px) clamp(19px,4.7vw,78px)}
+header{display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid var(--line);padding-bottom:17px}
+.brand{font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--green)}
+.micro{font-size:10px;letter-spacing:.14em;color:var(--sub)}
+.headline{text-align:center;padding:clamp(22px,4vw,42px) 0 17px}
+.headline h1{font:normal clamp(26px,4.2vw,47px)/1.15 Georgia,serif;color:var(--green);margin:8px 0 9px}
+.headline p{margin:0 auto;color:var(--sub);font-size:12px;line-height:1.8;max-width:690px}
+.stage{position:relative;flex:1;min-height:min(63vh,640px);height:min(63vh,670px);max-height:690px;overflow:hidden;background:#f5f3ed;border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;outline-offset:-4px}
+.stage.is-finished canvas{cursor:default}
+.stage-folio{pointer-events:none;position:absolute;left:22px;top:17px;font-size:9px;letter-spacing:.17em;color:#8b9788}
+.stage-folio.right{left:auto;right:22px}
+.draw-prompt{position:absolute;top:48%;left:50%;width:min(90%,470px);transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .26s ease}
+.draw-prompt h2{font:normal clamp(27px,5.5vw,50px)/1.18 Georgia,serif;color:#315f40;font-weight:400;letter-spacing:-.035em;margin:0 0 14px}
+.draw-prompt p{margin:0;color:#8b978a;font-size:12px;letter-spacing:.035em}
+.draw-prompt[hidden]{display:none}
+.draw-prompt.fade{opacity:0}
+.stage-finish{position:absolute;bottom:clamp(28px,5vh,54px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:18px;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.stage.is-finished .stage-finish{opacity:1;pointer-events:auto}
+.enter-link{font-size:11px;color:var(--green);letter-spacing:.13em;border-bottom:1px solid var(--green);padding-bottom:4px;white-space:nowrap}
+.stage-finish .again{font-size:11px;letter-spacing:.12em;background:none;border:0;border-bottom:1px solid #b1bdb2;color:#697a6c;padding:0 0 4px}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);font-size:11px;letter-spacing:.12em;color:var(--sub);padding:30px;text-align:center}
+.loading[hidden]{display:none}
+.actions{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:16px 0}
+.actions span,.actions a,.actions button{font-size:11px;letter-spacing:.07em}
+.actions span{color:var(--sub)}
+.actions button{background:none;color:var(--green);border:1px solid var(--green);padding:8px 13px;min-height:39px}
+.actions button:hover{background:var(--green);color:var(--paper)}
+.actions .right{display:flex;gap:22px;align-items:center}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:35px;padding:19px 0 28px;color:var(--sub)}
+.summary p{margin:0;max-width:570px}
+.summary small{letter-spacing:.12em;line-height:1.8}
+footer{margin-top:auto;border-top:1px solid var(--line);padding-top:15px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:10px;letter-spacing:.12em;color:var(--sub)}
+@media(max-width:700px){
+ main{padding:16px 18px}.brand{font-size:13px}.micro{font-size:9px;letter-spacing:.07em}
+ .headline{padding:22px 4px 13px}.headline p{font-size:11px}
+ .stage{height:56dvh;min-height:390px;max-height:none;flex:none}
+ .stage-folio{left:12px;top:12px;font-size:8px}.stage-folio.right{left:auto;right:12px}
+ .draw-prompt h2{font-size:32px}.draw-prompt p{font-size:11px}
+ .actions{gap:13px}.actions .right{gap:13px}
+ .summary{grid-template-columns:1fr;gap:8px}.summary small{font-size:10px}
+ .stage-finish{bottom:25px}
+}
+@media(prefers-reduced-motion:reduce){.draw-prompt,.stage-finish{transition:none}}
+
+/* Embedded version uses the exact V30 hand-drawn comma-to-original-logo logic.
+   Only chrome/layout changes; the original supplied logo pixels stay untouched. */
+html:has(body.gt-draw-embed),body.gt-draw-embed{height:100%;min-height:0;overflow:hidden}
+body.gt-draw-embed{background:#f3f1eb}
+body.gt-draw-embed main{height:100%;min-height:0;padding:clamp(7px,1.3vh,14px) 0 0;display:flex;flex-direction:column}
+body.gt-draw-embed header,body.gt-draw-embed .headline,
+body.gt-draw-embed .summary,body.gt-draw-embed footer{display:none}
+body.gt-draw-embed .stage{
+ height:auto;min-height:0;max-height:none;flex:1 1 auto;
+ border:0;background:#f3f1eb;
+}
+body.gt-draw-embed .stage canvas{outline-offset:-5px}
+body.gt-draw-embed .stage-folio{top:12px}
+body.gt-draw-embed .draw-prompt{top:48%}
+body.gt-draw-embed .draw-prompt h2{font-size:clamp(25px,5.5vw,45px)}
+body.gt-draw-embed .actions{
+ border:0;flex:0 0 auto;padding:8px 0 0;
+ justify-content:center;gap:0;min-height:42px;
+}
+body.gt-draw-embed .actions>span,body.gt-draw-embed .actions a{display:none}
+body.gt-draw-embed .actions .right{gap:20px}
+body.gt-draw-embed .actions button{
+ border:0;border-bottom:1px solid #aab8aa;
+ padding:7px 0;min-height:32px;font-size:10px;
+ color:#5b755f;background:transparent;
+}
+body.gt-draw-embed .stage-finish{bottom:clamp(20px,4vh,38px)}
+body.gt-draw-embed .stage-finish .again{font-size:10px}
+@media(max-width:700px){
+ body.gt-draw-embed main{padding:0}
+ body.gt-draw-embed .stage{height:auto;min-height:0;max-height:none;flex:1 1 auto}
+ body.gt-draw-embed .stage-folio{font-size:8px}
+ body.gt-draw-embed .actions{padding:7px 0 0}
+ body.gt-draw-embed .draw-prompt h2{font-size:30px}
+}
+
+</style></head>
+<body><main>
+<header><strong class="brand">GOOD THINGS,</strong><span class="micro">AN INTERACTIVE OPENING / V30</span><a href="./">ENTER SITE</a></header>
+<section class="headline"><span class="micro">A SMALL MARK, A CONTINUING STORY</span>
+<h1>Make your mark.</h1>
+<p>留下自己的逗號，讓 GOOD THINGS, 從這一筆開始。沒有標準答案，也不需要畫得漂亮。</p>
+</section>
+<section id="stage" class="stage" aria-label="自由畫逗號的互動開場">
+<canvas id="canvas" tabindex="0" aria-label="在這裡用手指或滑鼠隨意畫一筆逗號。按 Enter 可以觀看示範"></canvas>
+<div class="stage-folio">GOOD THINGS, / 001</div><div class="stage-folio right">A CONTINUING JOURNAL</div>
+<div id="prompt" class="draw-prompt"><h2>Draw a comma.</h2><p>用手指或滑鼠，自由畫一筆。</p></div>
+<div class="stage-finish"><a href="./" class="enter-link">EXPLORE GOOD THINGS,</a><button type="button" id="again" class="again">DRAW AGAIN</button></div>
+<div id="loading" class="loading">PREPARING THE ORIGINAL LETTERFORMS...</div>
+</section>
+<div class="actions"><span>ONE GESTURE / YOUR MARK BECOMES OUR COMMA</span>
+<div class="right"><button id="try" type="button">SEE IT WITHOUT DRAWING</button><button id="reset" type="button">CLEAR / RESTART</button><a href="./">SKIP INTRO</a></div></div>
+<section class="summary"><p>你的筆跡不會被評分。放開手指後，它會緩緩收束成 GOOD THINGS, 原始 LOGO 的逗號，再帶出完整的滿版標誌。</p><small>DRAW → TRANSFORM → REVEAL<br>原始標誌不改字型 · 手機和電腦皆可操作 · 不儲存筆跡</small></section>
+<footer><span>GOOD THINGS, / UNPUBLISHED MOTION STUDY</span><span><a href="./opening-lab-editorial-v29.html">PREVIOUS STUDY V29</a> · ORIGINAL LOGO PRESERVED</span></footer>
+</main><script>
+'use strict';
+const gtEmbeddedDraw=new URLSearchParams(location.search).get('embed')==='1' && window.parent!==window;
+if(gtEmbeddedDraw)document.body.classList.add('gt-draw-embed');
+const gtDrawParent=(type,rest={})=>{
+ if(gtEmbeddedDraw)window.parent.postMessage({type,...rest},location.origin);
+};
+let gtLastDrawProgress=0;
+const stage=document.getElementById('stage'),canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const hint=document.getElementById('prompt'),loading=document.getElementById('loading');
+const again=document.getElementById('again'),resetButton=document.getElementById('reset');
+const motionOK=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=p=>{p=clamp(p);return p*p*(3-2*p)};
+const phase=(a,b,p)=>ease((p-a)/(b-a));
+const mix=(a,b,p)=>a+(b-a)*p;
+const DUR_MORPH=920,DUR_PLACE=900,DUR_TYPE=760,DUR_TOTAL=DUR_MORPH+DUR_PLACE+DUR_TYPE;
+const MOTION_FACTOR=motionOK?1:.001;
+let model=null,view={w:900,h:570,dpr:1};
+let state='idle',userStroke=[],pointer=null,animElapsed=0,then=0,raf=0;
+let drawnSamples=null,targetSamples=null,inkCenter=null,quickStartAt=0;
+function getBitmap(img){
+ const width=img.naturalWidth,height=img.naturalHeight;
+ if(width*height>2600000||width<100)return Promise.reject('Unexpected logo dimensions');
+ const base=document.createElement('canvas');base.width=width;base.height=height;
+ const c=base.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0);
+ const data=c.getImageData(0,0,width,height);
+ const ink=new Uint8Array(width*height),seen=new Uint8Array(width*height);
+ const labels=new Uint16Array(width*height),queue=new Int32Array(width*height),comps=[];
+ for(let i=0;i<ink.length;i++)ink[i]=data.data[i*4+3]>24?1:0;
+ let id=0;
+ for(let index=0;index<ink.length;index++){
+  if(!ink[index]||seen[index])continue;
+  let count=0,head=0,tail=1,left=width,top=height,right=0,bottom=0;
+  queue[0]=index;seen[index]=1;id++;
+  while(head<tail){
+   const n=queue[head++],x=n%width,y=Math.floor(n/width);count++;
+   labels[n]=id;left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+   const neighbors=[x? n-1:-1,x<width-1?n+1:-1,y?n-width:-1,y<height-1?n+width:-1];
+   for(const v of neighbors)if(v>=0&&ink[v]&&!seen[v]){
+    seen[v]=1;queue[tail++]=v;
+   }
+  }
+  if(count>150)comps.push({id,count,x:left,y:top,w:right-left+1,h:bottom-top+1});
+ }
+ const comma=comps.filter(c=>c.x>width*.78&&c.y>height*.49).sort((a,b)=>b.x-a.x)[0];
+ const letters=comps.filter(c=>c.id!==comma?.id&&c.count>500).sort((a,b)=>{
+  const rowA=a.y<height*.46?0:1,rowB=b.y<height*.46?0:1;
+  return rowA-rowB||a.x-b.x;
+ });
+ if(!comma||letters.length!==10)throw Error('Original logo requires 10 separable glyphs + comma; found '+letters.length);
+ function cropGlyph(c){
+  const o=document.createElement('canvas');o.width=c.w+4;o.height=c.h+4;
+  const target=o.getContext('2d'),im=target.createImageData(o.width,o.height);
+  for(let y=0;y<c.h;y++)for(let x=0;x<c.w;x++){
+   const src=((c.y+y)*width+c.x+x),dest=((y+2)*o.width+x+2)*4;
+   const alpha=data.data[src*4+3];
+   let belonging=labels[src]===c.id;
+   if(!belonging&&alpha&&alpha<40){
+    for(let dy=-1;dy<=1&&!belonging;dy++)for(let dx=-1;dx<=1;dx++){
+     const xx=c.x+x+dx,yy=c.y+y+dy;
+     if(xx>=0&&yy>=0&&xx<width&&yy<height&&labels[yy*width+xx]===c.id){belonging=true;break;}
+    }
+   }
+   if(belonging){
+    for(let k=0;k<4;k++)im.data[dest+k]=data.data[src*4+k];
+   }
+  }
+  target.putImageData(im,0,0);return o;
+ }
+ const glyphs=letters.map(c=>({...c,img:cropGlyph(c)}));
+ const cw=comma.w+2,ch=comma.h+2,cmask=new Uint8Array(cw*ch);
+ for(let y=0;y<comma.h;y++)for(let x=0;x<comma.w;x++){
+  const n=(comma.y+y)*width+comma.x+x;
+  if(labels[n]===comma.id)cmask[(y+1)*cw+x+1]=1;
+ }
+ const inside=(x,y)=>x>=0&&x<cw&&y>=0&&y<ch&&cmask[Math.floor(y)*cw+Math.floor(x)]===1;
+ // Oriented pixel-edge contours exactly follow the supplied comma's alpha.
+ const outgoing=new Map(),edges=[];
+ const key=(x,y)=>y*(cw+1)+x;
+ function add(ax,ay,bx,by){
+  const id=edges.length,k=key(ax,ay);
+  edges.push({ax,ay,bx,by,used:false});
+  if(!outgoing.has(k))outgoing.set(k,[]);
+  outgoing.get(k).push(id);
+ }
+ for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(inside(x,y)){
+  if(!inside(x,y-1))add(x,y,x+1,y);
+  if(!inside(x+1,y))add(x+1,y,x+1,y+1);
+  if(!inside(x,y+1))add(x+1,y+1,x,y+1);
+  if(!inside(x-1,y))add(x,y+1,x,y);
+ }
+ const loops=[];
+ for(let i=0;i<edges.length;i++){
+  if(edges[i].used)continue;
+  const pts=[],first=key(edges[i].ax,edges[i].ay);
+  let current=i;
+  while(pts.length<edges.length){
+   const e=edges[current];if(e.used)break;
+   e.used=true;pts.push({x:e.ax,y:e.ay});
+   const k=key(e.bx,e.by);
+   if(k===first)break;
+   const next=(outgoing.get(k)||[]).find(i=>!edges[i].used);
+   if(next===undefined)break;current=next;
+  }
+  if(pts.length>20){
+   let area=0;
+   for(let n=0;n<pts.length;n++){
+    const p=pts[n],q=pts[(n+1)%pts.length];area+=p.x*q.y-p.y*q.x;
+   }
+   loops.push({area:Math.abs(area),pts});
+  }
+ }
+ loops.sort((a,b)=>b.area-a.area);
+ if(!loops.length)throw Error('Original comma contour missing');
+ // Cyclic gaussian then sample, preserving the recognisable comma tail.
+ const ring=loops[0].pts,smoothed=[];
+ const sig=2.9;
+ for(let i=0;i<ring.length;i++){
+  let sum=0,x=0,y=0;
+  for(let d=-9;d<=9;d++){
+   const weight=Math.exp(-d*d/(2*sig*sig)),p=ring[(i+d+ring.length)%ring.length];
+   x+=p.x*weight;y+=p.y*weight;sum+=weight;
+  }
+  smoothed.push({x:x/sum,y:y/sum});
+ }
+ const contour=[];
+ let lastPos=smoothed[0];
+ for(let i=0;i<smoothed.length;i++){
+  const pos=smoothed[i];
+  if(contour.length===0||Math.hypot(pos.x-lastPos.x,pos.y-lastPos.y)>=2.4){
+   contour.push(pos);lastPos=pos;
+  }
+ }
+ if(contour.length<30)throw Error('Insufficient original contour points');
+ return {width,height,comma:{...comma,w:cw,h:ch},mask:cmask,inside,contour,glyphs,source:img};
+}
+function layout(){
+ const box=canvas.getBoundingClientRect();
+ const dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1,
+  Math.sqrt(6500000/Math.max(1,box.width*box.height))));
+ view={w:Math.max(1,box.width),h:Math.max(1,box.height),dpr};
+ canvas.width=Math.round(view.w*dpr);canvas.height=Math.round(view.h*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ paint();
+}
+function markLayout(){
+ const w=view.w,h=view.h,a=model.width/model.height;
+ const width=Math.min(w*(w<650?.88:.85),1170,h*.53*a);
+ const height=width/a;
+ return {x:(w-width)*.5,y:(h-height)*.5,w:width,h:height,s:width/model.width};
+}
+function targetComma(q){
+ const c=model.comma;
+ return {x:q.x+(c.x+c.w*.5)*q.s,y:q.y+(c.y+c.h*.5)*q.s,w:c.w*q.s,h:c.h*q.s};
+}
+function penLine(points,alpha=1,width=3.4,closed=false){
+ if(!points||!points.length)return;
+ ctx.save();ctx.globalAlpha=alpha;ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.strokeStyle='#315f40';ctx.lineWidth=width;
+ ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);
+ if(points.length===1){ctx.lineTo(points[0].x+.001,points[0].y+.001)}
+ else{
+  for(let i=1;i<points.length-1;i++){
+   const now=points[i],next=points[i+1];
+   ctx.quadraticCurveTo(now.x,now.y,(now.x+next.x)/2,(now.y+next.y)/2);
+  }
+  const lastPoint=points[points.length-1];
+  ctx.lineTo(lastPoint.x,lastPoint.y);
+ }
+ if(closed)ctx.closePath();
+ ctx.stroke();ctx.restore();
+}
+function pointFromEvent(e){
+ const b=canvas.getBoundingClientRect();
+ return {x:e.clientX-b.left,y:e.clientY-b.top};
+}
+function getDistance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function resample(points,count){
+ if(!points.length)points=[{x:view.w*.5,y:view.h*.49}];
+ if(points.length===1)points=[points[0],{x:points[0].x+.01,y:points[0].y+.01}];
+ const lengths=[0];let total=0;
+ for(let i=1;i<points.length;i++){total+=getDistance(points[i],points[i-1]);lengths.push(total)}
+ if(total<.02)return Array.from({length:count},()=>({...points[0]}));
+ const result=[];let j=1;
+ for(let i=0;i<count;i++){
+  const goal=total*i/(count-1);
+  while(j<lengths.length-1&&lengths[j]<goal)j++;
+  const t=clamp((goal-lengths[j-1])/(lengths[j]-lengths[j-1]||1));
+  result.push({x:mix(points[j-1].x,points[j].x,t),y:mix(points[j-1].y,points[j].y,t)});
+ }
+ return result;
+}
+function originalCommaOutline(count){
+ // Pixels for the contour were extracted from the site's ORIGINAL image.
+ const ring=model.contour;
+ const pts=ring.map(p=>({x:p.x-1,y:p.y-1}));
+ pts.push({...pts[0]});
+ return resample(pts,count);
+}
+function prepareMorph(points){
+ drawnSamples=resample(points,105);
+ const source=originalCommaOutline(105),c=model.comma;
+ const sizePx=Math.min(140,view.w*.27,view.h*.31);
+ const scale=sizePx/c.w;
+ inkCenter={x:view.w*.5,y:view.h*.47,w:sizePx,h:sizePx*c.h/c.w};
+ targetSamples=source.map(p=>({
+  x:inkCenter.x+(p.x-c.w*.5)*scale,
+  y:inkCenter.y+(p.y-c.h*.5)*scale
+ }));
+}
+function commaImage(x,y,w,h,alpha=1){
+ const c=model.comma;
+ ctx.save();ctx.globalAlpha=alpha;
+ ctx.drawImage(model.source,c.x,c.y,c.w,c.h,x-w*.5,y-h*.5,w,h);
+ ctx.restore();
+}
+function renderMorph(progress){
+ const p=phase(0,.80,progress);
+ const pts=drawnSamples.map((item,i)=>({
+  x:mix(item.x,targetSamples[i].x,p),
+  y:mix(item.y,targetSamples[i].y,p)
+ }));
+ penLine(pts,1-phase(.52,.99,progress),mix(3.4,1.75,p),p>.73);
+ // The actual logo's comma gradually replaces the hand-drawn stroke.
+ commaImage(inkCenter.x,inkCenter.y,inkCenter.w,inkCenter.h,phase(.47,.98,progress));
+}
+function renderPlacement(progress){
+ const q=markLayout(),target=targetComma(q),move=phase(.02,.82,progress);
+ const x=mix(inkCenter.x,target.x,move),y=mix(inkCenter.y,target.y,move);
+ const w=mix(inkCenter.w,target.w,move),h=mix(inkCenter.h,target.h,move);
+ commaImage(x,y,w,h);
+ // The text doesn't arrive as an unrelated animation. Its ten genuine
+ // letter sprites settle exactly around the traveling comma.
+ for(let i=0;i<model.glyphs.length;i++){
+  const g=model.glyphs[i],show=phase(.30+i*.025,.86+i*.010,progress);
+  if(show<.001)continue;
+  const ww=(g.w+4)*q.s,hh=(g.h+4)*q.s;
+  const gx=q.x+(g.x+g.w*.5)*q.s,gy=q.y+(g.y+g.h*.5)*q.s;
+  const shift=(1-show)*(view.w<650?5:9);
+  ctx.save();ctx.globalAlpha=show;
+  ctx.drawImage(g.img,gx-ww*.5,gy-hh*.5+shift,ww,hh);
+  ctx.restore();
+ }
+}
+function renderComplete(progress){
+ const q=markLayout(),settle=phase(.04,.35,progress);
+ const comma=targetComma(q);
+ commaImage(comma.x,comma.y,comma.w,comma.h);
+ for(let i=0;i<model.glyphs.length;i++){
+  const g=model.glyphs[i],ww=(g.w+4)*q.s,hh=(g.h+4)*q.s;
+  const gx=q.x+(g.x+g.w*.5)*q.s,gy=q.y+(g.y+g.h*.5)*q.s;
+  ctx.drawImage(g.img,gx-ww*.5,gy-hh*.5,ww,hh);
+ }
+ // Normalize pixel-fringing only after all source pieces fully align.
+ if(settle>.001){
+  ctx.save();ctx.globalAlpha=settle;
+  ctx.fillStyle='#f5f3ed';ctx.fillRect(0,0,view.w,view.h);
+  ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+  ctx.restore();
+ }
+}
+function paint(){
+ if(!model)return;
+ ctx.clearRect(0,0,view.w,view.h);
+ ctx.fillStyle='#f5f3ed';ctx.fillRect(0,0,view.w,view.h);
+ if(state==='drawing'){penLine(userStroke);return}
+ if(state==='morph'){renderMorph(clamp(animElapsed/(DUR_MORPH*MOTION_FACTOR)));return}
+ if(state==='placing'){renderPlacement(clamp(animElapsed/(DUR_PLACE*MOTION_FACTOR)));return}
+ if(state==='revealing'){renderComplete(clamp(animElapsed/(DUR_TYPE*MOTION_FACTOR)));return}
+ if(state==='finished'){
+  const q=markLayout();ctx.drawImage(model.source,q.x,q.y,q.w,q.h);
+ }
+}
+function tick(ms){
+ raf=requestAnimationFrame(tick);
+ if(!then)then=ms;
+ const dt=Math.min(70,ms-then);then=ms;
+ if(!['morph','placing','revealing'].includes(state))return;
+ animElapsed+=dt;
+ if(gtEmbeddedDraw && ms-gtLastDrawProgress>90){
+  gtLastDrawProgress=ms;
+  const t=state==='morph'?Math.min(1,animElapsed/DUR_MORPH)*.36:state==='placing'?.36+Math.min(1,animElapsed/DUR_PLACE)*.39:.75+Math.min(1,animElapsed/DUR_TYPE)*.25;
+  gtDrawParent('gt-draw-progress',{progress:Math.min(1,Math.max(0,t))});
+ }
+ const duration=state==='morph'?DUR_MORPH:state==='placing'?DUR_PLACE:DUR_TYPE;
+ if(animElapsed>duration*MOTION_FACTOR){
+  if(state==='morph'){state='placing';animElapsed=0}
+  else if(state==='placing'){state='revealing';animElapsed=0}
+  else{state='finished';animElapsed=0;stage.classList.add('is-finished');gtDrawParent('gt-draw-complete')}
+ }
+ paint();
+}
+function beginTransition(points){
+ if(!model)return;
+ prepareMorph(points);
+ state='morph';animElapsed=0;then=0;gtDrawParent('gt-draw-progress',{progress:0});
+ hint.classList.add('fade');
+ stage.classList.remove('is-finished');
+ paint();
+}
+function reset(){
+ state='idle';pointer=null;userStroke=[];drawnSamples=null;
+ stage.classList.remove('is-finished');hint.hidden=false;hint.classList.remove('fade');
+ paint();
+}
+function sampleStroke(p){
+ if(!userStroke.length||getDistance(userStroke[userStroke.length-1],p)>1.4)
+  userStroke.push(p);
+ if(userStroke.length>450){
+  userStroke=userStroke.filter((_,i)=>i%2===0);
+ }
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!model||state==='morph'||state==='placing'||state==='revealing')return;
+ if(e.pointerType==='mouse'&&e.button!==0)return;
+ if(state==='finished')reset();
+ pointer=e.pointerId;state='drawing';userStroke=[];
+ sampleStroke(pointFromEvent(e));
+ hint.classList.add('fade');
+ try{canvas.setPointerCapture(e.pointerId)}catch{}
+ paint();
+});
+canvas.addEventListener('pointermove',e=>{
+ if(pointer!==e.pointerId||state!=='drawing')return;
+ sampleStroke(pointFromEvent(e));paint();
+});
+function finishStroke(e){
+ if(pointer!==e.pointerId||state!=='drawing')return;
+ sampleStroke(pointFromEvent(e));
+ pointer=null;
+ // There is deliberately NO handwriting accuracy gate.
+ beginTransition([...userStroke]);
+}
+canvas.addEventListener('pointerup',finishStroke);
+canvas.addEventListener('pointercancel',e=>{
+ if(pointer===e.pointerId)reset();
+});
+canvas.addEventListener('keydown',e=>{
+ if(e.key==='Enter'||e.key===' '){
+  e.preventDefault();if(state==='idle'||state==='finished')demonstrate();
+ }
+});
+function demonstrate(){
+ // Accessible fallback: a single tap can produce the same final
+ // mark without drawing or passing an artificial handwriting test.
+ const cx=view.w*.5,cy=view.h*.47,s=Math.min(view.w*.17,70);
+ const pts=[];
+ for(let i=0;i<35;i++){
+  const t=i/34;
+  pts.push({x:cx+Math.cos(-.8+t*2.25)*s*.56,
+   y:cy+Math.sin(-.8+t*2.25)*s*.75+t*t*s*.30});
+ }
+ beginTransition(pts);
+}
+document.getElementById('try').addEventListener('click',demonstrate);
+resetButton.addEventListener('click',reset);
+again.addEventListener('click',reset);
+window.addEventListener('resize',()=>{
+ if(model&&['morph','placing','revealing'].includes(state)){
+  // Preserve the user gesture through rotation changes.
+  prepareMorph(userStroke.length?userStroke:[{x:view.w*.5,y:view.h*.47}]);
+ }
+ layout();
+},{passive:true});
+async function init(){
+ try{
+  const resp=await fetch('./index.html',{cache:'force-cache'});
+  if(!resp.ok)throw Error('Could not load source website');
+  const dom=new DOMParser().parseFromString(await resp.text(),'text/html');
+  const imgSrc=dom.querySelector('.site-header .gt-brand-logo')?.getAttribute('src');
+  if(!imgSrc||!imgSrc.startsWith('data:image/'))throw Error('Original GOOD THINGS, logo missing');
+  const img=new Image();img.src=imgSrc;
+  if(img.decode)await img.decode();
+  else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+  model=await getBitmap(img);
+  loading.hidden=true;layout();
+  gtDrawParent('gt-draw-ready');
+  raf=requestAnimationFrame(tick);
+ }catch(error){loading.textContent='THE ORIGINAL LOGO COULD NOT LOAD · '+(error?.message||String(error));gtDrawParent('gt-draw-fail')}
+}
+if(gtEmbeddedDraw){
+ document.querySelectorAll('a[href="./"]').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();gtDrawParent('gt-draw-enter');
+ }));
+}
+init();
+</script></body></html>
