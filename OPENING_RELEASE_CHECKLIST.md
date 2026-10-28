@@ -21,3 +21,13 @@ This is an isolated **draft** release from GitHub `main`. It is **not** the prot
 
 ## Outstanding note
 The Cloudflare private preview cannot prove the public Sanity cross-origin request; validate the public browser request before unlocking the publish flag. Existing public pages must always fail open to V30.
+
+
+## Automated QA review · 2026-10-28 (not browser acceptance)
+
+- Verified isolated PR diff against current main: only one `index.html` script reference changes; no articles, brand data, layouts, main LOGO or editor scripts changed.
+- Verified JavaScript parser accepts all public release assets and original study inline scripts.
+- Simulated the official controller for seven states, all passing: no published setting with legacy seen flag, published DRAW with legacy seen flag, published MAGNETIC with always, published OFF, network failure fallback to existing V30, direct article deep-link, and reduced-motion bypass.
+- Fixed a migration bug: old V30 `localStorage` "seen forever" is now respected **only** when no published cloud configuration exists; published `repeat=once` correctly means first play per tab, even for returning V30 visitors.
+- Browser-level acceptance is still open. No external browser network access was available to verify Sanity CORS, Cloudflare Access, GitHub Pages asset deployment, phone touch or real animation visuals.
+- PR **must remain draft and unmerged** until browser acceptance and explicit production deployment approval.
