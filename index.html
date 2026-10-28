@@ -841,6 +841,7 @@ body.gt-drawer-open{overflow:hidden}
 })();
 </script>
 <link rel="stylesheet" href="./gt-index-profile-v2.css?v=20261028-a1">
+<link rel="stylesheet" href="./gt-drawer-motion.css?v=20261028-sheet1">
 </head>
 <body>
   <section class="gt-scroll-entry" id="gt-scroll-entry" aria-label="GOOD THINGS, 互動式入口">
@@ -1924,22 +1925,61 @@ document.addEventListener('input',e=>{if(e.target.id==='search'){filters.q=e.tar
 document.addEventListener('change',e=>{if(e.target.id==='brand-filter'){filters.brand=e.target.value;renderResults()}if(e.target.id==='size-filter'){filters.size=e.target.value;renderResults()}if(e.target.id==='available-filter'){filters.available=e.target.checked;renderResults()}if(e.target.id.startsWith('archive-')&&e.target.id!=='archive-results'){archiveFilters[e.target.id.replace('archive-','')]=e.target.value;renderArchiveResults()}});
 // One editorial contents drawer on desktop and mobile, keyboard/touch accessible.
 let gtPreviousFocus=null;
+let gtDrawerHideTimer=null;
 function setGtDrawer(open){
   const panel=document.getElementById('gt-drawer'), backdrop=document.getElementById('gt-drawer-backdrop');
+  if(gtDrawerHideTimer!==null){clearTimeout(gtDrawerHideTimer);gtDrawerHideTimer=null;}
   gtPreviousFocus=open?document.activeElement:gtPreviousFocus;
-  panel.classList.toggle('is-open',open);backdrop.hidden=!open;
+  // Keep the backdrop in the layout while fading: instantly toggling [hidden]
+  // made the previous menu feel like a popup rather than a sliding sheet.
+  if(open){
+    backdrop.hidden=false;
+    void backdrop.offsetWidth;
+  }
+  panel.classList.toggle('is-open',open);
   panel.setAttribute('aria-hidden',String(!open));panel.inert=!open;
   document.getElementById('menu-toggle').setAttribute('aria-expanded',String(open));
   document.getElementById('gt-side-tab').setAttribute('aria-expanded',String(open));
   document.body.classList.toggle('gt-drawer-open',open);
-  if(open)document.getElementById('gt-drawer-close').focus();
-  else if(gtPreviousFocus && document.contains(gtPreviousFocus))gtPreviousFocus.focus();
+  if(open){
+    document.getElementById('gt-drawer-close').focus();
+  }else{
+    const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduced){
+      backdrop.hidden=true;
+    }else{
+      gtDrawerHideTimer=setTimeout(()=>{
+        if(!panel.classList.contains('is-open'))backdrop.hidden=true;
+        gtDrawerHideTimer=null;
+      },640);
+    }
+    if(gtPreviousFocus&&document.contains(gtPreviousFocus))gtPreviousFocus.focus();
+  }
 }
 document.getElementById('menu-toggle').addEventListener('click',()=>setGtDrawer(true));
 document.getElementById('gt-side-tab').addEventListener('click',()=>setGtDrawer(true));
 document.getElementById('gt-drawer-close').addEventListener('click',()=>setGtDrawer(false));
 document.getElementById('gt-drawer-backdrop').addEventListener('click',()=>setGtDrawer(false));
 document.getElementById('gt-drawer').addEventListener('click',e=>{if(e.target.closest('a[href]'))setGtDrawer(false)});
+
+ // On touch devices, a deliberate horizontal swipe right also puts the sheet away.
+ // Vertical swipes still scroll long menu contents normally.
+ let gtDrawerTouchStart=null;
+ const gtDrawerPanel=document.getElementById('gt-drawer');
+ gtDrawerPanel.addEventListener('touchstart',e=>{
+   if(e.touches.length!==1||!gtDrawerPanel.classList.contains('is-open'))return;
+   const t=e.touches[0];gtDrawerTouchStart={x:t.clientX,y:t.clientY};
+ },{passive:true});
+ gtDrawerPanel.addEventListener('touchend',e=>{
+   if(!gtDrawerTouchStart||e.changedTouches.length!==1)return;
+   const t=e.changedTouches[0],dx=t.clientX-gtDrawerTouchStart.x,dy=t.clientY-gtDrawerTouchStart.y;
+   gtDrawerTouchStart=null;
+   if(dx>95&&dx>Math.abs(dy)*1.5){
+     if(e.cancelable)e.preventDefault();
+     setGtDrawer(false);
+   }
+ },{passive:false});
+ gtDrawerPanel.addEventListener('touchcancel',()=>{gtDrawerTouchStart=null;},{passive:true});
 document.addEventListener('keydown',e=>{
   if(!document.getElementById('gt-drawer').classList.contains('is-open'))return;
   if(e.key==='Escape'){e.preventDefault();setGtDrawer(false);return;}
