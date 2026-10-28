@@ -1,0 +1,23 @@
+name: Opening release remote acceptance
+on:
+  push:
+    branches:
+      - release/opening-selector-safe-20261028
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  remote-acceptance:
+    name: Sanity CORS and candidate resources
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check controller syntax
+        run: node --check gt-opening-public-controller.js
+      - name: Check variant selector syntax
+        run: node --check gt-opening-study-param.js
+      - name: Check Sanity CORS, Cloudflare candidate, and official site
+        run: node .github/scripts/opening-remote-qa.mjs
