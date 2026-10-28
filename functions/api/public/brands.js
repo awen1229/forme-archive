@@ -3,7 +3,7 @@
 // settings. Never return drafts or credentials to the browser.
 const API='https://8nqupq9u.api.sanity.io/v2025-02-19'
 const NO_STORE={'Cache-Control':'no-store'}
-const QUERY='*[_type == "brand" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(name asc){name,slug,founder,foundedYear,summary,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}'
+const QUERY='*[_type == "brand" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(name asc){name,slug,founder,foundedYear,summary,editorNoteTitle,editorNote,tags,website,logoScale,logoOffsetX,logoOffsetY,"logoUrl":logo.asset->url}'
 
 export async function onRequestGet({env}){
  try{
