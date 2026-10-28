@@ -79,9 +79,11 @@ export async function onRequestPost({request,env}){
    method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
    body:JSON.stringify({mutations,returnDocuments:true})})
   if(!saved.ok)throw new AuthError(saved.status===409?409:502,'儲存動畫草稿失敗（HTTP '+saved.status+'）')
-  const result=await saved.json()
-  const draft=result.results?.find(x=>x.document?._id==='drafts.'+ID)?.document
-  return Response.json({ok:true,draft:serialized(draft)||{settings,revision:'',updatedAt:''},
-    readiness:readiness(env)},{headers:HEADERS})
+  // Read back the actual patched document. A createIfNotExists result may
+  // contain pre-patch settingsJson and must not be mistaken for the final draft.
+  const fresh=await state(token)
+  const draft=serialized(fresh.draft)
+  if(!draft||draft.invalid||!draft.revision)throw new AuthError(502,'草稿已保存，但無法確認最新版本；請重新讀取')
+  return Response.json({ok:true,draft,readiness:readiness(env)},{headers:HEADERS})
  }catch(e){return errorResponse(e)}
 }
