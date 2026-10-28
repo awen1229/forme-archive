@@ -171,3 +171,25 @@ Operator has now re-entered and saved `ENABLE_PRODUCTION_PUBLISH` as a Text vari
 - The studio is reachable from the preview utility bar, drawer menu, and Design Settings page. It previews each original archived study and provides select / save / test-homepage / phone-width / playback-frequency controls. The original archive study pages remain independently accessible for deeper playback and scrubbing.
 - URL overrides: `/?opening=magnetic&replay=1#/` tests any allowlisted mode (removes override after completion); `/?intro=off#/` always bypasses opening; existing legacy V21 `/?intro=pinnedstage21#/` remains. `opening=none` bypasses intro altogether.
 - Syntax checks passed for all newly added JS, new inline studio script, and main index HTML. Boot simulation passed 12 switching/replay/reduced-motion cases. External Cloudflare build and browser touch/iframe behavior should be checked independently; all changes stay on `feature/secure-editor-cloud`. Do not merge to main or publish Sanity data without explicit user approval.
+
+### Opening Studio / Cloud Draft and Publish Gate · 2026-10-28
+
+**User request:** Add the animation chooser to the editorial backend and prepare one-click publication of the selected opening to the official GOOD THINGS, website. The user did **not** select a version for immediate production release.
+
+**Implemented on protected preview branch only:**
+
+- Editorial admin tab now links to OPENING STUDIO; the existing Design Settings, drawer and utility links remain.
+- Studio adds `gt-opening-cloud-editor.js`, which reads the current selected mode and repeat/once setting, loads previously published values, saves a Sanity **draft**, and shows a separate explicit **Publish to Production** button.
+- `functions/api/editor/opening-settings.js` requires verified Cloudflare Access and a same-origin JSON POST, validates against the exact 24 allowlisted opening options, protects concurrent edits by `_rev`, saves under `drafts.gt-opening-settings` and returns the read-back revision.
+- `functions/api/editor/publish-opening-settings.js` requires verified Cloudflare Access, same-origin request, confirmation `PUBLISH_OPENING`, current draft revision and the matching settings. Production mutation is **refused** until all THREE preview-environment flags are text `true`: `ENABLE_PRODUCTION_PUBLISH`, `ENABLE_OPENING_PUBLISH`, `PRODUCTION_OPENING_ASSETS_READY`.
+- `functions/api/public/opening-settings.js` is a published-only read endpoint with CORS restricted to `https://awen1229.github.io`. It contains no credentials and cannot read drafts.
+- `gt-opening-production-runtime.js` is prepared for a **future, one-time main-branch code release**: GitHub Pages fetches published settings from the Cloudflare published-only endpoint (with a public Sanity fallback), initializes the selected original study once or always, and leaves public pages usable when it cannot fetch. The existing original-logo assets are reused. Production config changes after that code release are data-only, not new Git commits.
+
+**Not complete / acceptance required before enabling one-click Publish:**
+
+1. Authorized owner reviews and explicitly approves a controlled one-time deployment of all required assets and runtime from preview to GitHub `main`. DO NOT automatically merge the full development branch; check unrelated editor/CMS changes and production compatibility.
+2. Verify the public GitHub Pages site can access `gt-opening-production-runtime.js`, the 24 allowlisted study assets and the Sanity published-only endpoint, including CORS, on desktop and mobile. Exercise SKIP, reduced-motion preference, direct deep-links, repeat/once and failed-network handling.
+3. After verified deployment, set `PRODUCTION_OPENING_ASSETS_READY=true` and `ENABLE_OPENING_PUBLISH=true` in the secured Cloudflare Pages Preview environment only, with `ENABLE_PRODUCTION_PUBLISH=true` also enabled if the operator approves. Redeploy preview to load flags. Existing global publish gate semantics remain unchanged.
+4. Then the protected Studio enables the button; user saves desired mode and repeat settings, compares preview, explicitly confirms one-click publish, and the public runtime reads the newly published Sanity document. Keep a record of the previous chosen mode for a quick reversal.
+
+**Safeguard:** No merge to main, no Sanity production mutation, no Cloudflare flag changes and no live official opening switch were performed by this request. Static JS checks passed for the new client, functions and index. Browser/server authentication and full end-to-end publication remain unverified.
