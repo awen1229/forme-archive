@@ -61,6 +61,8 @@ function load(d){
  repeat.checked=d.settings.repeat==='always';
  const query=document.getElementById('query');if(query){query.value='';query.dispatchEvent(new Event('input'))}
  window.gtOpeningStudioSelect(d.settings.mode);
+ // Also synchronize the studio's in-memory saved-choice label.
+ document.getElementById('apply')?.click();
  // Existing studio tracks the preview selection and saved browser preference independently.
  note('已載入「'+reg.get(d.settings.mode).cn+'」到本機預覽；雲端資料沒有被修改。');
  draw();
