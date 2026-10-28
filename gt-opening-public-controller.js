@@ -178,13 +178,16 @@ async function boot(){
  if(!home())return;
  addReplay();
  if(suppress||motionReduced)return;
- let selected=await published();
+ const configured=await published();
  if(!home())return;
- if(!selected)selected={mode:'draw',repeat:'once'}; // preserve public behavior if published setting is absent
+ let selected=configured||{mode:'draw',repeat:'once'}; // preserve legacy V30 only when no published setting exists
  if(force)selected={mode:'draw',repeat:'always'}; // existing direct link remains functional
  if(selected.mode==='none')return;
- if(!force&&selected.repeat==='once'&&
-   (seenMode(selected.mode)||(selected.mode==='draw'&&legacySeen())))return;
+ // The legacy V30 stored a permanent localStorage flag. Respect it only for
+ // the unconfigured fallback. Once the editor publishes a setting, "once"
+ // means once per tab/session for that mode, not once forever.
+ const alreadySeen=seenMode(selected.mode)||(!configured&&selected.mode==='draw'&&legacySeen());
+ if(!force&&selected.repeat==='once'&&alreadySeen)return;
  open(selected);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
