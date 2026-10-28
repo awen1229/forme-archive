@@ -2,11 +2,11 @@
 (()=>{
 'use strict';
 const HOST='feature-secure-editor-cloud.forme-archive.pages.dev';
-const ids={list:'gt-font-list',count:'gt-font-count',upload:'gt-font-upload',files:'gt-font-files',license:'gt-font-license',progress:'gt-font-progress',save:'gt-font-save',status:'gt-font-status'};
+const ids={list:'gt-font-list',count:'gt-font-count',upload:'gt-font-upload',files:'gt-font-files',license:'gt-font-license',progress:'gt-font-progress',save:'gt-font-save',publish:'gt-font-publish',status:'gt-font-status'};
 const $=id=>document.getElementById(id);
 const ROLES=['headlines','body','navigation'];
 const initial={headlines:'',body:'',navigation:''};
-let fonts=[],roles={...initial},saved={...initial},revision='',loading=false,saving=false,uploading=false,deleting=false,loaded=false,limit=150,visibleCount=35,search='',previewCounter=0;
+let fonts=[],roles={...initial},saved={...initial},revision='',hasPublished=false,loading=false,saving=false,uploading=false,deleting=false,loaded=false,limit=150,visibleCount=35,search='',previewCounter=0;
 let activeObserver=null,categoryFilter='all',editingFont=null,editingBusy=false;
 const CATEGORIES={uncategorized:'未分類',serif:'Serif 襯線',sans:'Sans 無襯線',display:'Display 展示',handwriting:'Handwriting 手寫',other:'其他'};
 const fontById=id=>fonts.find(f=>f._id===id);
@@ -22,6 +22,7 @@ function buttons(){
  const f=$(ids.files),lic=$(ids.license);
  $(ids.upload).disabled=loading||uploading||deleting||!lic.checked||!f.files?.length;
  $(ids.save).disabled=loading||saving||uploading||deleting||!loaded||!available()||!isDirty();
+ $(ids.publish).disabled=loading||saving||uploading||deleting||!loaded||!available()||isDirty()||!revision;
  $('gt-font-reload').disabled=loading||uploading||saving||deleting;
 }
 async function api(url,init={}){
@@ -44,10 +45,10 @@ async function refresh(){
   fonts=(Array.isArray(library.fonts)?library.fonts:[]).filter(validFont).sort((a,b)=>a.name.localeCompare(b.name,'en',{sensitivity:'base'}));
   limit=Number(library.limit)||150;
   roles=window.GTFontPreview.normalise(settings.roles);
-  revision=String(settings.revision||'');saved={...roles};loaded=true;
+  revision=String(settings.revision||'');hasPublished=!!settings.published;saved={...roles};loaded=true;
   render();
   await applyPreview();
-  stateMessage('字型庫已載入。所有套用設定都停留在預覽／草稿，尚未公開。');
+  stateMessage(revision?'字型草稿已載入，可檢查後正式發布。':hasPublished?'目前顯示已發布字型設定，修改後請先儲存草稿。':'尚未發布字型設定，請先預覽並儲存草稿。');
  }catch(error){loaded=false;stateMessage('無法讀取字型庫：'+error.message,true)}
  finally{loading=false;buttons()}
 }
@@ -206,6 +207,21 @@ async function save(){
  }catch(error){stateMessage('草稿儲存失敗：'+error.message,true)}
  finally{saving=false;buttons()}
 }
+async function publish(){
+ if(saving||uploading||deleting||loading||!loaded||!revision||isDirty())return;
+ if(!confirm('確定把目前儲存的字型配置發布到 GOOD THINGS, 正式網站？請先確認每款字型允許公開網頁嵌入。'))return;
+ saving=true;buttons();stateMessage('正在正式發布字型配置…');
+ try{
+  await api('/api/editor/publish-font-settings',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({revision,confirmation:'PUBLISH'})
+  });
+  saving=false;
+  await refresh();
+  stateMessage('字型配置已正式發布。公開網站重新載入後會使用這組字型；字型檔載入失敗時保留原本字體。');
+ }catch(error){stateMessage('字型發布失敗：'+error.message,true)}
+ finally{saving=false;buttons()}
+}
 if(location.hostname!==HOST||!window.GTFontPreview){
  stateMessage('請使用受保護的編輯器網址開啟字型庫。',true);
  $('gt-font-upload').disabled=true;$('gt-font-save').disabled=true;return;
@@ -228,6 +244,7 @@ $(ids.license).addEventListener('change',buttons);
 $(ids.upload).addEventListener('click',upload);
 $('gt-font-reload').addEventListener('click',refresh);
 $(ids.save).addEventListener('click',save);
+$(ids.publish).addEventListener('click',publish);
 // Independent local font test: never uploads, stores or transmits selected file.
 let localFontFace=null;
 let localTestSequence=0;
