@@ -55,7 +55,7 @@ function urlFor(id,site=false){
  if(site){base.searchParams.set('opening',get(id)?id:'draw');base.searchParams.set('replay','1');base.hash='#/'}
  return base.toString();
 }
-if(location.hostname===HOST&&location.protocol==='https:'){
+if((location.hostname===HOST || (location.hostname==='awen1229.github.io' && /^\/forme-archive(?:\/|$)/.test(location.pathname))) && location.protocol==='https:'){
  window.GTOpening={modes,get,selected,save,seen,markSeen,cleanUrl,urlFor,KEY};
 }
 })();
