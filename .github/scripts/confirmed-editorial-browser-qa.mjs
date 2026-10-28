@@ -62,6 +62,36 @@ await run('Mobile: editorial home and menu are usable',{width:390,height:844},'#
  const menu=page.locator('.gt-side-tab');
  assert.ok(await menu.count()>0,'original dark MENU tab absent');
 });
+await run('Mobile: featured text only; olive MENU opens and original warm drawer remains',{width:390,height:844},'#/',async page=>{
+ await page.waitForSelector('.gt-editorial-home .gt-feature-intro > span:first-child',{timeout:12000});
+ const style=await page.evaluate(()=>{
+  const label=document.querySelector('.gt-editorial-home .gt-feature-intro > span:first-child');
+  const labelCSS=getComputedStyle(label);
+  const before=getComputedStyle(label,'::before');
+  const menu=document.getElementById('gt-side-tab');
+  return {
+   labelText:label?.textContent?.trim(),
+   labelBorder:labelCSS.borderTopWidth,
+   labelRadius:labelCSS.borderTopLeftRadius,
+   labelBackground:labelCSS.backgroundColor,
+   markerContent:before.content,
+   markerDisplay:before.display,
+   menuColor:getComputedStyle(menu).backgroundColor
+  };
+ });
+ assert.ok(style.labelText?.includes('FEATURED STORIES'),'featured editorial label missing');
+ assert.equal(style.labelBorder,'0px','capsule border not removed');
+ assert.equal(style.labelRadius,'0px','capsule rounding not removed');
+ assert.equal(style.labelBackground,'rgba(0, 0, 0, 0)','featured text still has badge background');
+ assert.ok(style.markerContent==='none'||style.markerDisplay==='none','decorative marker still visible');
+ assert.equal(style.menuColor,'rgb(46, 52, 45)','MENU should be deep olive #2e342d');
+ await page.locator('#gt-side-tab').click();
+ await page.waitForSelector('#gt-drawer.is-open',{timeout:6000});
+ const drawerColor=await page.locator('#gt-drawer').evaluate(el=>getComputedStyle(el).backgroundColor);
+ assert.equal(drawerColor,'rgb(232, 229, 220)','warm drawer must retain its color');
+ await page.locator('#gt-drawer-close').click();
+ await page.waitForSelector('#gt-drawer.is-open',{state:'detached',timeout:6000});
+});
 await run('Mobile: branded index editor note fits',{width:390,height:844},'#/brand/test-editorial-brand',async page=>{
  await page.waitForSelector('.gt-index-profile-v2 .gt-profile-editor-note',{timeout:12000});
  const dims=await page.evaluate(()=>({width:document.documentElement.clientWidth,content:document.documentElement.scrollWidth}));
