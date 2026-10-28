@@ -6,7 +6,7 @@
 'use strict';
 const HOST='awen1229.github.io',SUBDIR=/^\/forme-archive(?:\/|$)/;
 const QA_HOST='release-opening-selector-saf.forme-archive.pages.dev';
-const qa=new URLSearchParams(location.search).get('openingQA')==='1'&&location.hostname===QA_HOST;
+const qa=new URLSearchParams(location.search).get('openingQA')==='1'&&[QA_HOST,'127.0.0.1','localhost'].includes(location.hostname);
 const official=location.hostname===HOST&&SUBDIR.test(location.pathname);
 if((!official&&!qa)||location.protocol!=='https:')return;
 const TYPE='gt-draw-intro-v30',KEY='gt-draw-comma-intro-v30-seen',ORIGIN=location.origin;
