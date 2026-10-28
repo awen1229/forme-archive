@@ -31,3 +31,13 @@ The Cloudflare private preview cannot prove the public Sanity cross-origin reque
 - Fixed a migration bug: old V30 `localStorage` "seen forever" is now respected **only** when no published cloud configuration exists; published `repeat=once` correctly means first play per tab, even for returning V30 visitors.
 - Browser-level acceptance is still open. No external browser network access was available to verify Sanity CORS, Cloudflare Access, GitHub Pages asset deployment, phone touch or real animation visuals.
 - PR **must remain draft and unmerged** until browser acceptance and explicit production deployment approval.
+
+## Cloudflare release-candidate preview · 2026-10-28
+
+- Candidate build succeeded on Cloudflare Pages: https://release-opening-selector-saf.forme-archive.pages.dev/
+- Operator-friendly full-homepage QA page: https://release-opening-selector-saf.forme-archive.pages.dev/opening-release-qa.html
+- For Cloudflare release host **only**, `?openingQA=1&mode=<allowlisted-mode>#/` explicitly enables the candidate opening without querying Sanity; normal protected preview and `main` behavior remain unchanged.
+- The QA page lists 24 allowlisted modes, permits replay, phone-width emulation, and real homepage navigation in a same-origin iframe.
+- Physics V10/V21 now enable `embed=1` and bridge `gt-physics-ready`, `gt-physics-complete`, and `gt-physics-fail` messages to the controller; completed physics returns to the homepage instead of waiting for a fixed full-time timeout.
+- Simulation matrix for candidate preview and public fallback passed: QA physics21, QA OFF, QA magnetic, production published OFF, production network failure -> original V30. Syntax and 24-item catalog checked.
+- **Not verified:** visual, touch and desktop behavior on real browsers; real GitHub Pages origin's Sanity CORS; authentication requirements for preview host. Keep PR as draft and do not merge before acceptance.
