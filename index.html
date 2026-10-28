@@ -784,6 +784,8 @@ body.gt-drawer-open{overflow:hidden}
   var legacy=['scrolllab','scrollstage','pinnedstage','pinnedstage19','pinnedstage20','pinnedstage21'].includes(intro);
   var root=document.documentElement;
   if(!preview){
+   // GitHub Pages production reads the published Sanity opening with a separate safe runtime.
+   if(location.hostname==='awen1229.github.io' && /^\/forme-archive(?:\/|$)/.test(location.pathname))return;
    var seen=sessionStorage.getItem('gt-scroll-entry-physics10')==='done';
    if(home&&!reduced&&(legacy||intro==='replay'||(!seen&&intro!=='off'))){
     root.classList.add('gt-scroll-entry-ready');
@@ -2158,6 +2160,7 @@ gtLoadCloudPublishedBrands();
 <script src="./gt-image-dimension-guide.js?v=20261024-img1" defer></script>
 <script src="./gt-font-preview.js?v=20261024-font6" defer></script>
 <script src="./gt-design-site.js" defer></script>
+<script src="./gt-opening-production-runtime.js?v=20261028-release1" defer></script>
 <script src="./gt-home-intro.js?v=20261024-physics10" defer></script>
 <script src="./gt-home-intro-draw-v30.js?v=20261028-a1" defer></script>
 <script src="./gt-home-intro-lab.js?v=20261028-studio1" defer></script>
