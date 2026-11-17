@@ -1,0 +1,392 @@
+{
+  "schema": 1,
+  "status": "exploratory_incremental_tdcc_gate",
+  "asOf": "2026-11-16",
+  "definition": "Among the original top 10 fullDiv selected names, remove TDCC large-share-down and retail-share-up trend flags (4 statement periods). Reinvest equally in remaining choices, no cash allocation.",
+  "costMethod": "Rebalance cost on target-weight differences: buy .1425%, sell .4425%; gross returns use unadjusted weekly close prices.",
+  "control": "Remove the same number of lowest-ranked choices in the base top10, to distinguish concentration warning from merely narrowing selection.",
+  "sample": {
+    "weeks": 10,
+    "totalChosen": 2,
+    "redWeeks": 2,
+    "byFlag": {
+      "concentration": {
+        "observations": 47,
+        "meanGrossPct": -0.8
+      },
+      "distribution": {
+        "observations": 2,
+        "meanGrossPct": -15.3
+      },
+      "other": {
+        "observations": 51,
+        "meanGrossPct": 0.47
+      },
+      "invalid": {
+        "observations": 0,
+        "meanGrossPct": null
+      }
+    }
+  },
+  "results": {
+    "baseline": {
+      "cumulativeNetPct": -7.98,
+      "weekly": [
+        {
+          "date": "2026-09-04",
+          "netPct": -1.78,
+          "grossPct": -1.64,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-11",
+          "netPct": 2.67,
+          "grossPct": 3.02,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-18",
+          "netPct": -0.33,
+          "grossPct": 0.02,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-24",
+          "netPct": 3.22,
+          "grossPct": 3.51,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-02",
+          "netPct": -0.11,
+          "grossPct": 0.36,
+          "turnover": 1.6,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-08",
+          "netPct": 0.02,
+          "grossPct": 0.38,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-16",
+          "netPct": -3.47,
+          "grossPct": -3,
+          "turnover": 1.6,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-22",
+          "netPct": -1.24,
+          "grossPct": -0.95,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-30",
+          "netPct": -8.25,
+          "grossPct": -7.95,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-11-06",
+          "netPct": 1.48,
+          "grossPct": 1.84,
+          "turnover": 1.2,
+          "selected": 10
+        }
+      ]
+    },
+    "skipDistribution": {
+      "cumulativeNetPct": -5.84,
+      "weekly": [
+        {
+          "date": "2026-09-04",
+          "netPct": -1.78,
+          "grossPct": -1.64,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-11",
+          "netPct": 2.67,
+          "grossPct": 3.02,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-18",
+          "netPct": -0.33,
+          "grossPct": 0.02,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-24",
+          "netPct": 3.22,
+          "grossPct": 3.51,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-02",
+          "netPct": -0.11,
+          "grossPct": 0.36,
+          "turnover": 1.6,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-08",
+          "netPct": 0.02,
+          "grossPct": 0.38,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-16",
+          "netPct": -2.29,
+          "grossPct": -1.82,
+          "turnover": 1.6,
+          "selected": 9
+        },
+        {
+          "date": "2026-10-22",
+          "netPct": -1.24,
+          "grossPct": -0.95,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-30",
+          "netPct": -7.24,
+          "grossPct": -6.95,
+          "turnover": 1,
+          "selected": 9
+        },
+        {
+          "date": "2026-11-06",
+          "netPct": 1.48,
+          "grossPct": 1.84,
+          "turnover": 1.2,
+          "selected": 10
+        }
+      ]
+    },
+    "trimTailControl": {
+      "cumulativeNetPct": -7.95,
+      "weekly": [
+        {
+          "date": "2026-09-04",
+          "netPct": -1.78,
+          "grossPct": -1.64,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-11",
+          "netPct": 2.67,
+          "grossPct": 3.02,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-18",
+          "netPct": -0.33,
+          "grossPct": 0.02,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-09-24",
+          "netPct": 3.22,
+          "grossPct": 3.51,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-02",
+          "netPct": -0.11,
+          "grossPct": 0.36,
+          "turnover": 1.6,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-08",
+          "netPct": 0.02,
+          "grossPct": 0.38,
+          "turnover": 1.2,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-16",
+          "netPct": -3.65,
+          "grossPct": -3.13,
+          "turnover": 1.8,
+          "selected": 9
+        },
+        {
+          "date": "2026-10-22",
+          "netPct": -1.24,
+          "grossPct": -0.95,
+          "turnover": 1,
+          "selected": 10
+        },
+        {
+          "date": "2026-10-30",
+          "netPct": -8.03,
+          "grossPct": -7.74,
+          "turnover": 1,
+          "selected": 9
+        },
+        {
+          "date": "2026-11-06",
+          "netPct": 1.48,
+          "grossPct": 1.84,
+          "turnover": 1.2,
+          "selected": 10
+        }
+      ]
+    }
+  },
+  "weekly": [
+    {
+      "signalDate": "2026-09-04",
+      "fromDate": "2026-07-31",
+      "tdccSnapshot": "2026-08-28",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": -1.78,
+        "skipDistribution": -1.78,
+        "trimTailControl": -1.78
+      }
+    },
+    {
+      "signalDate": "2026-09-11",
+      "fromDate": "2026-08-07",
+      "tdccSnapshot": "2026-09-04",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": 2.67,
+        "skipDistribution": 2.67,
+        "trimTailControl": 2.67
+      }
+    },
+    {
+      "signalDate": "2026-09-18",
+      "fromDate": "2026-08-14",
+      "tdccSnapshot": "2026-09-11",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": -0.33,
+        "skipDistribution": -0.33,
+        "trimTailControl": -0.33
+      }
+    },
+    {
+      "signalDate": "2026-09-24",
+      "fromDate": "2026-08-21",
+      "tdccSnapshot": "2026-09-18",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": 3.22,
+        "skipDistribution": 3.22,
+        "trimTailControl": 3.22
+      }
+    },
+    {
+      "signalDate": "2026-10-02",
+      "fromDate": "2026-08-28",
+      "tdccSnapshot": "2026-09-24",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": -0.11,
+        "skipDistribution": -0.11,
+        "trimTailControl": -0.11
+      }
+    },
+    {
+      "signalDate": "2026-10-08",
+      "fromDate": "2026-09-04",
+      "tdccSnapshot": "2026-10-02",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": 0.02,
+        "skipDistribution": 0.02,
+        "trimTailControl": 0.02
+      }
+    },
+    {
+      "signalDate": "2026-10-16",
+      "fromDate": "2026-09-11",
+      "tdccSnapshot": "2026-10-08",
+      "redFlags": [
+        "2368"
+      ],
+      "excludedCount": 1,
+      "returns": {
+        "baseline": -3.47,
+        "skipDistribution": -2.29,
+        "trimTailControl": -3.65
+      }
+    },
+    {
+      "signalDate": "2026-10-22",
+      "fromDate": "2026-09-18",
+      "tdccSnapshot": "2026-10-16",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": -1.24,
+        "skipDistribution": -1.24,
+        "trimTailControl": -1.24
+      }
+    },
+    {
+      "signalDate": "2026-10-30",
+      "fromDate": "2026-09-24",
+      "tdccSnapshot": "2026-10-22",
+      "redFlags": [
+        "3017"
+      ],
+      "excludedCount": 1,
+      "returns": {
+        "baseline": -8.25,
+        "skipDistribution": -7.24,
+        "trimTailControl": -8.03
+      }
+    },
+    {
+      "signalDate": "2026-11-06",
+      "fromDate": "2026-10-02",
+      "tdccSnapshot": "2026-10-30",
+      "redFlags": [],
+      "excludedCount": 0,
+      "returns": {
+        "baseline": 1.48,
+        "skipDistribution": 1.48,
+        "trimTailControl": 1.48
+      }
+    }
+  ],
+  "warnings": [
+    "Short 10wk research sample, with retrospective survivor stock universe",
+    "Thresholds selected a priori for illustration, but not walk-forward optimized or independently tested",
+    "Different number of stocks per week changes portfolio concentration",
+    "Cash dividends, slippage and full corporate-action handling omitted",
+    "Source dates strictly earlier than signal date; only issue these percentages as observations",
+    "If TDCC filter beats the baseline here, that is not proof of robust out-of-sample advantage"
+  ]
+}
