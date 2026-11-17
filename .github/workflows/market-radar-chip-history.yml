@@ -1,0 +1,53 @@
+name: MARKET RADAR chip history backfill
+on:
+  workflow_dispatch:
+  schedule:
+    # Sunday 18:15 Taiwan time, refresh missing/revised history
+    - cron: '15 10 * * 0'
+  push:
+    paths:
+      - '.github/workflows/market-radar-chip-history.yml'
+      - 'market-radar/scripts/backfill-chip.mjs'
+permissions:
+  contents: write
+concurrency:
+  group: market-radar-data-sync
+  cancel-in-progress: false
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify and import historical institutional flows
+        env:
+          BACKFILL_CALENDAR_DAYS: '112'
+        run: node market-radar/scripts/backfill-chip.mjs
+      - name: Commit audited time series
+        run: |
+          git config user.name "market-radar-bot"
+          git config user.email "market-radar-bot@users.noreply.github.com"
+          git add market-radar/data/series.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: expand verified institutional flow history"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "History published successfully"
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "History publication failed"
+                exit 1
+              fi
+              sleep "$attempt"
+            done
+          else
+            echo "No new historical sessions to save"
+          fi
