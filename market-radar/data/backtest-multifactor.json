@@ -1,0 +1,1603 @@
+{
+  "schema": 2,
+  "study": "MARKET RADAR historical 45/35/20 factor ablation",
+  "status": "exploratory_partial_pit",
+  "asOf": "2026-11-16",
+  "producedAt": "2026-11-17",
+  "period": {
+    "firstSignal": "2026-09-04",
+    "lastExit": "2026-11-16",
+    "weeks": 10,
+    "qualifyingPerWeek": [
+      177,
+      177,
+      177,
+      177,
+      177,
+      177,
+      177,
+      177,
+      177,
+      177
+    ],
+    "eligibleMarket": "TWSE listed stocks in currently tracked universe with complete 20d chip + Q2 results + reported revenue"
+  },
+  "formula": {
+    "institutional": "45 points: foreign/trust 5/20/60d net and buy-day counts, matching existing App point allocation",
+    "fundamental": "35 points: published monthly revenue YoY/MoM and prior 2026Q2 EPS, op margin, gross margin",
+    "relative": "20 points: signal-day 0050-relative price momentum and NT$50m trading value proxy",
+    "diversification": "fullDiv applies <=2 names per published revenue sector (not identical to website thematic sector groups)",
+    "ablation": "noChip=35+20, noFundamental=45+20, noRelative=45+35",
+    "ties": "For each factor rank only its own score; ties resolved by ascending ticker without other factor leakage"
+  },
+  "execution": {
+    "signal": "weekly last session after close",
+    "entry": "next week's first listed trading session closing price (not a guaranteed fill)",
+    "exit": "following week's first listed trading session closing price",
+    "portfolio": "10 equal-weight stocks, rebalance weekly",
+    "buyCostPct": 0.1425,
+    "sellCostPct": 0.4425,
+    "slippage": false,
+    "fees": "estimated full retail brokerage fee and stock sell tax for changed weights, no broker discounts",
+    "corporateActions": "unadjusted listed closing prices, no cash dividends; corporate actions not comprehensively audited"
+  },
+  "vintage": {
+    "monthly": "actual dated publication field if present, otherwise conservatively next month 18th; 2026 July/Aug/Sept archived files",
+    "earnings": "2026Q2 issuer financial numbers, treated as available from 2026-08-24; original per-company publication versions and later restatements not audited",
+    "stockPrices": "TWSE-daily historical daily CSV",
+    "chip": "MARKET RADAR existing official institution history 2026-05 to 2026-11"
+  },
+  "metricNotes": [
+    "Short period includes steep market drawdown and may not generalize",
+    "Retrospective survivor/stock-pool bias; incomplete delisted/newly-listed population",
+    "Quarterly financials and monthly archives are not fully point-in-time immutable snapshots",
+    "Tie-breaking by ticker can materially influence coarse-scored factor rankings"
+  ],
+  "baseline": {
+    "name": "0050",
+    "cumulativePct": -12.238,
+    "maxWeeklyDrawdownPct": -16.818,
+    "gross": true,
+    "includesDividends": false
+  },
+  "metrics": {
+    "chip": {
+      "cumulativePct": -12.443,
+      "maxWeeklyDrawdownPct": -14.057,
+      "positiveWeeks": 3,
+      "beat0050Weeks": 5,
+      "estimatedTotalTradingCostPpt": 2.833,
+      "grossTurnover": 10.2,
+      "annualizedWeeklySharpe0Cash": -2.97
+    },
+    "fundamental": {
+      "cumulativePct": -27.581,
+      "maxWeeklyDrawdownPct": -27.581,
+      "positiveWeeks": 2,
+      "beat0050Weeks": 2,
+      "estimatedTotalTradingCostPpt": 0.669,
+      "grossTurnover": 2.8,
+      "annualizedWeeklySharpe0Cash": -4.32
+    },
+    "relative": {
+      "cumulativePct": -13.699,
+      "maxWeeklyDrawdownPct": -14.354,
+      "positiveWeeks": 4,
+      "beat0050Weeks": 5,
+      "estimatedTotalTradingCostPpt": 4.881,
+      "grossTurnover": 17.2,
+      "annualizedWeeklySharpe0Cash": -2.26
+    },
+    "full": {
+      "cumulativePct": -13.515,
+      "maxWeeklyDrawdownPct": -14.405,
+      "positiveWeeks": 2,
+      "beat0050Weeks": 3,
+      "estimatedTotalTradingCostPpt": 3.301,
+      "grossTurnover": 11.8,
+      "annualizedWeeklySharpe0Cash": -3.17
+    },
+    "noChip": {
+      "cumulativePct": -22.037,
+      "maxWeeklyDrawdownPct": -22.037,
+      "positiveWeeks": 2,
+      "beat0050Weeks": 3,
+      "estimatedTotalTradingCostPpt": 4.53,
+      "grossTurnover": 16,
+      "annualizedWeeklySharpe0Cash": -4.22
+    },
+    "noFundamental": {
+      "cumulativePct": -12.506,
+      "maxWeeklyDrawdownPct": -12.506,
+      "positiveWeeks": 3,
+      "beat0050Weeks": 4,
+      "estimatedTotalTradingCostPpt": 4.296,
+      "grossTurnover": 15.2,
+      "annualizedWeeklySharpe0Cash": -3.51
+    },
+    "noRelative": {
+      "cumulativePct": -9.322,
+      "maxWeeklyDrawdownPct": -14.399,
+      "positiveWeeks": 3,
+      "beat0050Weeks": 3,
+      "estimatedTotalTradingCostPpt": 2.131,
+      "grossTurnover": 7.8,
+      "annualizedWeeklySharpe0Cash": -1.9
+    },
+    "fullDiv": {
+      "cumulativePct": -7.983,
+      "maxWeeklyDrawdownPct": -12.6,
+      "positiveWeeks": 4,
+      "beat0050Weeks": 5,
+      "estimatedTotalTradingCostPpt": 3.36,
+      "grossTurnover": 12,
+      "annualizedWeeklySharpe0Cash": -1.7
+    }
+  },
+  "weekly": [
+    {
+      "signalDate": "2026-09-04",
+      "entryDate": "2026-09-07",
+      "exitDate": "2026-09-14",
+      "eligible": 177,
+      "etf0050GrossPct": -2.73,
+      "models": {
+        "chip": {
+          "grossPct": -2.829,
+          "costPct": 0.143,
+          "netPct": -2.972,
+          "codes": [
+            "2353",
+            "2382",
+            "2542",
+            "2603",
+            "2609",
+            "9910",
+            "1402",
+            "2301",
+            "2313",
+            "2618"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -7.504,
+          "costPct": 0.143,
+          "netPct": -7.647,
+          "codes": [
+            "1590",
+            "1618",
+            "1723",
+            "1802",
+            "2027",
+            "2049",
+            "2059",
+            "2301",
+            "2308",
+            "2327"
+          ]
+        },
+        "relative": {
+          "grossPct": -6.443,
+          "costPct": 0.143,
+          "netPct": -6.586,
+          "codes": [
+            "2049",
+            "2313",
+            "2324",
+            "2327",
+            "2353",
+            "2357",
+            "2375",
+            "2421",
+            "2472",
+            "2492"
+          ]
+        },
+        "full": {
+          "grossPct": -4.143,
+          "costPct": 0.143,
+          "netPct": -4.285,
+          "codes": [
+            "3017",
+            "2301",
+            "2421",
+            "2382",
+            "2049",
+            "2353",
+            "3653",
+            "2313",
+            "2609",
+            "1802"
+          ]
+        },
+        "noChip": {
+          "grossPct": -5.723,
+          "costPct": 0.143,
+          "netPct": -5.866,
+          "codes": [
+            "2049",
+            "2327",
+            "2421",
+            "2472",
+            "3017",
+            "3023",
+            "3026",
+            "3189",
+            "3653",
+            "2059"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": -3.971,
+          "costPct": 0.143,
+          "netPct": -4.113,
+          "codes": [
+            "2353",
+            "2382",
+            "2313",
+            "3017",
+            "4938",
+            "9910",
+            "2301",
+            "2357",
+            "3406",
+            "2609"
+          ]
+        },
+        "noRelative": {
+          "grossPct": 0.029,
+          "costPct": 0.143,
+          "netPct": -0.113,
+          "codes": [
+            "2542",
+            "2603",
+            "2301",
+            "3017",
+            "2609",
+            "1802",
+            "2455",
+            "2615",
+            "3034",
+            "3443"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": -1.636,
+          "costPct": 0.143,
+          "netPct": -1.779,
+          "codes": [
+            "3017",
+            "2301",
+            "2421",
+            "2049",
+            "3653",
+            "2609",
+            "1802",
+            "2455",
+            "3443",
+            "2542"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-09-11",
+      "entryDate": "2026-09-14",
+      "exitDate": "2026-09-21",
+      "eligible": 177,
+      "etf0050GrossPct": 4.163,
+      "models": {
+        "chip": {
+          "grossPct": 3.052,
+          "costPct": 0.292,
+          "netPct": 2.759,
+          "codes": [
+            "2382",
+            "2603",
+            "2618",
+            "2207",
+            "2542",
+            "2610",
+            "3443",
+            "3532",
+            "9910",
+            "1326"
+          ]
+        },
+        "fundamental": {
+          "grossPct": 3.493,
+          "costPct": 0,
+          "netPct": 3.493,
+          "codes": [
+            "1590",
+            "1618",
+            "1723",
+            "1802",
+            "2027",
+            "2049",
+            "2059",
+            "2301",
+            "2308",
+            "2327"
+          ]
+        },
+        "relative": {
+          "grossPct": 0.816,
+          "costPct": 0.585,
+          "netPct": 0.231,
+          "codes": [
+            "2208",
+            "2609",
+            "2880",
+            "2884",
+            "2886",
+            "2892",
+            "3029",
+            "3532",
+            "6112",
+            "8454"
+          ]
+        },
+        "full": {
+          "grossPct": 3.424,
+          "costPct": 0.468,
+          "netPct": 2.956,
+          "codes": [
+            "2603",
+            "2542",
+            "3034",
+            "2382",
+            "2609",
+            "2610",
+            "2615",
+            "2618",
+            "3044",
+            "3443"
+          ]
+        },
+        "noChip": {
+          "grossPct": 1.828,
+          "costPct": 0.585,
+          "netPct": 1.243,
+          "codes": [
+            "2379",
+            "2615",
+            "2617",
+            "2637",
+            "3034",
+            "3044",
+            "8046",
+            "2542",
+            "2603",
+            "2605"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": 1.047,
+          "costPct": 0.468,
+          "netPct": 0.579,
+          "codes": [
+            "2382",
+            "2603",
+            "2618",
+            "3532",
+            "2207",
+            "2542",
+            "2609",
+            "2610",
+            "2886",
+            "2892"
+          ]
+        },
+        "noRelative": {
+          "grossPct": 4.276,
+          "costPct": 0.117,
+          "netPct": 4.159,
+          "codes": [
+            "2603",
+            "3443",
+            "2542",
+            "3017",
+            "3034",
+            "2382",
+            "2455",
+            "2610",
+            "2615",
+            "1802"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": 3.018,
+          "costPct": 0.351,
+          "netPct": 2.667,
+          "codes": [
+            "2603",
+            "2542",
+            "3034",
+            "2382",
+            "2609",
+            "3044",
+            "3443",
+            "1402",
+            "2207",
+            "3017"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-09-18",
+      "entryDate": "2026-09-21",
+      "exitDate": "2026-09-29",
+      "eligible": 177,
+      "etf0050GrossPct": -0.045,
+      "models": {
+        "chip": {
+          "grossPct": -2.101,
+          "costPct": 0.351,
+          "netPct": -2.452,
+          "codes": [
+            "2382",
+            "2891",
+            "1802",
+            "2353",
+            "2603",
+            "2610",
+            "2618",
+            "2357",
+            "2455",
+            "2480"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -1.555,
+          "costPct": 0.292,
+          "netPct": -1.848,
+          "codes": [
+            "1802",
+            "2049",
+            "2059",
+            "2301",
+            "2327",
+            "2330",
+            "2337",
+            "2344",
+            "2360",
+            "2368"
+          ]
+        },
+        "relative": {
+          "grossPct": -1.572,
+          "costPct": 0.526,
+          "netPct": -2.098,
+          "codes": [
+            "2344",
+            "2360",
+            "2368",
+            "2408",
+            "2449",
+            "2454",
+            "3008",
+            "3017",
+            "3026",
+            "3029"
+          ]
+        },
+        "full": {
+          "grossPct": -0.084,
+          "costPct": 0.468,
+          "netPct": -0.552,
+          "codes": [
+            "3017",
+            "2455",
+            "2360",
+            "3443",
+            "1802",
+            "3034",
+            "2449",
+            "2454",
+            "3653",
+            "6770"
+          ]
+        },
+        "noChip": {
+          "grossPct": -0.452,
+          "costPct": 0.585,
+          "netPct": -1.037,
+          "codes": [
+            "2344",
+            "2360",
+            "2368",
+            "2408",
+            "2449",
+            "2454",
+            "3017",
+            "3443",
+            "3661",
+            "2327"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": -2.159,
+          "costPct": 0.526,
+          "netPct": -2.685,
+          "codes": [
+            "3017",
+            "2455",
+            "2360",
+            "3026",
+            "3443",
+            "1802",
+            "2421",
+            "2480",
+            "3034",
+            "2382"
+          ]
+        },
+        "noRelative": {
+          "grossPct": -0.69,
+          "costPct": 0.234,
+          "netPct": -0.924,
+          "codes": [
+            "1802",
+            "2382",
+            "2455",
+            "2603",
+            "3017",
+            "3034",
+            "2353",
+            "2360",
+            "3653",
+            "6770"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": 0.02,
+          "costPct": 0.351,
+          "netPct": -0.331,
+          "codes": [
+            "3017",
+            "2455",
+            "2360",
+            "3443",
+            "1802",
+            "3034",
+            "3653",
+            "3026",
+            "2382",
+            "5534"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-09-24",
+      "entryDate": "2026-09-29",
+      "exitDate": "2026-10-05",
+      "eligible": 177,
+      "etf0050GrossPct": 4.178,
+      "models": {
+        "chip": {
+          "grossPct": 0.111,
+          "costPct": 0.351,
+          "netPct": -0.24,
+          "codes": [
+            "2891",
+            "2892",
+            "4736",
+            "1802",
+            "2382",
+            "2618",
+            "3017",
+            "9910",
+            "1513",
+            "2385"
+          ]
+        },
+        "fundamental": {
+          "grossPct": 6.194,
+          "costPct": 0,
+          "netPct": 6.194,
+          "codes": [
+            "1802",
+            "2049",
+            "2059",
+            "2301",
+            "2327",
+            "2330",
+            "2337",
+            "2344",
+            "2360",
+            "2368"
+          ]
+        },
+        "relative": {
+          "grossPct": 8.696,
+          "costPct": 0.526,
+          "netPct": 8.17,
+          "codes": [
+            "1303",
+            "3026",
+            "3189",
+            "3653",
+            "4566",
+            "6213",
+            "6285",
+            "1301",
+            "1326",
+            "1802"
+          ]
+        },
+        "full": {
+          "grossPct": 3.336,
+          "costPct": 0.234,
+          "netPct": 3.102,
+          "codes": [
+            "1802",
+            "3017",
+            "2454",
+            "3653",
+            "2455",
+            "4961",
+            "2449",
+            "9945",
+            "3026",
+            "3035"
+          ]
+        },
+        "noChip": {
+          "grossPct": 5.504,
+          "costPct": 0.351,
+          "netPct": 5.153,
+          "codes": [
+            "3189",
+            "3653",
+            "1802",
+            "2301",
+            "2327",
+            "2449",
+            "2454",
+            "2615",
+            "3017",
+            "3026"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": 3.206,
+          "costPct": 0.351,
+          "netPct": 2.855,
+          "codes": [
+            "1802",
+            "3017",
+            "2454",
+            "4961",
+            "3653",
+            "3026",
+            "1513",
+            "2385",
+            "2455",
+            "2449"
+          ]
+        },
+        "noRelative": {
+          "grossPct": 3.058,
+          "costPct": 0.292,
+          "netPct": 2.765,
+          "codes": [
+            "4736",
+            "1802",
+            "3017",
+            "2454",
+            "2455",
+            "3034",
+            "2382",
+            "4961",
+            "2449",
+            "3044"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": 3.511,
+          "costPct": 0.292,
+          "netPct": 3.218,
+          "codes": [
+            "1802",
+            "3017",
+            "2454",
+            "3653",
+            "2455",
+            "4961",
+            "9945",
+            "3026",
+            "2027",
+            "2637"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-10-02",
+      "entryDate": "2026-10-05",
+      "exitDate": "2026-10-12",
+      "eligible": 177,
+      "etf0050GrossPct": -0.992,
+      "models": {
+        "chip": {
+          "grossPct": 0.915,
+          "costPct": 0.351,
+          "netPct": 0.564,
+          "codes": [
+            "2454",
+            "2609",
+            "2892",
+            "3189",
+            "1605",
+            "2610",
+            "2618",
+            "3005",
+            "9910",
+            "1513"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -2.442,
+          "costPct": 0,
+          "netPct": -2.442,
+          "codes": [
+            "1802",
+            "2049",
+            "2059",
+            "2301",
+            "2327",
+            "2330",
+            "2337",
+            "2344",
+            "2360",
+            "2368"
+          ]
+        },
+        "relative": {
+          "grossPct": 1.778,
+          "costPct": 0.526,
+          "netPct": 1.252,
+          "codes": [
+            "1326",
+            "2327",
+            "2345",
+            "2360",
+            "2383",
+            "2409",
+            "2455",
+            "2492",
+            "2637",
+            "3037"
+          ]
+        },
+        "full": {
+          "grossPct": -1.227,
+          "costPct": 0.526,
+          "netPct": -1.753,
+          "codes": [
+            "3189",
+            "2609",
+            "2327",
+            "3037",
+            "8021",
+            "4916",
+            "2454",
+            "2637",
+            "6770",
+            "3005"
+          ]
+        },
+        "noChip": {
+          "grossPct": -1.797,
+          "costPct": 0.409,
+          "netPct": -2.207,
+          "codes": [
+            "2327",
+            "2360",
+            "2383",
+            "2455",
+            "3037",
+            "3189",
+            "6442",
+            "8021",
+            "1802",
+            "2059"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": 1.071,
+          "costPct": 0.585,
+          "netPct": 0.486,
+          "codes": [
+            "3189",
+            "2609",
+            "1605",
+            "2610",
+            "2618",
+            "3005",
+            "4916",
+            "1326",
+            "2327",
+            "2409"
+          ]
+        },
+        "noRelative": {
+          "grossPct": -0.643,
+          "costPct": 0.351,
+          "netPct": -0.994,
+          "codes": [
+            "2454",
+            "3189",
+            "2609",
+            "3034",
+            "9945",
+            "3005",
+            "2379",
+            "4736",
+            "4916",
+            "4961"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": 0.358,
+          "costPct": 0.468,
+          "netPct": -0.11,
+          "codes": [
+            "3189",
+            "2609",
+            "2327",
+            "3037",
+            "8021",
+            "4916",
+            "2454",
+            "2637",
+            "3005",
+            "6505"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-10-08",
+      "entryDate": "2026-10-12",
+      "exitDate": "2026-10-19",
+      "eligible": 177,
+      "etf0050GrossPct": -5.793,
+      "models": {
+        "chip": {
+          "grossPct": -1.075,
+          "costPct": 0.351,
+          "netPct": -1.426,
+          "codes": [
+            "2892",
+            "3189",
+            "6213",
+            "8046",
+            "1477",
+            "3005",
+            "1513",
+            "2353",
+            "2379",
+            "2637"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -7.749,
+          "costPct": 0,
+          "netPct": -7.749,
+          "codes": [
+            "1802",
+            "2049",
+            "2059",
+            "2301",
+            "2327",
+            "2330",
+            "2337",
+            "2344",
+            "2360",
+            "2368"
+          ]
+        },
+        "relative": {
+          "grossPct": -6.018,
+          "costPct": 0.468,
+          "netPct": -6.486,
+          "codes": [
+            "1301",
+            "1326",
+            "1476",
+            "1723",
+            "2345",
+            "2368",
+            "2408",
+            "3026",
+            "3653",
+            "3661"
+          ]
+        },
+        "full": {
+          "grossPct": -1.051,
+          "costPct": 0.351,
+          "netPct": -1.402,
+          "codes": [
+            "6213",
+            "4736",
+            "3034",
+            "9945",
+            "3005",
+            "2379",
+            "2637",
+            "3023",
+            "3189",
+            "8021"
+          ]
+        },
+        "noChip": {
+          "grossPct": -8.015,
+          "costPct": 0.526,
+          "netPct": -8.542,
+          "codes": [
+            "2368",
+            "2408",
+            "3653",
+            "3661",
+            "4736",
+            "1723",
+            "2345",
+            "2383",
+            "2449",
+            "2605"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": 0.333,
+          "costPct": 0.468,
+          "netPct": -0.135,
+          "codes": [
+            "6213",
+            "1477",
+            "3005",
+            "4736",
+            "2379",
+            "2637",
+            "3034",
+            "9945",
+            "1301",
+            "1326"
+          ]
+        },
+        "noRelative": {
+          "grossPct": 0.193,
+          "costPct": 0.175,
+          "netPct": 0.017,
+          "codes": [
+            "3189",
+            "6213",
+            "8046",
+            "3034",
+            "4736",
+            "9945",
+            "3005",
+            "2379",
+            "2637",
+            "4961"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": 0.376,
+          "costPct": 0.351,
+          "netPct": 0.025,
+          "codes": [
+            "6213",
+            "4736",
+            "3034",
+            "9945",
+            "3005",
+            "2379",
+            "2637",
+            "3023",
+            "8021",
+            "6505"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-10-16",
+      "entryDate": "2026-10-19",
+      "exitDate": "2026-10-27",
+      "eligible": 177,
+      "etf0050GrossPct": -1.433,
+      "models": {
+        "chip": {
+          "grossPct": -1.132,
+          "costPct": 0.234,
+          "netPct": -1.366,
+          "codes": [
+            "1513",
+            "2353",
+            "2379",
+            "2892",
+            "3034",
+            "3189",
+            "6214",
+            "8046",
+            "1216",
+            "2313"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -1.252,
+          "costPct": 0,
+          "netPct": -1.252,
+          "codes": [
+            "1802",
+            "2049",
+            "2059",
+            "2301",
+            "2327",
+            "2330",
+            "2337",
+            "2344",
+            "2360",
+            "2368"
+          ]
+        },
+        "relative": {
+          "grossPct": -1.371,
+          "costPct": 0.526,
+          "netPct": -1.897,
+          "codes": [
+            "1802",
+            "2027",
+            "2313",
+            "2344",
+            "2368",
+            "2451",
+            "2603",
+            "3006",
+            "3017",
+            "3231"
+          ]
+        },
+        "full": {
+          "grossPct": -2.246,
+          "costPct": 0.351,
+          "netPct": -2.597,
+          "codes": [
+            "3034",
+            "3189",
+            "2379",
+            "2603",
+            "2353",
+            "8046",
+            "2027",
+            "9945",
+            "1802",
+            "2368"
+          ]
+        },
+        "noChip": {
+          "grossPct": -0.522,
+          "costPct": 0.526,
+          "netPct": -1.049,
+          "codes": [
+            "1802",
+            "2344",
+            "2368",
+            "3006",
+            "3017",
+            "6446",
+            "6782",
+            "2027",
+            "2059",
+            "2337"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": -1.725,
+          "costPct": 0.468,
+          "netPct": -2.193,
+          "codes": [
+            "2353",
+            "2379",
+            "3034",
+            "3189",
+            "2313",
+            "2603",
+            "6214",
+            "8046",
+            "2027",
+            "1513"
+          ]
+        },
+        "noRelative": {
+          "grossPct": -0.907,
+          "costPct": 0.234,
+          "netPct": -1.141,
+          "codes": [
+            "3034",
+            "3189",
+            "2379",
+            "8046",
+            "9945",
+            "2353",
+            "6214",
+            "2603",
+            "3443",
+            "4736"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": -2.998,
+          "costPct": 0.468,
+          "netPct": -3.466,
+          "codes": [
+            "3034",
+            "3189",
+            "2603",
+            "2353",
+            "8046",
+            "2027",
+            "9945",
+            "1802",
+            "2368",
+            "3017"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-10-22",
+      "entryDate": "2026-10-27",
+      "exitDate": "2026-11-02",
+      "eligible": 177,
+      "etf0050GrossPct": -2.345,
+      "models": {
+        "chip": {
+          "grossPct": -0.779,
+          "costPct": 0.292,
+          "netPct": -1.072,
+          "codes": [
+            "2379",
+            "2637",
+            "3189",
+            "4961",
+            "8046",
+            "2313",
+            "2451",
+            "2603",
+            "2882",
+            "2892"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -4.014,
+          "costPct": 0.234,
+          "netPct": -4.248,
+          "codes": [
+            "1590",
+            "1723",
+            "1795",
+            "1802",
+            "2027",
+            "2049",
+            "2327",
+            "2337",
+            "2344",
+            "2360"
+          ]
+        },
+        "relative": {
+          "grossPct": -0.858,
+          "costPct": 0.585,
+          "netPct": -1.443,
+          "codes": [
+            "2615",
+            "2886",
+            "2892",
+            "3029",
+            "6112",
+            "1216",
+            "1319",
+            "1402",
+            "1477",
+            "1503"
+          ]
+        },
+        "full": {
+          "grossPct": -0.816,
+          "costPct": 0.351,
+          "netPct": -1.167,
+          "codes": [
+            "2451",
+            "2027",
+            "2603",
+            "2615",
+            "2637",
+            "3189",
+            "4961",
+            "8046",
+            "3029",
+            "6214"
+          ]
+        },
+        "noChip": {
+          "grossPct": -0.469,
+          "costPct": 0.526,
+          "netPct": -0.995,
+          "codes": [
+            "2615",
+            "2027",
+            "2383",
+            "2451",
+            "2480",
+            "4967",
+            "6770",
+            "9958",
+            "1609",
+            "2603"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": 0.115,
+          "costPct": 0.468,
+          "netPct": -0.353,
+          "codes": [
+            "2637",
+            "2892",
+            "2451",
+            "2603",
+            "3029",
+            "5880",
+            "9945",
+            "1477",
+            "2027",
+            "6112"
+          ]
+        },
+        "noRelative": {
+          "grossPct": -2.222,
+          "costPct": 0.292,
+          "netPct": -2.515,
+          "codes": [
+            "3189",
+            "8046",
+            "4961",
+            "2451",
+            "2027",
+            "2603",
+            "3037",
+            "3443",
+            "4958",
+            "2379"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": -0.948,
+          "costPct": 0.292,
+          "netPct": -1.24,
+          "codes": [
+            "2451",
+            "2027",
+            "2603",
+            "2615",
+            "3189",
+            "8046",
+            "3029",
+            "6214",
+            "1477",
+            "1802"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-10-30",
+      "entryDate": "2026-11-02",
+      "exitDate": "2026-11-09",
+      "eligible": 177,
+      "etf0050GrossPct": -6.388,
+      "models": {
+        "chip": {
+          "grossPct": -8.194,
+          "costPct": 0.234,
+          "netPct": -8.428,
+          "codes": [
+            "2603",
+            "3034",
+            "4961",
+            "5880",
+            "2379",
+            "2637",
+            "1503",
+            "1802",
+            "2313",
+            "2451"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -10.39,
+          "costPct": 0,
+          "netPct": -10.39,
+          "codes": [
+            "1590",
+            "1723",
+            "1795",
+            "1802",
+            "2027",
+            "2049",
+            "2327",
+            "2337",
+            "2344",
+            "2360"
+          ]
+        },
+        "relative": {
+          "grossPct": -4.866,
+          "costPct": 0.409,
+          "netPct": -5.275,
+          "codes": [
+            "1216",
+            "2379",
+            "2603",
+            "2609",
+            "2615",
+            "2912",
+            "1477",
+            "1802",
+            "2105",
+            "2207"
+          ]
+        },
+        "full": {
+          "grossPct": -7.489,
+          "costPct": 0.234,
+          "netPct": -7.723,
+          "codes": [
+            "2603",
+            "1802",
+            "2379",
+            "2615",
+            "3443",
+            "2027",
+            "2609",
+            "4961",
+            "2451",
+            "2637"
+          ]
+        },
+        "noChip": {
+          "grossPct": -6.745,
+          "costPct": 0.351,
+          "netPct": -7.096,
+          "codes": [
+            "2615",
+            "1802",
+            "2480",
+            "2603",
+            "2609",
+            "2027",
+            "2379",
+            "2542",
+            "2605",
+            "3005"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": -6.104,
+          "costPct": 0.351,
+          "netPct": -6.455,
+          "codes": [
+            "2603",
+            "2379",
+            "5880",
+            "1802",
+            "1216",
+            "2609",
+            "3029",
+            "2615",
+            "2637",
+            "2882"
+          ]
+        },
+        "noRelative": {
+          "grossPct": -8.744,
+          "costPct": 0.234,
+          "netPct": -8.978,
+          "codes": [
+            "2603",
+            "4961",
+            "1802",
+            "2451",
+            "3443",
+            "3034",
+            "2027",
+            "4566",
+            "2379",
+            "2615"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": -7.954,
+          "costPct": 0.292,
+          "netPct": -8.247,
+          "codes": [
+            "2603",
+            "1802",
+            "2379",
+            "2615",
+            "3443",
+            "2027",
+            "3005",
+            "3029",
+            "3017",
+            "6491"
+          ]
+        }
+      }
+    },
+    {
+      "signalDate": "2026-11-06",
+      "entryDate": "2026-11-09",
+      "exitDate": "2026-11-16",
+      "eligible": 177,
+      "etf0050GrossPct": -1.026,
+      "models": {
+        "chip": {
+          "grossPct": 2.112,
+          "costPct": 0.234,
+          "netPct": 1.878,
+          "codes": [
+            "2002",
+            "2603",
+            "2615",
+            "4961",
+            "5880",
+            "9945",
+            "1802",
+            "2379",
+            "2451",
+            "2882"
+          ]
+        },
+        "fundamental": {
+          "grossPct": -4.67,
+          "costPct": 0,
+          "netPct": -4.67,
+          "codes": [
+            "1590",
+            "1723",
+            "1795",
+            "1802",
+            "2027",
+            "2049",
+            "2327",
+            "2337",
+            "2344",
+            "2360"
+          ]
+        },
+        "relative": {
+          "grossPct": 0.954,
+          "costPct": 0.585,
+          "netPct": 0.369,
+          "codes": [
+            "1476",
+            "2480",
+            "3023",
+            "3576",
+            "4967",
+            "6112",
+            "6214",
+            "6443",
+            "6446",
+            "6782"
+          ]
+        },
+        "full": {
+          "grossPct": -0.354,
+          "costPct": 0.175,
+          "netPct": -0.53,
+          "codes": [
+            "4961",
+            "6446",
+            "2451",
+            "2615",
+            "1802",
+            "2379",
+            "2603",
+            "3034",
+            "2027",
+            "3023"
+          ]
+        },
+        "noChip": {
+          "grossPct": -2.906,
+          "costPct": 0.526,
+          "netPct": -3.432,
+          "codes": [
+            "2480",
+            "3023",
+            "4967",
+            "6446",
+            "1723",
+            "1795",
+            "6782",
+            "6214",
+            "2049",
+            "2451"
+          ]
+        },
+        "noFundamental": {
+          "grossPct": -0.464,
+          "costPct": 0.468,
+          "netPct": -0.932,
+          "codes": [
+            "4961",
+            "2002",
+            "5880",
+            "2379",
+            "6446",
+            "9945",
+            "1402",
+            "1476",
+            "2207",
+            "2451"
+          ]
+        },
+        "noRelative": {
+          "grossPct": -1.395,
+          "costPct": 0.059,
+          "netPct": -1.453,
+          "codes": [
+            "2615",
+            "2603",
+            "4961",
+            "1802",
+            "2451",
+            "2027",
+            "3034",
+            "6446",
+            "4566",
+            "2379"
+          ]
+        },
+        "fullDiv": {
+          "grossPct": 1.836,
+          "costPct": 0.351,
+          "netPct": 1.485,
+          "codes": [
+            "4961",
+            "6446",
+            "2451",
+            "2615",
+            "1802",
+            "2603",
+            "2027",
+            "3023",
+            "6782",
+            "1476"
+          ]
+        }
+      }
+    }
+  ],
+  "sourceLinks": [
+    {
+      "name": "Daily prices and financial statement archive",
+      "url": "https://github.com/joy40217/TWSE-daily"
+    },
+    {
+      "name": "Institution historical snapshots",
+      "url": "./data/history/2026-09.json"
+    },
+    {
+      "name": "Score signal audit",
+      "url": "./data/backtest-multifactor-signals.json"
+    }
+  ]
+}
