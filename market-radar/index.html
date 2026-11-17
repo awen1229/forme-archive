@@ -1077,6 +1077,8 @@ function renderDailyWatchlist(){
   +(warning?'<div class="warning-note">注意：篩選名單日期與最新盤後行情不同，請以標示日期為準。</div>':'')
   +'<div class="radar-macro-note"><strong>今日市場條件：</strong>'+esc(macro.marketCaution||macro.message||'總經資料不足')
   +(notes.length?'<span>'+notes.join('　/　')+'</span>':'<span>利率或市場廣度資料不足，暫不做總經方向判定</span>')+'</div>'
+  +(p.news?.global?.length?'<div class="radar-macro-note"><strong>全球官方訊息：</strong><span>僅列出已收錄的官方原始標題，並非已核實其對獲利的影響</span>'
+    +p.news.global.slice(0,2).map(n=>sourceSafe(n.url)?'<div><a href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">'+esc(n.date)+'｜'+esc(n.title)+'</a></div>':'<div>'+esc(n.title)+'</div>').join('')+'</div>':'<div class="radar-macro-note"><strong>全球官方訊息：</strong>目前無可用的最新資料，未納入推論。</div>')
   +'<p class="radar-watch-method">研究優先分數：20／60日法人籌碼 45 分、營收與已公告財報 35 分、當日相對強弱與流動性 20 分。<strong>尚未回測，分數不是報酬機率，也不等於分批買進條件。</strong> 公告只做事件與風險提示，不由標題直接推定利多。</p>'
   +'<div class="radar-watch-grid">'+tracking.map(item).join('')+'</div>'
   +(discoveries.length?'<div class="radar-watch-subtitle">全市場新發現 <span>長期法人資料尚不足，請先列觀察</span></div><div class="radar-watch-grid">'+discoveries.map((r,i)=>item(r,i)).join('')+'</div>':'')
