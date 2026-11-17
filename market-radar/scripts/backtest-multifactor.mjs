@@ -237,7 +237,22 @@ function evaluate(signals,prices){
    estimatedTotalTradingCostPpt:round(s.cost*100),grossTurnover:round(s.turnover),
    annualizedWeeklySharpe0Cash:sd>0?round(avg/sd*Math.sqrt(52),2):null}];
  }));
- return {metrics,weekly:rows,baseline:{name:'0050',cumulativePct:round((base-1)*100),
+ const marketRegimes=Object.fromEntries([
+  ['marketUp',rows.filter(x=>x.etf0050GrossPct>=0)],
+  ['marketDown',rows.filter(x=>x.etf0050GrossPct<0)]
+ ].map(([name,items])=>{
+  const strategies=Object.fromEntries(['fullDiv','full','chip','fundamental','relative'].map(key=>{
+   const n=items.length;
+   if(!n)return [key,{weeks:0,meanWeeklyNetPct:null,meanWeeklyExcessVs0050Ppt:null,beat0050Weeks:0}];
+   const net=items.map(x=>x.models[key].netPct),bench=items.map(x=>x.etf0050GrossPct);
+   return [key,{weeks:n,
+    meanWeeklyNetPct:round(net.reduce((a,b)=>a+b,0)/n),
+    meanWeeklyExcessVs0050Ppt:round(net.reduce((a,z,i)=>a+z-bench[i],0)/n),
+    beat0050Weeks:net.filter((z,i)=>z>bench[i]).length}];
+  }));
+  return [name,{weeks:items.length,signalDates:items.map(x=>x.signalDate),strategies}];
+ }));
+ return {marketRegimes,metrics,weekly:rows,baseline:{name:'0050',cumulativePct:round((base-1)*100),
    maxWeeklyDrawdownPct:round(baseDrawdown*100),gross:true,includesDividends:false}};
 }
 function selfTest(){
