@@ -56,6 +56,7 @@ async function main(){
   const x=endpoints[i];
   sourceStatus[x.k+"_"+x.seg]={ok:o.status==="fulfilled",url:x.url,records:o.status==="fulfilled"?o.value.length:0,error:o.status==="rejected"?String(o.reason?.message||o.reason).slice(0,150):null};
   if(o.status!=="fulfilled")return;
+  if(x.k==='tpex'&&x.seg==='ci'&&o.value.length)console.log('TPEx EPS schema sample:',JSON.stringify(o.value[0]).slice(0,900));
   for(const item of o.value){
    const r=parse(item,x.url,x.k+"/"+x.seg);
    if(!r)continue;
