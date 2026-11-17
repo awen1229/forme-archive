@@ -246,7 +246,8 @@ async function main(){
  try{const existingSeries=JSON.parse(await fs.readFile(seriesFile,'utf8'));series=Array.isArray(existingSeries)?existingSeries:Array.isArray(existingSeries?.days)?existingSeries.days:[];}catch{}
  if(prior?.asOf&&prior.asOf>asOf){console.warn('Official API returned an older trade date '+asOf+' than published '+prior.asOf+'. Preserving the good snapshot, allowing downstream analysis.');return;}
  // Keep globally shared tracking history small, preserve only verified data and timestamps.
- const short={date:asOf,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct,volume:x.volume}]))};
+ const etf0050=resultRows.find(x=>x.code==='0050');
+ const short={date:asOf,benchmark0050:etf0050?.close>0?{close:etf0050.close,volume:etf0050.volume,pct:etf0050.pct,date:asOf}:null,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct,volume:x.volume}]))};
  series=series.filter(x=>x.date!==asOf);
  series.push(short);series.sort((a,b)=>b.date.localeCompare(a.date));series=series.slice(0,160);
  await fs.writeFile(latestFile,JSON.stringify(snapshot)+'\n');
