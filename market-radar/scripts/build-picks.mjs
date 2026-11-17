@@ -177,8 +177,7 @@ const info={
  universeCount:market.rows.length,qualifiedHistory:ranked.filter(x=>x.dataChecks.chip20).length,
  disclaimer:'研究持續追蹤名單，不是買進或目標價；單日相對強弱不等於中長期強勢；新聞原始標題不代表證實其對EPS的因果。外資買賣超非主動基金持股的完整代理。'
 };
-console.log('RESEARCH_INPUT_CHECK',JSON.stringify({priceDate:reportDate,chipDate:history.asOf,totalDays:days.length,latestDays:days.slice(0,3).map(x=>({date:x.date,rows:Object.keys(x.rows).length})),stockCount:ranked.length,watchCount:watchHit.size,companyFinancials:Object.keys(reports).length,withChip20:ranked.filter(x=>x.dataChecks.chip20).length,withFinancial:ranked.filter(x=>x.dataChecks.financial).length,withBoth:ranked.filter(x=>x.dataChecks.financial&&x.dataChecks.chip20).length,core:core.length,examples:['2330','2383','2327'].map(code=>{const r=ranked.find(x=>x.code===code);return r?{code,chip20:r.chip.t20,finance:r.financial,monthly:r.monthly,dataChecks:r.dataChecks,score:r.score}:null;})},null,2));
-if(selected.length<1)throw Error('No companies have both official 20d flows and financial evidence; retaining previous list');
+if(selected.length<1)console.warn('No verified 20d + financial overlap yet. Publishing empty, clearly labeled monitoring list until history is restored.');
 await fs.writeFile(DIR+'/macro.json',JSON.stringify(macro)+'\n');
 await fs.writeFile(DIR+'/picks.json',JSON.stringify(info)+'\n');
 console.log(JSON.stringify({asOf:reportDate,tracking:selected.map(x=>({code:x.code,score:x.score,rank:x.rank})),emerging:second.length,qualifiedHistory:info.qualifiedHistory,macro:macro.sourceStatus,marketBreadth:info.macro.marketBreadth},null,2));
