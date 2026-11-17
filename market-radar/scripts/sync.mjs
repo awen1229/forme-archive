@@ -243,7 +243,7 @@ async function main(){
  const latestFile=path.join(ROOT,'latest.json'),seriesFile=path.join(ROOT,'series.json');
  let prior=null,series=[];
  try{prior=JSON.parse(await fs.readFile(latestFile,'utf8'));}catch{}
- try{series=JSON.parse(await fs.readFile(seriesFile,'utf8'));if(!Array.isArray(series))series=[];}catch{}
+ try{const existingSeries=JSON.parse(await fs.readFile(seriesFile,'utf8'));series=Array.isArray(existingSeries)?existingSeries:Array.isArray(existingSeries?.days)?existingSeries.days:[];}catch{}
  if(prior?.asOf&&prior.asOf>asOf){console.warn('Official API returned an older trade date '+asOf+' than published '+prior.asOf+'. Preserving the good snapshot, allowing downstream analysis.');return;}
  // Keep globally shared tracking history small, preserve only verified data and timestamps.
  const short={date:asOf,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct,volume:x.volume}]))};
