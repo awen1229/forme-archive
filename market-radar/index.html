@@ -38,7 +38,7 @@
       <div class="crumb">TAIWAN EQUITIES <span>/</span> <strong id="topbarTab">OVERVIEW</strong></div>
       <div class="top-actions"><span id="connectionBadge" class="status-pill status-idle"><i></i> 尚未連線</span><button class="btn btn-primary" id="refreshBtn">↻ <span>更新資料</span></button></div>
     </header>
-    <div class="notice" id="statusNotice" role="status"><strong>研究工具已上線。</strong> 目前是靜態網站版，尚未串接交易所行情後端，請先使用 CSV 匯入。</div>
+    <div class="notice" id="statusNotice" role="status"><strong>研究工具已上線。</strong> 已開啟官方資料同步：每個交易日收盤後由 GitHub Actions 取得、驗證並保存快照；非盤中即時報價。</div>
     <div class="content" id="content"></div>
     <footer class="footer">MARKET RADAR, © 2026 <span>研究與資訊整理用途，非即時交易報價，也不構成投資建議。</span></footer>
   </main>
@@ -193,7 +193,7 @@ function renderSettings(){const statuses=state.data?.sourceStatus||{};
  return sectionTitle('PREFERENCES & SOURCES','資料管理','資料來源、匯入匯出、觀察名單，以及目前尚未自動化的部分。')
  +`<div class="panel-grid"><section class="panel">${panelHeader('連線來源狀態')}
  ${sources.map(([k,n])=>`<div class="data-item"><div><strong>${n}</strong><span class="mini-tag ${statuses[k]?.ok?'':'amber'}">${!state.data?'未取得':statuses[k]?.ok?'取得成功':'不可用／未匯入'}</span></div><p>${statuses[k]?.url?`<a href="${esc(statuses[k].url)}" target="_blank" rel="noopener noreferrer">官方來源 ↗</a>`:'資料未連線或手動匯入'}</p></div>`).join('')}
- <p class="small muted">Cloudflare Pages 部署後按「更新資料」，App 會向同網站的 /api/snapshot 讀取官方盤後快照。若官方介面異常，相應欄位保留空白，不會自動填入舊值冒充最新。</p>
+ <p class="small muted">已使用 GitHub Actions 自動抓取官方盤後快照；網頁開啟時會同步最新 JSON，並保存最多 80 個交易日的觀察池籌碼紀錄。若當日擷取失敗，會保留先前交易日並明確顯示日期，不把舊資料冒充最新。</p>
  </section><section class="panel">${panelHeader('匯入與備份','只在此裝置瀏覽器保存')}
  <div class="btn-group"><button class="btn btn-primary btn-small" data-action="refresh">取得官方盤後資料</button><button class="btn btn-small" data-action="importCsv">匯入行情 CSV</button><button class="btn btn-small" data-action="export">匯出完整 JSON</button><button class="btn btn-small" data-action="importJson">還原 JSON 備份</button></div>
  <div class="warning-note margintop">本機儲存不等於雲端同步。更換手機、清除瀏覽器資料、重新安裝 App，可能失去自選股與研究日誌。請定期匯出備份。每日的 ChatGPT 自動報告不會自動寫入這個 App，需手動貼入日誌。</div>
@@ -206,13 +206,13 @@ function renderSettings(){const statuses=state.data?.sourceStatus||{};
  </section></div>
  <section class="panel">${panelHeader('功能範圍與資料限制')}
  <div class="table-wrap"><table><thead><tr><th>模組</th><th>第一版狀態</th><th>備註</th></tr></thead><tbody>
- <tr><td>上市／上櫃盤後行情</td><td>可串接官方 API</td><td>需 Cloudflare Pages 部署；非盤中即時</td></tr>
- <tr><td>法人單日淨買賣</td><td>可串接官方 API</td><td>欄位解析失敗會保留空白</td></tr>
- <tr><td>5／10／20 筆籌碼</td><td>由本機快照累計</td><td>沒有足夠紀錄不計算</td></tr>
- <tr><td>月營收、近四季 PE</td><td>可串接官方 API</td><td>以來源最新資料月／日為準</td></tr>
+ <tr><td>上市／上櫃盤後行情</td><td>可串接官方 API</td><td>GitHub Actions 同步；非盤中即時</td></tr>
+ <tr><td>法人單日淨買賣</td><td>已設定官方快照同步</td><td>擷取或日期查核失敗保留空白</td></tr>
+ <tr><td>5／10／20 筆籌碼</td><td>由同步歷史累計</td><td>從首次成功更新逐日累積，不足交易日不計算</td></tr>
+ <tr><td>月營收、近四季 PE</td><td>已設定官方快照同步</td><td>若來源欄位無法解析就留空</td></tr>
  <tr><td>2027／2028 法人 EPS</td><td>手動輸入</td><td>須保存預估來源與日期</td></tr>
  <tr><td>美股即時行情／新聞</td><td>來源連結＋手動紀錄</td><td>尚未串接付費國際資料</td></tr>
- <tr><td>每日 ChatGPT 研究日報</td><td>手動貼到研究日誌</td><td>目前與排程任務未自動串接</td></tr></tbody></table></div>
+ <tr><td>每日 ChatGPT 研究日報</td><td>手動貼到研究日誌</td><td>ChatGPT 任務與此 GitHub 資料流程仍是兩套系統</td></tr></tbody></table></div>
  </section>`;
 }
 function render(){activeNav();setStatus();const c=$('content');c.innerHTML=({overview:renderOverview,sectors:renderSectors,stocks:renderStocks,valuation:renderValuation,journal:renderJournal,settings:renderSettings})[state.tab]();}
@@ -223,10 +223,47 @@ function registerSnapshot(data){
  state.history.sort((a,b)=>b.date.localeCompare(a.date));state.history=state.history.slice(0,80);
  state.data=data;persist();render();
 }
-async function refresh(){if(state.refreshing)return;state.refreshing=true;$('refreshBtn').disabled=true;$('refreshBtn').innerHTML='⌛ 讀取中';setNotice('正在向官方交易所介面取得盤後行情、法人與月營收。若來源暫時失效，會保留錯誤狀態。');
- try {if(location.protocol==='file:'||location.protocol==='about:')throw new Error('離線單檔沒有行情 API，請使用 CSV 匯入或部署完整版');const r=await fetch('/api/snapshot',{cache:'no-store'});if(!r.ok)throw new Error(`站點 API HTTP ${r.status}`);const data=await r.json();if(!data.rows?.length)throw new Error('官方市場行情目前無法取得有效資料');data.origin='official';registerSnapshot(data);setNotice(`<strong>官方盤後資料已載入。</strong> 交易日 ${esc(data.asOf)}，收盤行情 ${fmt(data.rows.length,0)} 檔，法人數據覆蓋 ${fmt(data.summary?.withInst,0)} 檔。請留意部分資料可能晚於收盤才更新。`,'success');}
- catch(e){setNotice(`<strong>目前無法自動取得資料：</strong> ${esc(e.message)}。如果直接在手機開啟 HTML 檔案，請改用 Cloudflare Pages 正式部署；也可以到「資料管理」匯入 CSV。先前資料保留原日期，不會冒充最新。`,'error');}
- finally{state.refreshing=false;$('refreshBtn').disabled=false;$('refreshBtn').innerHTML='↻ <span>更新資料</span>';}
+async function refresh(options={}){
+ if(state.refreshing)return;
+ const quiet=options&&options.quiet===true;
+ state.refreshing=true;
+ $('refreshBtn').disabled=true;
+ $('refreshBtn').innerHTML='⌛ 讀取中';
+ if(!quiet)setNotice('正在讀取 GitHub Pages 已同步的交易所官方盤後快照。');
+ try{
+  if(location.protocol==='file:'||location.protocol==='about:')throw new Error('離線 HTML 無法自動連線，請使用線上網址');
+  const response=await fetch('./data/latest.json?v='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('自動同步快照尚未產生，HTTP '+response.status);
+  const data=await response.json();
+  if(!data.asOf||!Array.isArray(data.rows)||data.rows.length<300)throw new Error('行情快照日期或內容不完整');
+  if(state.data?.asOf&&state.data.asOf>data.asOf&&state.data.origin!=='import')throw new Error('線上資料比本機快照更舊，已保留本機');
+  data.origin='official';
+  try{
+    const hr=await fetch('./data/series.json?v='+Date.now(),{cache:'no-store'});
+    if(hr.ok){
+      const history=await hr.json();
+      if(Array.isArray(history.days)){
+        for(const item of history.days){
+          if(!item.date||!item.rows||typeof item.rows!=='object')continue;
+          const i=state.history.findIndex(x=>x.date===item.date);
+          if(i<0)state.history.push(item);
+          else if(Object.keys(item.rows).length>Object.keys(state.history[i].rows||{}).length)state.history[i]=item;
+        }
+        state.history.sort((a,b)=>b.date.localeCompare(a.date));
+        state.history=state.history.slice(0,80);
+      }
+    }
+  }catch(e){console.warn('籌碼歷史暫時無法載入',e);}
+  registerSnapshot(data);
+  window.marketRadarLastSyncCheck=Date.now();
+  setNotice('<strong>官方盤後資料已同步。</strong> 交易日 '+esc(data.asOf)+'，股票 '+fmt(data.rows.length,0)+' 檔，法人資料覆蓋 '+fmt(data.summary?.withInst,0)+' 檔。網站上傳時間：'+esc((data.generatedAt||'').replace('T',' ').slice(0,16))+' UTC。非盤中即時報價；若資料來源異常，請查看「資料管理」。','success');
+ }catch(e){
+  setNotice('<strong>自動同步暫不可用：</strong>'+esc(e.message)+'。已保留原快照與研究紀錄；可查看資料管理頁的來源狀態。','error');
+ }finally{
+  state.refreshing=false;
+  $('refreshBtn').disabled=false;
+  $('refreshBtn').innerHTML='↻ <span>更新資料</span>';
+ }
 }
 function showModal(html){$('dialogInner').innerHTML=html;$('dialog').showModal();}
 function closeModal(){$('dialog').close();}
@@ -272,9 +309,12 @@ $('refreshBtn').addEventListener('click',refresh);
 $('dialog').addEventListener('click',e=>{if(e.target===$('dialog'))closeModal();});
 if(state.data?.rows?.length){setNotice(`<strong>已恢復本機快照。</strong> 最後存檔交易日 ${esc(state.data.asOf)}。這是快取，請按「更新資料」取得最近已公布的官方盤後數字。`,'success');}
 render();
-// Standalone deployment under GitHub Pages subpath: do not register a site-root worker.
-// Offline single-file edition: do not attempt network API fetch.
-if(!state.data)setNotice('<strong>線上研究版。</strong> 可管理股票池、EPS 預估、新聞筆記與匯入 CSV；官方行情自動更新尚未啟用，資料不會自行更新。');
+// Official end-of-day JSON is served from the same GitHub Pages path.
+// Scheduled collector runs on weekdays; a browser refresh reads the newest published snapshot.
+if(!state.data)setNotice('<strong>準備同步官方盤後資料。</strong> 若首次排程尚未完成，請稍後再次按「更新資料」。');
+refresh();
+window.addEventListener('focus',()=>{if(Date.now()-(window.marketRadarLastSyncCheck||0)>20*60*1000)refresh({quiet:true});});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(window.marketRadarLastSyncCheck||0)>20*60*1000)refresh({quiet:true});});
 
 </script>
 </body>
