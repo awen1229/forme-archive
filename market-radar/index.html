@@ -178,8 +178,31 @@ function renderValuation(){const focus=[...new Set([...state.watch,...Object.key
  <section class="panel">${panelHeader('觀察池前瞻估值比較','只顯示你有填入預估的股票')}
  <div class="table-wrap"><table><thead><tr><th>股票</th><th>現價</th><th>2027E EPS</th><th>2027E PE</th><th>2028E EPS</th><th>2028E PE</th><th>資料日期</th></tr></thead><tbody>${focus.filter(c=>state.eps[c]?.eps27||state.eps[c]?.eps28).map(code=>{const {s,d,pe27,pe28}=getValuation(code);return `<tr><td><button class="stock-link" data-action="stock" data-code="${code}">${esc(s.name)} ${code}</button></td><td>${fmt(s.close,2)}</td><td>${fmt(Number(d.eps27)||null,2)}</td><td>${pe27!=null?fmt(pe27,1)+'x':'—'}</td><td>${fmt(Number(d.eps28)||null,2)}</td><td>${pe28!=null?fmt(pe28,1)+'x':'—'}</td><td>${esc(d.date||'—')}</td></tr>`}).join('')||'<tr><td colspan="7" style="text-align:center;color:#879188;padding:30px">尚無已輸入的 EPS 資料</td></tr>'}</tbody></table></div></section>`;
 }
+function renderAutoDigest(){
+ const data=state.data;
+ if(!data?.rows?.length)return '';
+ const groups=catSector().filter(x=>x.valid>=2 && x.avg!==null);
+ const top=[...groups].sort((a,b)=>b.avg-a.avg).slice(0,3);
+ const bottom=[...groups].sort((a,b)=>a.avg-b.avg).slice(0,3);
+ const pool=new Set(allPool().map(x=>x.code));
+ const flow=data.rows.filter(x=>pool.has(x.code)&&typeof x.foreign==='number'&&typeof x.trust==='number')
+  .map(x=>({...x,net:x.foreign+x.trust})).sort((a,b)=>b.net-a.net);
+ const buy=flow.slice(0,3),sell=flow.slice(-3).reverse();
+ const line=arr=>arr.map(x=>esc(x.sector)+' '+percentage(x.avg)+'（'+x.valid+' 檔）').join('、')||'資料不足';
+ const stocks=arr=>arr.map(x=>esc(x.name)+' '+x.code+' '+fmt(x.net,0)+' 張').join('、')||'資料不足';
+ return '<section class="panel">'
+  +panelHeader('今日數據快報｜'+esc(data.asOf),'系統依官方盤後資料機械式整理；不是 ChatGPT 研究報告或未來預測')
+  +'<div class="metric-inline"><div class="label">市場廣度</div><div class="value">'+fmt(data.summary?.up,0)+' 上漲／'+fmt(data.summary?.down,0)+' 下跌</div></div>'
+  +'<div class="metric-inline"><div class="label">觀察池相對強弱（單日等權平均）</div></div>'
+  +'<p><strong>相對強：</strong>'+line(top)+'</p><p><strong>相對弱：</strong>'+line(bottom)+'</p>'
+  +'<div class="metric-inline"><div class="label">觀察池外資＋投信單日買賣超（張）</div></div>'
+  +'<p><strong>淨買超：</strong>'+stocks(buy)+'</p><p><strong>淨賣超：</strong>'+stocks(sell)+'</p>'
+  +'<p class="small muted">排行只依觀察池有資料的個股計算，並非全市場產業排行；單日籌碼不能判斷連續建倉。更多 5／10／20 日分析需累積後續交易日。</p>'
+  +'</section>';
+}
 function renderJournal(){const journals=[...state.journal].sort((a,b)=>String(b.date).localeCompare(String(a.date))),news=[...state.news].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
  return sectionTitle('DAILY INTELLIGENCE','研究日誌','把消息、假設與反證條件留在同一個地方，避免只記得市場最熱的說法。')
+ +renderAutoDigest()
  +'<section class="panel">'+panelHeader('官方消息自動同步','證交所、櫃買中心重大訊息與 NVIDIA 官方新聞室；僅顯示原文標題，尚未進行獨立查證')
  +'<p class="small muted">最後同步：'+esc(state.feedUpdatedAt?state.feedUpdatedAt.replace('T',' ').slice(0,16)+' UTC':'尚未取得')+'。公司「發言日期」不一定等於「事實發生日」。</p>'
  +((state.feed||[]).length?(state.feed||[]).slice(0,28).map(n=>'<div class="saved-card"><div class="saved-card-header"><strong>'+esc(n.code?n.company+' '+n.code+'｜'+n.title:n.title)+'</strong><time>'+esc(n.date||'—')+'</time></div><span class="mini-tag">'+esc(n.category||'官方原始資料')+'</span><p class="small muted margintop">來源：'+esc(n.source||'—')+(n.eventDate?'｜事實發生：'+esc(n.eventDate):'')+'</p>'+(sourceSafe(n.url)?'<a class="source-chip" href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">查看官方原始來源 ↗</a>':'')+'</div>').join(''):empty('尚無官方消息快照','待 GitHub 同步流程首次取得官方公告。'))
