@@ -10,6 +10,7 @@ on:
     paths:
       - '.github/workflows/market-radar-sync.yml'
       - 'market-radar/scripts/sync.mjs'
+      - 'market-radar/scripts/sync-earnings.mjs'
 permissions:
   contents: write
 concurrency:
@@ -30,11 +31,15 @@ jobs:
           node-version: '22'
       - name: Collect verified TWSE and TPEx close data
         run: node market-radar/scripts/sync.mjs
+      - name: Collect published EPS financial statements and model scenarios
+        run: node market-radar/scripts/sync-earnings.mjs
+        continue-on-error: true
       - name: Commit refreshed public snapshots
         run: |
           git config user.name "market-radar-bot"
           git config user.email "market-radar-bot@users.noreply.github.com"
           git add market-radar/data/latest.json market-radar/data/series.json market-radar/data/news.json
+          if [ -f market-radar/data/earnings.json ]; then git add market-radar/data/earnings.json; fi
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh MARKET RADAR official EOD snapshot"
             # Another site update can land during collection. Rebase before publish.
