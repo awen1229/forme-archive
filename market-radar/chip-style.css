@@ -1,0 +1,14 @@
+
+/* Multi-session institution flow detail */
+.chip-long-term{border-top:1px solid var(--line);margin-top:22px;padding-top:8px}
+.chip-long-term h3{font-size:16px;line-height:1.4;margin:18px 0 10px}
+.chip-flow-caption{font-size:11px;color:var(--muted);line-height:1.65}
+.chip-series-head,.chip-series-row{display:grid;grid-template-columns:60px minmax(88px,1fr) minmax(88px,1fr);gap:10px;align-items:center}
+.chip-series-head{padding:8px 0;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
+.chip-series-row{padding:2px 0;min-height:20px;font-size:11px;color:var(--muted)}
+.chip-flow-track{position:relative;height:15px;border-radius:3px;background:rgba(123,130,118,.065);overflow:hidden}
+.chip-flow-mid{position:absolute;left:50%;top:0;height:100%;width:1px;background:#bbb;z-index:1}
+.chip-flow-fill{position:absolute;top:3px;height:9px;border-radius:2px}
+.chip-flow-buy{background:#18866f}.chip-flow-sell{background:#bd5b51}
+.chip-series-scroll{max-height:410px;overflow-y:auto}
+.chip-coverage{font-size:12px;color:var(--muted);margin:10px 0}
