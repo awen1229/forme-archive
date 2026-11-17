@@ -246,9 +246,9 @@ async function main(){
  try{series=JSON.parse(await fs.readFile(seriesFile,'utf8'));if(!Array.isArray(series))series=[];}catch{}
  if(prior?.asOf&&prior.asOf>asOf)throw new Error('New data is older than published data; aborting');
  // Keep globally shared tracking history small, preserve only verified data and timestamps.
- const short={date:asOf,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct}]))};
+ const short={date:asOf,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct,volume:x.volume}]))};
  series=series.filter(x=>x.date!==asOf);
- series.push(short);series.sort((a,b)=>b.date.localeCompare(a.date));series=series.slice(0,80);
+ series.push(short);series.sort((a,b)=>b.date.localeCompare(a.date));series=series.slice(0,160);
  await fs.writeFile(latestFile,JSON.stringify(snapshot)+'\n');
  await fs.writeFile(seriesFile,JSON.stringify({asOf,generatedAt:snapshot.generatedAt,days:series})+'\n');
  try{
