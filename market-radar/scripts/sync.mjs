@@ -244,7 +244,7 @@ async function main(){
  let prior=null,series=[];
  try{prior=JSON.parse(await fs.readFile(latestFile,'utf8'));}catch{}
  try{series=JSON.parse(await fs.readFile(seriesFile,'utf8'));if(!Array.isArray(series))series=[];}catch{}
- if(prior?.asOf&&prior.asOf>asOf)throw new Error('New data is older than published data; aborting');
+ if(prior?.asOf&&prior.asOf>asOf){console.warn('Official API returned an older trade date '+asOf+' than published '+prior.asOf+'. Preserving the good snapshot, allowing downstream analysis.');return;}
  // Keep globally shared tracking history small, preserve only verified data and timestamps.
  const short={date:asOf,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct,volume:x.volume}]))};
  series=series.filter(x=>x.date!==asOf);
