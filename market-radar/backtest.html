@@ -43,6 +43,9 @@
 <p class="sub tiny" id="tdccBacktestStatus">集保歷史研究資料載入中…</p>
 <div class="table-scroll"><table><thead><tr><th>研究假設／基準</th><th class="num">10週累積報酬</th><th class="num">勝過0050週數</th></tr></thead><tbody id="tdccBacktestTable"></tbody></table></div>
 <p id="tdccBacktestIC" style="margin-top:15px;font-weight:700"></p>
+<div style="margin-top:19px"><strong>集保風險篩選的增量實驗</strong><p class="sub tiny" id="tdccGateStatus">檢查以集保風險警示排除部分入選股票是否改善原模型……</p></div>
+<div class="table-scroll"><table><thead><tr><th>增量測試條件</th><th class="num">十週累積報酬</th></tr></thead><tbody id="tdccGateTable"></tbody></table></div>
+<p class="sub tiny" style="margin-top:10px">此檢驗與原先45／35／20 完整模型相同的十檔名單比較。原模型與 TDCC 風險門檻均保持可稽核，但排除樣本若非常少，不能推論長期有效。</p>
 <p class="sub tiny" style="margin-top:12px">單因子前十名是追蹤研究，不是可直接交易的模型。股東級距變化不是主力買賣的直接證據。原始資料來自 <a target="_blank" rel="noopener" href="https://www.tdcc.com.tw/portal/zh/smWeb/qryStock">臺灣集保結算所</a>，歷史週檔以 <a target="_blank" rel="noopener" href="https://github.com/wirelessr/tdcc-opendata-archive">公開封存來源</a>配對。期末價格未全面還原股利、公司行動與滑價；股票池有存活者偏差。</p>
 </div></section>
 <footer class="sub tiny" style="margin-top:36px">MARKET RADAR, / 實驗性量化研究。不是投資建議、買賣建議或收益保證。</footer></main>
@@ -150,5 +153,23 @@ fetch('./data/backtest.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok
   $('tdccBacktestIC').textContent='大戶集中減散戶增加的平均每週排序相關（Spearman IC）：'+o.avgSignalCorrelation.toFixed(4)+'。接近零，目前尚不能確認獨立預測力。';
  })
  .catch(e=>{$('tdccBacktestStatus').textContent='集保回測尚未通過資料可用性檢查：'+escape(e.message);});
+})();
+</script><script>
+(function(){
+ const status=document.getElementById('tdccGateStatus'),table=document.getElementById('tdccGateTable');
+ const fmt=x=>Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'--';
+ fetch('./data/backtest-tdcc-overlay.json?v='+Date.now(),{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()})
+ .then(d=>{
+   if(!d.results?.baseline||!d.results?.skipDistribution||!d.results?.trimTailControl)throw Error('條件資料缺失');
+   table.innerHTML=[
+     ['原始45／35／20＋產業分散',d.results.baseline.cumulativeNetPct],
+     ['排除集保大戶減持／散戶增持警示',d.results.skipDistribution.cumulativeNetPct],
+     ['對照：僅刪除相同檔數的排名尾端',d.results.trimTailControl.cumulativeNetPct]
+   ].map(([label,rate])=>'<tr><td>'+label+'</td><td class="num">'+fmt(rate)+'</td></tr>').join('');
+   const signals=d.weekly.filter(x=>x.excludedCount);
+   status.textContent='研究區間 '+d.sample.weeks+' 週，只有 '+d.sample.totalChosen+' 筆入選股票觸發排除（'+signals.map(x=>x.signalDate+'：'+x.redFlags.join('、')).join('；')+'）。資料量過少，不能認定策略已成立。';
+ })
+ .catch(e=>{status.textContent='集保增量測試未完成：'+e.message;});
 })();
 </script></body></html>
