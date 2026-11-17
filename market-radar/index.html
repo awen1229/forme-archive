@@ -180,10 +180,14 @@ function renderValuation(){const focus=[...new Set([...state.watch,...Object.key
 }
 function renderJournal(){const journals=[...state.journal].sort((a,b)=>String(b.date).localeCompare(String(a.date))),news=[...state.news].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
  return sectionTitle('DAILY INTELLIGENCE','研究日誌','把消息、假設與反證條件留在同一個地方，避免只記得市場最熱的說法。')
- +`<div class="panel-grid"><section class="panel">${panelHeader('每日研究摘要','可貼上 ChatGPT 每日報告或自己的筆記')}
+ +'<section class="panel">'+panelHeader('官方消息自動同步','證交所、櫃買中心重大訊息與 NVIDIA 官方新聞室；僅顯示原文標題，尚未進行獨立查證')
+ +'<p class="small muted">最後同步：'+esc(state.feedUpdatedAt?state.feedUpdatedAt.replace('T',' ').slice(0,16)+' UTC':'尚未取得')+'。公司「發言日期」不一定等於「事實發生日」。</p>'
+ +((state.feed||[]).length?(state.feed||[]).slice(0,28).map(n=>'<div class="saved-card"><div class="saved-card-header"><strong>'+esc(n.code?n.company+' '+n.code+'｜'+n.title:n.title)+'</strong><time>'+esc(n.date||'—')+'</time></div><span class="mini-tag">'+esc(n.category||'官方原始資料')+'</span><p class="small muted margintop">來源：'+esc(n.source||'—')+(n.eventDate?'｜事實發生：'+esc(n.eventDate):'')+'</p>'+(sourceSafe(n.url)?'<a class="source-chip" href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">查看官方原始來源 ↗</a>':'')+'</div>').join(''):empty('尚無官方消息快照','待 GitHub 同步流程首次取得官方公告。'))
+ +'</section>'
+ +'<div class="panel-grid"><section class="panel">${panelHeader('每日研究摘要','可貼上 ChatGPT 每日報告或自己的筆記')}
  <div class="btn-group" style="margin-bottom:15px"><button class="btn btn-primary btn-small" data-action="addNote">＋ 新增日報筆記</button><button class="btn btn-small" data-action="export">匯出備份</button></div>
  ${journals.length?journals.slice(0,15).map(j=>`<div class="saved-card"><div class="saved-card-header"><strong>${esc(j.title)}</strong><time>${esc(j.date)}</time></div><p>${esc(j.text)}</p><div class="item-actions"><button data-action="deleteNote" data-id="${esc(j.id)}">刪除</button></div></div>`).join(''):empty('還沒有研究紀錄','新增一篇日報，記錄最關鍵的利多、利空與反證。')}
- </section><section class="panel">${panelHeader('消息來源與可信度','消息手動錄入，避免錯誤自動轉述')}
+ </section><section class="panel">${panelHeader('消息來源與可信度','這一區保存你手動查證的消息；上方另有官方標題自動同步')}
  <div class="btn-group" style="margin-bottom:15px"><button class="btn btn-primary btn-small" data-action="addNews">＋ 新增查證消息</button></div>
  ${news.length?news.slice(0,20).map(n=>`<div class="saved-card"><div class="saved-card-header"><strong>${esc(n.title)}</strong><time>${esc(n.date)}</time></div><div class="mini-tag ${n.level==='未證實傳聞'?'danger':n.level==='媒體報導'?'amber':''}">${esc(n.level)}</div><p style="margin-top:12px">${esc(n.text)}</p><div class="item-actions">${sourceSafe(n.url)?`<a class="source-chip" target="_blank" rel="noopener noreferrer" href="${esc(n.url)}">原始來源 ↗</a>`:''}<button data-action="deleteNews" data-id="${esc(n.id)}">刪除</button></div></div>`).join(''):empty('尚未保存消息','新增事件時，務必保留原始來源及日期。')}
  </section></div>`;
@@ -211,7 +215,7 @@ function renderSettings(){const statuses=state.data?.sourceStatus||{};
  <tr><td>5／10／20 筆籌碼</td><td>由同步歷史累計</td><td>從首次成功更新逐日累積，不足交易日不計算</td></tr>
  <tr><td>月營收、近四季 PE</td><td>已設定官方快照同步</td><td>若來源欄位無法解析就留空</td></tr>
  <tr><td>2027／2028 法人 EPS</td><td>手動輸入</td><td>須保存預估來源與日期</td></tr>
- <tr><td>美股即時行情／新聞</td><td>來源連結＋手動紀錄</td><td>尚未串接付費國際資料</td></tr>
+ <tr><td>NVIDIA 官方新聞與上市櫃重大訊息</td><td>自動同步原文標題</td><td>原始公告不代表獨立查證；其他新聞仍需人工查核</td></tr><tr><td>美股即時行情／總經新聞</td><td>未串接</td><td>尚無穩定合法的即時付費資料</td></tr>
  <tr><td>每日 ChatGPT 研究日報</td><td>手動貼到研究日誌</td><td>ChatGPT 任務與此 GitHub 資料流程仍是兩套系統</td></tr></tbody></table></div>
  </section>`;
 }
@@ -254,6 +258,10 @@ async function refresh(options={}){
       }
     }
   }catch(e){console.warn('籌碼歷史暫時無法載入',e);}
+  try{
+    const nr=await fetch('./data/news.json?v='+Date.now(),{cache:'no-store'});
+    if(nr.ok){const n=await nr.json();if(Array.isArray(n.items)){state.feed=n.items;state.feedUpdatedAt=n.generatedAt||null;state.feedSources=n.sourceStatus||{};}}
+  }catch(e){console.warn('官方消息摘要未能同步',e);}
   registerSnapshot(data);
   window.marketRadarLastSyncCheck=Date.now();
   setNotice('<strong>官方盤後資料已同步。</strong> 交易日 '+esc(data.asOf)+'，股票 '+fmt(data.rows.length,0)+' 檔，法人資料覆蓋 '+fmt(data.summary?.withInst,0)+' 檔。網站上傳時間：'+esc((data.generatedAt||'').replace('T',' ').slice(0,16))+' UTC。非盤中即時報價；若資料來源異常，請查看「資料管理」。','success');
