@@ -12,22 +12,26 @@
     "fullDiv"
   ],
   "asOf": "2026-11-16",
-  "createdAt": "2026-11-17",
-  "formula": "chip45 + financial35 + priceRelative20; ranking ties are ticker-ascending only, no other-factor leakage",
-  "quarterVintage": "2026Q2 available by 2026-08-24 conservative Q-end +55d estimate; per-issuer real-time vintages not certified",
-  "revenueVintage": "per-row official publication date where available, else next month 18th",
-  "priceSignal": "TWSE day close and daily Change; 0050 same-day percentage as proxy for TAIEX (not exact live homepage relativeAction)",
-  "universe": "today's 2026 MARKET RADAR tracked listed tickers with 20d institutional history, Q2 EPS and published monthly revenue",
-  "excluded": "OTC, news, macro, revisions to broker EPS forecasts, dividends and full corporate-action handling",
+  "createdAt": "2026-11-17T12:23:14.690Z",
+  "formula": "chip45 + fundamental35 + 0050-relative20; ticker ascending tie break (no other factor)",
+  "revenueVintage": "Per-row published date when provided, else next-month day18",
+  "quarterVintage": "Quarter-end plus 55 days conservative proxy; original issuer vintages not independently audited",
+  "universe": "Today-listed watch universe with archived 20d chip + published monthly + quarterly EPS",
   "selection": [
     {
       "signalDate": "2026-09-04",
+      "entryDate": "2026-09-07",
+      "exitDate": "2026-09-14",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 177,
         "2026-08": 0,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2353",
@@ -129,12 +133,18 @@
     },
     {
       "signalDate": "2026-09-11",
+      "entryDate": "2026-09-14",
+      "exitDate": "2026-09-21",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 177,
         "2026-08": 0,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2382",
@@ -236,12 +246,18 @@
     },
     {
       "signalDate": "2026-09-18",
+      "entryDate": "2026-09-21",
+      "exitDate": "2026-09-29",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 177,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2382",
@@ -343,12 +359,18 @@
     },
     {
       "signalDate": "2026-09-24",
+      "entryDate": "2026-09-29",
+      "exitDate": "2026-10-05",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 177,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2891",
@@ -450,12 +472,18 @@
     },
     {
       "signalDate": "2026-10-02",
+      "entryDate": "2026-10-05",
+      "exitDate": "2026-10-12",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 177,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2454",
@@ -557,12 +585,18 @@
     },
     {
       "signalDate": "2026-10-08",
+      "entryDate": "2026-10-12",
+      "exitDate": "2026-10-19",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 177,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2892",
@@ -664,12 +698,18 @@
     },
     {
       "signalDate": "2026-10-16",
+      "entryDate": "2026-10-19",
+      "exitDate": "2026-10-27",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 177,
-        "2026-09": 0
+        "2026-09": 0,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "1513",
@@ -771,12 +811,18 @@
     },
     {
       "signalDate": "2026-10-22",
+      "entryDate": "2026-10-27",
+      "exitDate": "2026-11-02",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 0,
-        "2026-09": 177
+        "2026-09": 177,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2379",
@@ -878,12 +924,18 @@
     },
     {
       "signalDate": "2026-10-30",
+      "entryDate": "2026-11-02",
+      "exitDate": "2026-11-09",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 0,
-        "2026-09": 177
+        "2026-09": 177,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2603",
@@ -985,12 +1037,18 @@
     },
     {
       "signalDate": "2026-11-06",
+      "entryDate": "2026-11-09",
+      "exitDate": "2026-11-16",
       "eligible": 177,
       "sourceMonthly": {
+        "2026-05": 0,
+        "2026-06": 0,
         "2026-07": 0,
         "2026-08": 0,
-        "2026-09": 177
+        "2026-09": 177,
+        "2026-10": 0
       },
+      "quarterVintage": "2026Q2",
       "picks": {
         "chip": [
           "2002",

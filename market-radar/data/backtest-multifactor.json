@@ -1,9 +1,9 @@
 {
   "schema": 2,
-  "study": "MARKET RADAR historical 45/35/20 factor ablation",
   "status": "exploratory_partial_pit",
+  "study": "MARKET RADAR historical 45/35/20 factor ablation",
   "asOf": "2026-11-16",
-  "producedAt": "2026-11-17",
+  "producedAt": "2026-11-17T12:23:14.690Z",
   "period": {
     "firstSignal": "2026-09-04",
     "lastExit": "2026-11-16",
@@ -20,46 +20,38 @@
       177,
       177
     ],
-    "eligibleMarket": "TWSE listed stocks in currently tracked universe with complete 20d chip + Q2 results + reported revenue"
+    "eligibleMarket": "TWSE listed currently-tracked survivors with complete institution, revenue and financial data"
   },
   "formula": {
-    "institutional": "45 points: foreign/trust 5/20/60d net and buy-day counts, matching existing App point allocation",
-    "fundamental": "35 points: published monthly revenue YoY/MoM and prior 2026Q2 EPS, op margin, gross margin",
-    "relative": "20 points: signal-day 0050-relative price momentum and NT$50m trading value proxy",
-    "diversification": "fullDiv applies <=2 names per published revenue sector (not identical to website thematic sector groups)",
+    "institutional": "45 points: foreign/trust 5/20/60d nets and buy-day counts",
+    "fundamental": "35 points: published monthly revenue and quarterly EPS, op/gross margin",
+    "relative": "20 points: same-day 0050-relative action and NT$50m volume value",
+    "diversification": "fullDiv max 2 selected stocks per published revenue sector",
     "ablation": "noChip=35+20, noFundamental=45+20, noRelative=45+35",
-    "ties": "For each factor rank only its own score; ties resolved by ascending ticker without other factor leakage"
+    "ties": "Within any strategy ties broken by ascending ticker only, no other factor leakage"
   },
   "execution": {
-    "signal": "weekly last session after close",
-    "entry": "next week's first listed trading session closing price (not a guaranteed fill)",
-    "exit": "following week's first listed trading session closing price",
-    "portfolio": "10 equal-weight stocks, rebalance weekly",
+    "signal": "weekly last close",
+    "entry": "next week first listed session close",
+    "exit": "following week first listed session close",
+    "portfolio": "10 equal-weight names; weekly re-selection",
     "buyCostPct": 0.1425,
     "sellCostPct": 0.4425,
     "slippage": false,
-    "fees": "estimated full retail brokerage fee and stock sell tax for changed weights, no broker discounts",
-    "corporateActions": "unadjusted listed closing prices, no cash dividends; corporate actions not comprehensively audited"
+    "corporateActions": "unadjusted closes; cash dividends, all other actions and delistings not audited"
   },
   "vintage": {
-    "monthly": "actual dated publication field if present, otherwise conservatively next month 18th; 2026 July/Aug/Sept archived files",
-    "earnings": "2026Q2 issuer financial numbers, treated as available from 2026-08-24; original per-company publication versions and later restatements not audited",
-    "stockPrices": "TWSE-daily historical daily CSV",
-    "chip": "MARKET RADAR existing official institution history 2026-05 to 2026-11"
+    "monthly": "publication date or next-month 18th if missing",
+    "earnings": "quarter-end plus 55 calendar days; not immutable point-in-time filings",
+    "stockPrices": "TWSE-daily public archived price CSV",
+    "chip": "official institution results archived by MARKET RADAR"
   },
   "metricNotes": [
-    "Short period includes steep market drawdown and may not generalize",
-    "Retrospective survivor/stock-pool bias; incomplete delisted/newly-listed population",
-    "Quarterly financials and monthly archives are not fully point-in-time immutable snapshots",
-    "Tie-breaking by ticker can materially influence coarse-scored factor rankings"
+    "Short and retrospectively selected sample, not out-of-sample proof",
+    "Survivor bias; unavailable historical delisted / watch list entrants",
+    "Corporate actions, dividends, market impact and intraday drawdown omitted",
+    "Historic quarterly records may reflect later restatements"
   ],
-  "baseline": {
-    "name": "0050",
-    "cumulativePct": -12.238,
-    "maxWeeklyDrawdownPct": -16.818,
-    "gross": true,
-    "includesDividends": false
-  },
   "metrics": {
     "chip": {
       "cumulativePct": -12.443,
@@ -1586,17 +1578,20 @@
       }
     }
   ],
+  "baseline": {
+    "name": "0050",
+    "cumulativePct": -12.238,
+    "maxWeeklyDrawdownPct": -16.818,
+    "gross": true,
+    "includesDividends": false
+  },
   "sourceLinks": [
     {
-      "name": "Daily prices and financial statement archive",
+      "name": "Public TWSE daily price and filings archives",
       "url": "https://github.com/joy40217/TWSE-daily"
     },
     {
-      "name": "Institution historical snapshots",
-      "url": "./data/history/2026-09.json"
-    },
-    {
-      "name": "Score signal audit",
+      "name": "Auditable selected signals",
       "url": "./data/backtest-multifactor-signals.json"
     }
   ]
