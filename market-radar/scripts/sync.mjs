@@ -122,6 +122,55 @@ function indexMap(a,asOf){
  const sign=r['漲跌']==='-'?-1:1;return {name:String(r['指數']),date:asOf,value:num(r['收盤指數']),change:num(r['漲跌點數'])===null?null:num(r['漲跌點數'])*sign,pct:num(r['漲跌百分比'])===null?null:num(r['漲跌百分比'])*sign};
  });
 }
+function decodeXml(x) {
+ return String(x??'').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,'$1').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n))).replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim();
+}
+function rssNvidia(xml) {
+ const items=[];
+ for(const match of String(xml).matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)){
+  const x=match[1],read=tag=>{const m=x.match(new RegExp('<'+tag+'(?:\\s[^>]*)?>([\\s\\S]*?)<\\/'+tag+'>','i'));return decodeXml(m?.[1]||'');};
+  const title=read('title'),url=read('link'),rawDate=read('pubDate');
+  const d=new Date(rawDate);
+  if(!title||title.length>500||!Number.isFinite(d.valueOf()))continue;
+  let valid=false;try{const u=new URL(url);valid=u.protocol==='https:'&&(u.hostname==='nvidianews.nvidia.com'||u.hostname==='www.nvidia.com'||u.hostname==='nvidia.com');}catch{}
+  if(!valid)continue;
+  items.push({date:d.toISOString().slice(0,10),time:d.toISOString(),title,url,category:'NVIDIA 官方新聞',source:'NVIDIA Newsroom',code:null});
+ }
+ return items.slice(0,24);
+}
+async function collectNews(){
+ const feeds={
+  listed:'https://openapi.twse.com.tw/v1/opendata/t187ap04_L',
+  otc:'https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap04_O',
+  nvidia:'https://nvidianews.nvidia.com/rss.xml'
+ };
+ const res=await Promise.allSettled([
+  getJSON(feeds.listed),
+  getJSON(feeds.otc),
+  fetch(feeds.nvidia,{signal:AbortSignal.timeout(25000)}).then(x=>{if(!x.ok)throw Error('HTTP '+x.status);return x.text();})
+ ]);
+ const status=Object.fromEntries(Object.entries(feeds).map(([k,url],i)=>[k,{ok:res[i].status==='fulfilled',url,error:res[i].status==='rejected'?String(res[i].reason.message).slice(0,120):null}]));
+ const material=[];
+ [0,1].forEach(i=>{
+  const arr=res[i].status==='fulfilled'?res[i].value:null;
+  if(!Array.isArray(arr))return;
+  for(const r of arr){
+   const c=code(field(r,['公司代號','公司代碼','Code']));
+   const headline=String(field(r,['主旨','公告主旨'])??'').trim();
+   const announced=date(field(r,['發言日期']));
+   const facts=date(field(r,['事實發生日']));
+   const time=String(field(r,['發言時間'])??'').replace(/\D/g,'').padStart(6,'0');
+   if(!c||!headline||!announced)continue;
+   material.push({date:announced,time:announced+'T'+time.slice(0,2)+':'+time.slice(2,4)+':'+time.slice(4,6),title:headline.slice(0,250),code:c,company:String(field(r,['公司名稱'])??'').trim(),eventDate:facts,source:i===0?'上市公司重大訊息':'上櫃公司重大訊息',category:'公司自行公告',url:i===0?feeds.listed:feeds.otc,tracked:WATCH.has(c)});
+  }
+ });
+ material.sort((a,b)=>b.time.localeCompare(a.time));
+ const watched=material.filter(x=>x.tracked).slice(0,38);
+ const rest=material.filter(x=>!x.tracked).slice(0,10);
+ const nvidia=res[2].status==='fulfilled'?rssNvidia(res[2].value):[];
+ const items=[...watched,...nvidia,...rest].sort((a,b)=>String(b.time).localeCompare(String(a.time))).slice(0,65);
+ return {generatedAt:new Date().toISOString(),items,sourceStatus:status,disclaimer:'本清單僅轉載官方公司公告標題與 NVIDIA 新聞室原文標題，不等同獨立查證、投資意見或全面新聞掃描。發言日期與事實發生日分開顯示。'};
+}
 async function main(){
  const fetched=await Promise.allSettled(Object.values(URLS).map(getJSON));
  const raw={},sourceStatus={};
@@ -184,6 +233,14 @@ async function main(){
  series.push(short);series.sort((a,b)=>b.date.localeCompare(a.date));series=series.slice(0,80);
  await fs.writeFile(latestFile,JSON.stringify(snapshot)+'\n');
  await fs.writeFile(seriesFile,JSON.stringify({asOf,generatedAt:snapshot.generatedAt,days:series})+'\n');
+ try{
+  const news=await collectNews();
+  if(news.items.length){
+   await fs.writeFile(path.join(ROOT,'news.json'),JSON.stringify(news)+'\n');
+   console.log('Official announcements and NVIDIA news:',news.items.length);
+  }else console.warn('No official news found; previous news archive preserved.');
+ }catch(e){console.warn('Official news sync failed:',e.message);}
+
  console.log(JSON.stringify({asOf,total:summary.total,withInst:summary.withInst,withRevenue:summary.withRevenue,sources:sourceStatus},null,2));
 }
 main().catch(e=>{console.error('SYNC FAILED:',e);process.exitCode=1;});
