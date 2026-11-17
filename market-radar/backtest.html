@@ -19,6 +19,7 @@
 <p><strong>首頁 45＋35＋20 分數的歷史近似測試。</strong> 使用歷史 20／60 日法人籌碼、當時可合理取得的月營收與 Q2 財報、以及相對 0050 的當日價格強度。每組選 10 檔，與產業分散條件及移除因子的版本比較。<strong>消息、總經與券商 EPS 共識沒有納入。</strong></p>
 <div id="multifactorStatus" class="sub tiny">讀取因子比較中…</div>
 <div class="table-scroll"><table><thead><tr><th>模型／觀察方式</th><th class="num">累積報酬</th><th class="num">跑贏0050週數</th><th class="num">最大週度回撤</th><th class="num">估計成本(百分點)</th></tr></thead><tbody id="factorComparison"></tbody></table></div>
+<div id="factorRegime" class="fact-grid" style="margin-top:14px"></div>
 <p class="sub tiny" style="margin-top:13px">分數同分時，固定使用股票代號排序，不借其他因子破同分。完整模型的分散限制依月營收公告產業別，每產業最多兩檔；與首頁編輯分類不完全相同。所有回報都是探索性結果，不表示已完成歷史法人共識或事件驅動回測。</p>
 <details style="margin-top:15px"><summary style="cursor:pointer;font-weight:750">逐週選股與績效核對</summary><div class="table-scroll" style="margin-top:13px"><table><thead><tr><th>訊號日</th><th>持有區間</th><th class="num">完整＋分散</th><th class="num">0050</th><th>選出股票（代號）</th></tr></thead><tbody id="factorWeekRows"></tbody></table></div></details>
 <p class="tiny sub" id="factorAuditLink" style="margin-top:13px"></p>
@@ -62,6 +63,13 @@ fetch('./data/backtest.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok
   status.textContent=x.period.firstSignal+' 至 '+x.period.lastExit+'；'+x.period.weeks+' 個週期；每週 '+Math.min(...x.period.qualifyingPerWeek)+'～'+Math.max(...x.period.qualifyingPerWeek)+' 檔符合資格。基準0050累積 '+pct(x.baseline.cumulativePct)+'，尚未扣成本或加入配息。';
   const sorted=['fullDiv','full','chip','fundamental','relative','noChip','noFundamental','noRelative'];
   rows.innerHTML=sorted.map(k=>{const m=x.metrics[k];return '<tr><td><strong>'+escapeText(names[k])+'</strong></td><td class="num" style="font-weight:750;color:'+(m.cumulativePct<0?'#b8463d':'#167c63')+'">'+pct(m.cumulativePct)+'</td><td class="num">'+m.beat0050Weeks+' / '+x.period.weeks+'</td><td class="num">'+pct(m.maxWeeklyDrawdownPct)+'</td><td class="num">'+m.estimatedTotalTradingCostPpt.toFixed(2)+'</td></tr>'}).join('')+'<tr><td><strong>0050 基準（未扣成本）</strong></td><td class="num">'+pct(x.baseline.cumulativePct)+'</td><td class="num">基準</td><td class="num">'+pct(x.baseline.maxWeeklyDrawdownPct)+'</td><td class="num">未計</td></tr>';
+  const rg=x.marketRegimes;
+  if(rg?.marketDown?.weeks&&rg?.marketUp?.weeks){
+    const down=rg.marketDown,up=rg.marketUp;
+    document.getElementById('factorRegime').innerHTML=
+     '<div class="fact"><strong>0050 下跌週 '+down.weeks+' 週</strong><p class="sub tiny">完整＋分散平均每週超額 '+pct(down.strategies.fullDiv.meanWeeklyExcessVs0050Ppt)+'，其中 '+down.strategies.fullDiv.beat0050Weeks+' 週跑贏0050。</p></div>'+
+     '<div class="fact"><strong>0050 上漲週 '+up.weeks+' 週</strong><p class="sub tiny">完整＋分散平均每週超額 '+pct(up.strategies.fullDiv.meanWeeklyExcessVs0050Ppt)+'，其中 '+up.strategies.fullDiv.beat0050Weeks+' 週跑贏0050。</p></div>';
+  }
   weeks.innerHTML=x.weekly.map(w=>'<tr><td>'+escapeText(w.signalDate)+'</td><td>'+escapeText(w.entryDate)+' → '+escapeText(w.exitDate)+'</td><td class="num">'+pct(w.models.fullDiv.netPct)+'</td><td class="num">'+pct(w.etf0050GrossPct)+'</td><td>'+w.models.fullDiv.codes.map(escapeText).join(' · ')+'</td></tr>').join('');
   document.getElementById('factorAuditLink').innerHTML='<a href="./data/backtest-multifactor-signals.json" target="_blank" rel="noopener">檢視每週選股原始訊號</a>　·　<a href="./data/history/2026-09.json" target="_blank" rel="noopener">歷史籌碼封存</a>　·　<a href="https://github.com/joy40217/TWSE-daily" target="_blank" rel="noopener">股價／財報來源</a><br>資料風險：今天仍存在的觀察池造成存活者偏差；無法完全確定財報未經事後修正；無配息、滑價及完整公司行動調整。';
  }).catch(err=>status.textContent='尚無通過基本完整度檢查的修正版資料：'+err.message);
