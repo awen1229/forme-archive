@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/market-radar-research.yml'
       - 'market-radar/scripts/build-picks.mjs'
+      - 'market-radar/data/series.json'
 permissions:
   contents: write
 concurrency:
