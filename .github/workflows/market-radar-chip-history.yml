@@ -24,6 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # Restore historical chip continuity before the homepage research model is refreshed.
       - name: Verify and import historical institutional flows
         env:
           BACKFILL_CALENDAR_DAYS: '190'
