@@ -100,7 +100,7 @@ function listedInstitutions(j){
  const fd=at('外資自營商買賣超股數'),di=at('自營商買賣超股數(自行買賣)'),dh=at('自營商買賣超股數(避險)');
  if(fi<0||ti<0) return m;
  for(const a of j.data){const c=code(a[0]);if(!c)continue;const f=num(a[fi]),t=num(a[ti]);const f2=fd<0?0:num(a[fd]);const d1=di<0?null:num(a[di]),d2=dh<0?null:num(a[dh]);
-  m.set(c,{foreign:f===null?null:lots(f+(f2??0)),trust:lots(t),dealer:d1===null||d2===null?null:lots(d1+d2)});
+  m.set(c,{foreign:lots(f),trust:lots(t),dealer:d1===null||d2===null?null:lots(d1+d2)});
  }
  return m;
 }
