@@ -37,7 +37,20 @@ jobs:
           git add market-radar/data/latest.json market-radar/data/series.json market-radar/data/news.json
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh MARKET RADAR official EOD snapshot"
-            git push
+            # Another site update can land during collection. Rebase before publish.
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "Published refreshed snapshots"
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "Failed to publish after three retries"
+                exit 1
+              fi
+              sleep "$attempt"
+            done
           else
             echo "No changes to the public snapshots"
           fi
