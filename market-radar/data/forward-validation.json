@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "status": "collecting",
-  "generatedAt": "2026-11-17T12:35:05.079Z",
+  "generatedAt": "2026-11-17T13:55:04.958Z",
   "asOf": "2026-11-17",
   "firstRecordedSignal": "2026-11-17",
   "lastRecordedSignal": "2026-11-17",
@@ -64,13 +64,13 @@
     "exit": "5/20/60 trading sessions after entry close",
     "weights": "equally weighted, names fixed per cohort",
     "costs": "estimated stock round-trip 0.585%, ETF round-trip 0.385% before broker discount",
-    "selection": "exclude incomplete cohorts with explicit reason; never pick survivors after signal",
-    "samples": "daily overlapping cohorts, non-independent, not portfolio cumulative return",
+    "selection": "exclude all incomplete cohorts with explicit missing reason; do not replace missing prices with zero or survivors",
+    "samples": "daily cohorts overlap; cohort averages are not independent samples nor compoundable portfolio returns",
     "adjustment": "cash dividends, corporate actions, intraday execution and slippage omitted"
   },
   "warnings": [
-    "Prospective observations began on 2026-11-17",
-    "No mature 5/20/60 trading-session samples yet",
-    "Results will only display after actual future closes exist"
+    "Requires prospective data after first logged recommendation date",
+    "No Sharpe or statistical significance is published until sufficient independent history",
+    "Being selected by an App is a research observation, not an executed order"
   ]
 }
