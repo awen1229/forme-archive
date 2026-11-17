@@ -993,7 +993,7 @@ const baseWatch=['2330','3231','2382','2376','2327','3026','2383','2308'];
 const STORE_KEY='market-radar-app-v1';
 const deepClone=x=>JSON.parse(JSON.stringify(x));
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY))||{};}catch{return {};}})();
-const state={tab:'overview',data:saved.data||null,history:Array.isArray(saved.history)?saved.history:[],watch:Array.isArray(saved.watch)?saved.watch:baseWatch,eps:saved.eps||{},journal:saved.journal||[],news:saved.news||[],custom:saved.custom||[],filter:'',sector:'全部',sort:'value',watchOnly:false,stockScope:'pool',activeStock:'2330',earnings:null,picks:saved.picks||null,tdcc:null,refreshing:false};
+const state={tab:'overview',data:saved.data||null,history:Array.isArray(saved.history)?saved.history:[],watch:Array.isArray(saved.watch)?saved.watch:baseWatch,eps:saved.eps||{},journal:saved.journal||[],news:saved.news||[],custom:saved.custom||[],filter:'',sector:'全部',sort:'value',watchOnly:false,stockScope:'pool',activeStock:'2330',earnings:null,picks:saved.picks||null,tdcc:null,validation:null,refreshing:false};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const fmt=(x,d=1)=>x==null||!Number.isFinite(+x)?'—':Number(x).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -1087,12 +1087,42 @@ function renderDailyWatchlist(){
   +(notes.length?'<span>'+notes.join('　/　')+'</span>':'<span>利率或市場廣度資料不足，暫不做總經方向判定</span>')+'</div>'
   +(p.news?.global?.length?'<div class="radar-macro-note"><strong>全球官方訊息：</strong><span>僅列出已收錄的官方原始標題，並非已核實其對獲利的影響</span>'
     +p.news.global.slice(0,2).map(n=>sourceSafe(n.url)?'<div><a href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">'+esc(n.date)+'｜'+esc(n.title)+'</a></div>':'<div>'+esc(n.title)+'</div>').join('')+'</div>':'<div class="radar-macro-note"><strong>全球官方訊息：</strong>目前無可用的最新資料，未納入推論。</div>')
-  +'<p class="radar-watch-method">研究優先分數：20／60日法人籌碼 45 分、營收與已公告財報 35 分、當日相對強弱與流動性 20 分。<strong>尚未回測，分數不是報酬機率，也不等於分批買進條件。</strong> 公告只做事件與風險提示，不由標題直接推定利多。</p>'
+  +'<p class="radar-watch-method">研究優先分數：20／60日法人籌碼 45 分、營收與已公告財報 35 分、當日相對強弱與流動性 20 分。<strong>已有短期歷史近似回測，但尚未完成完整樣本外驗證；分數不是報酬機率，也不等於分批買進條件。</strong> 公告只做事件與風險提示，不由標題直接推定利多。</p>'
   +'<div class="radar-watch-grid">'+tracking.map(item).join('')+'</div>'
   +(discoveries.length?'<div class="radar-watch-subtitle">全市場新發現 <span>長期法人資料尚不足，請先列觀察</span></div><div class="radar-watch-grid">'+discoveries.map((r,i)=>item(r,i)).join('')+'</div>':'')
   +(p.removed?.length?'<p class="radar-watch-method">本次未續列：'+p.removed.slice(0,8).map(x=>esc(x.name+' '+x.code)).join('、')+'。退出只是規則式名單變化，並非賣出訊號。</p>':'')
   +'<p class="radar-watch-method">更新來源：<a href="https://www.twse.com.tw/" target="_blank" rel="noopener">證交所</a>、<a href="https://www.tpex.org.tw/" target="_blank" rel="noopener">櫃買中心</a>、公司重大訊息與美國公債資料。沒有取得2027／2028法人共識，不會以模型數據冒充。</p></section>';
 }
+
+function renderModelValidation(){
+ const evidence=state.validation||{},m=evidence.multifactor,t=evidence.tdcc,f=evidence.forward;
+ const p=x=>Number.isFinite(x)?(x>0?'+':'')+Number(x).toFixed(2)+'%':'—';
+ const n=x=>Number.isFinite(x)?Number(x):0;
+ if(!m&&!t&&!f)return '<section class="panel" id="model-validation">'+panelHeader('選股模型・驗證狀態','EVIDENCE CHECK')+'<p class="small muted">歷史回測與前向驗證資料尚未載入。首頁名單為研究排序，不代表策略通過驗證。<a href="./backtest.html">查看回測方法</a></p></section>';
+ const historical=m?.status==='exploratory_partial_pit'&&Number.isFinite(m.metrics?.fullDiv?.cumulativePct)&&n(m.period?.weeks)>0;
+ const forward=f?.status==='collecting'||f?.status==='completed';
+ const h5=forward?f.horizons?.['5']:null,h20=forward?f.horizons?.['20']:null,h60=forward?f.horizons?.['60']:null;
+ const gate=t?.status==='exploratory_incremental_tdcc_gate'&&Number.isFinite(t.results?.baseline?.cumulativeNetPct)&&Number.isFinite(t.results?.skipDistribution?.cumulativeNetPct);
+ const first=historical?m.period.firstSignal:'未完成',last=historical?m.period.lastExit:'—';
+ const histText=historical?'完整＋分散 '+p(m.metrics.fullDiv.cumulativePct)+'；0050 '+p(m.baseline?.cumulativePct)+'（0050 未扣成本，勿直接視為同口徑超額）':'歷史因子回測尚不可用，不能宣稱有勝率';
+ const tdccText=gate?'維持原選股 '+p(t.results.baseline.cumulativeNetPct)+'；避開集保分散警示 '+p(t.results.skipDistribution.cumulativeNetPct)+'；同數量末位刪除對照 '+p(t.results.trimTailControl?.cumulativeNetPct)+'。僅排除 '+n(t.sample?.totalChosen)+' 筆入選事件，尚無穩健證據':'集保增量回測資料尚未通過檢查，不調整選股權重';
+ const forwardReady=forward?[h5,h20,h60].map((h,i)=>['5','20','60'][i]+'日 '+n(h?.completedCohorts)+' 組').join('／'):'前向追蹤尚未就緒';
+ return '<section class="panel" id="model-validation">'
+   +panelHeader('選股模型・驗證狀態','RESEARCH EVIDENCE / NOT TRADE SIGNAL')
+   +'<div class="warning-note"><strong>模型尚未通過完整樣本外驗證。</strong> 45／35／20 是研究優先度配分，不是預測報酬率或獲利機率。千張大戶／散戶趨勢仍為警示層，不因短期回測較好就提高權重。</div>'
+   +'<div class="summary-grid">'
+   +kpi('歷史近似回測',historical?n(m.period.weeks)+' 週':'無有效結果',historical?esc(first)+' → '+esc(last):'樣本不足')
+   +kpi('前向檢驗成熟組數',h5?n(h5.completedCohorts)+' 組':'0 組','5 個交易日；不把未到期樣本算入')
+   +kpi('集保警示排除事件',gate?n(t.sample?.totalChosen)+' 次':'—',gate?'在 '+n(t.sample?.weeks)+' 週探索性測試中':'歷史資料不足')
+   +kpi('資料研究狀態','尚待驗證','消息／總經／券商EPS共識未完成歷史整合')
+   +'</div>'
+   +'<div class="metric-inline"><div class="label"><strong>45／35／20 分數檢驗</strong><span class="sub">'+esc(histText)+'</span></div><a href="./backtest.html#multiFactorSection">詳細結果 ↗</a></div>'
+   +'<div class="metric-inline"><div class="label"><strong>大戶／散戶增量測試</strong><span class="sub">'+esc(tdccText)+'</span></div><a href="./backtest.html#tdccBacktest">詳細結果 ↗</a></div>'
+   +'<div class="metric-inline"><div class="label"><strong>每日真實推薦的前向檢驗</strong><span class="sub">'+esc(forwardReady)+'；每日樣本會重疊，不能視為獨立勝率</span></div><a href="./backtest.html#forwardValidation">詳細結果 ↗</a></div>'
+   +'<p class="small muted margintop">驗證數據截至：歷史 '+esc(m?.asOf||'未知')+'；集保 '+esc(t?.asOf||'未知')+'；前向 '+esc(f?.asOf||'未知')+'。研究池可能存在存活者偏誤，部分財報公告日為保守代理日期；未計完整配息、公司行動與滑價。<strong>暫不將本回測結果用於自動調參或改動首頁排名。</strong></p>'
+   +'</section>';
+}
+
 function renderTDCCOverview(){
  const tdcc=state.tdcc;
  if(!tdcc?.asOf||!tdcc.rows)return '<section class="panel"><div class="panel-header"><h2>集保大戶／散戶結構</h2><span class="panel-note">資料尚未載入</span></div><p class="small muted">每週依集保公布的級距持股比例計算。與單日法人買賣超分開觀察，不會在資料不足時增加選股分數。</p></section>';
@@ -1115,6 +1145,7 @@ function renderOverview(){
  const breadth = summary.up!=null && summary.down!=null && (summary.up+summary.down)>0?(summary.up/(summary.up+summary.down)*100):null;
  return sectionTitle('THE DAILY PULSE','市場總覽','全球訊號 × 台股類股強弱 × 法人籌碼。只顯示可核對的資料。',`<div class="date-label">最新交易日<br><b>${fmtDate(state.data?.asOf)}</b></div>`)
  +renderDailyWatchlist()
+ +renderModelValidation()
  +renderTDCCOverview()
  +`<div class="summary-grid">
    ${kpi('加權指數 · 收盤',idx?.value!=null?fmt(idx.value,2):'—',idx?.pct!=null?`<span class="${color(idx.pct)}">${percentage(idx.pct)}</span> ｜官方指數`:'等待官方資料',color(idx?.pct))}
@@ -1329,6 +1360,19 @@ async function refresh(options={}){
     const tr=await fetch('./data/tdcc/latest.json?v='+Date.now(),{cache:'no-store'});
     if(tr.ok){const td=await tr.json();if(/^\d{4}-\d{2}-\d{2}$/.test(td.asOf)&&td.rows&&Object.keys(td.rows).length>=800)state.tdcc=td;}
   }catch(e){console.warn('集保週籌碼資料暫不可用',e);}
+
+  // Independent, research-only validation panels. A missing study never becomes a fabricated score.
+  const evidenceFiles=[['multifactor','backtest-multifactor.json'],['tdcc','backtest-tdcc-overlay.json'],['forward','forward-validation.json']];
+  const evidenceResults=await Promise.all(evidenceFiles.map(async ([key,name])=>{
+   try{
+    const r=await fetch('./data/'+name+'?v='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw Error('HTTP '+r.status);
+    const result=await r.json();
+    if(!result||typeof result!=='object'||!result.asOf)throw Error('缺少研究日期');
+    return [key,result];
+   }catch(e){console.warn('研究驗證資料讀取失敗：'+name,e);return [key,null];}
+  }));
+  state.validation=Object.fromEntries(evidenceResults);
   registerSnapshot(data);
   window.marketRadarLastSyncCheck=Date.now();
   setNotice('<strong>官方盤後資料已同步。</strong> 交易日 '+esc(data.asOf)+'，股票 '+fmt(data.rows.length,0)+' 檔，法人資料覆蓋 '+fmt(data.summary?.withInst,0)+' 檔。網站上傳時間：'+esc((data.generatedAt||'').replace('T',' ').slice(0,16))+' UTC。非盤中即時報價；若資料來源異常，請查看「資料管理」。','success');
