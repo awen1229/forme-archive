@@ -11,6 +11,7 @@ on:
       - '.github/workflows/market-radar-sync.yml'
       - 'market-radar/scripts/sync.mjs'
       - 'market-radar/scripts/sync-earnings.mjs'
+      - 'market-radar/scripts/archive-chip.mjs'
 permissions:
   contents: write
 concurrency:
@@ -31,6 +32,8 @@ jobs:
           node-version: '22'
       - name: Collect verified TWSE and TPEx close data
         run: node market-radar/scripts/sync.mjs
+      - name: Preserve longitudinal institutional history before rolling window expires
+        run: node market-radar/scripts/archive-chip.mjs
       - name: Collect published EPS financial statements and model scenarios
         run: node market-radar/scripts/sync-earnings.mjs
         continue-on-error: true
@@ -43,6 +46,7 @@ jobs:
           git add market-radar/data/latest.json market-radar/data/series.json market-radar/data/news.json
           if [ -f market-radar/data/earnings.json ]; then git add market-radar/data/earnings.json; fi
           git add market-radar/data/picks.json market-radar/data/macro.json
+          git add market-radar/data/history/
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh MARKET RADAR official EOD snapshot"
             # Another site update can land during collection. Rebase before publish.
