@@ -1,0 +1,479 @@
+{
+  "schema": 1,
+  "status": "completed",
+  "generatedAt": "2026-11-17T12:16:41.183734+00:00",
+  "asOf": "2026-11-17",
+  "study": "V3 corrected weekly multi-factor evaluation",
+  "universe": {
+    "stocks": [
+      "2330",
+      "2383",
+      "2327",
+      "3026",
+      "2308",
+      "2317"
+    ],
+    "benchmark": "0050",
+    "survivorshipWarning": true
+  },
+  "factors": {
+    "foreign": "Friday foreign net shares / Friday volume",
+    "trust": "Friday trust net shares / Friday volume",
+    "margin": "Friday daily margin position delta / volume (lower preferred)",
+    "momentum": "4 prior weekly signal close-price momentum"
+  },
+  "periods": {
+    "development": "2024-2025",
+    "evaluation": "2026"
+  },
+  "method": {
+    "signal": "end-of-week after close",
+    "entry": "following week first opening price",
+    "exit": "next week first opening price",
+    "cost": "buy 0.1425%; sell 0.4425%",
+    "dividendsIncluded": false,
+    "splitsAdjusted": [
+      "0050 2025-06-18",
+      "2327 2025-08-25"
+    ]
+  },
+  "coverage": {
+    "requiredFiles": 588,
+    "fetchedFiles": 588,
+    "failures": 0,
+    "weeks": 141,
+    "eventRows": 843
+  },
+  "strategyMetrics": [
+    {
+      "period": "all",
+      "strategy": "hold0050",
+      "weeks": 141,
+      "cumulative_pct": 194.77,
+      "annualized_pct": 48.98,
+      "max_open_to_open_drawdown_pct": -20.42,
+      "sharpe_0pct_cash": 1.68,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 1,
+      "gross_turnover": 1.0
+    },
+    {
+      "period": "all",
+      "strategy": "composite",
+      "weeks": 141,
+      "cumulative_pct": 357.42,
+      "annualized_pct": 75.2,
+      "max_open_to_open_drawdown_pct": -61.25,
+      "sharpe_0pct_cash": 1.17,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 141,
+      "gross_turnover": 147.59
+    },
+    {
+      "period": "all",
+      "strategy": "equal",
+      "weeks": 141,
+      "cumulative_pct": 408.3,
+      "annualized_pct": 82.14,
+      "max_open_to_open_drawdown_pct": -36.39,
+      "sharpe_0pct_cash": 1.65,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 141,
+      "gross_turnover": 6.78
+    },
+    {
+      "period": "all",
+      "strategy": "foreign",
+      "weeks": 141,
+      "cumulative_pct": 147.7,
+      "annualized_pct": 39.73,
+      "max_open_to_open_drawdown_pct": -58.69,
+      "sharpe_0pct_cash": 0.87,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 141,
+      "gross_turnover": 175.49
+    },
+    {
+      "period": "all",
+      "strategy": "foreignPositive",
+      "weeks": 141,
+      "cumulative_pct": 384.77,
+      "annualized_pct": 78.99,
+      "max_open_to_open_drawdown_pct": -35.36,
+      "sharpe_0pct_cash": 1.3,
+      "avg_stock_exposure_pct": 91.5,
+      "rebalanced_weeks": 140,
+      "gross_turnover": 153.09
+    },
+    {
+      "period": "all",
+      "strategy": "margin",
+      "weeks": 141,
+      "cumulative_pct": 137.92,
+      "annualized_pct": 37.67,
+      "max_open_to_open_drawdown_pct": -51.65,
+      "sharpe_0pct_cash": 0.82,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 141,
+      "gross_turnover": 187.59
+    },
+    {
+      "period": "all",
+      "strategy": "momentum",
+      "weeks": 141,
+      "cumulative_pct": 850.95,
+      "annualized_pct": 129.48,
+      "max_open_to_open_drawdown_pct": -47.69,
+      "sharpe_0pct_cash": 1.59,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 141,
+      "gross_turnover": 84.45
+    },
+    {
+      "period": "all",
+      "strategy": "trust",
+      "weeks": 141,
+      "cumulative_pct": 142.7,
+      "annualized_pct": 38.68,
+      "max_open_to_open_drawdown_pct": -58.76,
+      "sharpe_0pct_cash": 0.94,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 141,
+      "gross_turnover": 160.18
+    },
+    {
+      "period": "all",
+      "strategy": "trustPositive",
+      "weeks": 141,
+      "cumulative_pct": 299.97,
+      "annualized_pct": 66.73,
+      "max_open_to_open_drawdown_pct": -48.02,
+      "sharpe_0pct_cash": 1.36,
+      "avg_stock_exposure_pct": 97.9,
+      "rebalanced_weeks": 140,
+      "gross_turnover": 132.34
+    },
+    {
+      "period": "development",
+      "strategy": "hold0050",
+      "weeks": 97,
+      "cumulative_pct": 98.36,
+      "annualized_pct": 44.36,
+      "max_open_to_open_drawdown_pct": -20.42,
+      "sharpe_0pct_cash": 1.72,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 1,
+      "gross_turnover": 1.0
+    },
+    {
+      "period": "development",
+      "strategy": "composite",
+      "weeks": 97,
+      "cumulative_pct": 79.86,
+      "annualized_pct": 36.98,
+      "max_open_to_open_drawdown_pct": -44.34,
+      "sharpe_0pct_cash": 1.11,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 102.73
+    },
+    {
+      "period": "development",
+      "strategy": "equal",
+      "weeks": 97,
+      "cumulative_pct": 149.83,
+      "annualized_pct": 63.37,
+      "max_open_to_open_drawdown_pct": -21.23,
+      "sharpe_0pct_cash": 2.05,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 4.31
+    },
+    {
+      "period": "development",
+      "strategy": "foreign",
+      "weeks": 97,
+      "cumulative_pct": 70.89,
+      "annualized_pct": 33.28,
+      "max_open_to_open_drawdown_pct": -36.93,
+      "sharpe_0pct_cash": 1.06,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 118.6
+    },
+    {
+      "period": "development",
+      "strategy": "foreignPositive",
+      "weeks": 97,
+      "cumulative_pct": 84.38,
+      "annualized_pct": 38.82,
+      "max_open_to_open_drawdown_pct": -35.36,
+      "sharpe_0pct_cash": 1.26,
+      "avg_stock_exposure_pct": 91.8,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 102.74
+    },
+    {
+      "period": "development",
+      "strategy": "margin",
+      "weeks": 97,
+      "cumulative_pct": -6.19,
+      "annualized_pct": -3.37,
+      "max_open_to_open_drawdown_pct": -51.65,
+      "sharpe_0pct_cash": 0.01,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 128.63
+    },
+    {
+      "period": "development",
+      "strategy": "momentum",
+      "weeks": 97,
+      "cumulative_pct": 151.45,
+      "annualized_pct": 63.94,
+      "max_open_to_open_drawdown_pct": -37.39,
+      "sharpe_0pct_cash": 1.57,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 62.07
+    },
+    {
+      "period": "development",
+      "strategy": "trust",
+      "weeks": 97,
+      "cumulative_pct": 113.91,
+      "annualized_pct": 50.33,
+      "max_open_to_open_drawdown_pct": -31.39,
+      "sharpe_0pct_cash": 1.42,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 97,
+      "gross_turnover": 109.68
+    },
+    {
+      "period": "development",
+      "strategy": "trustPositive",
+      "weeks": 97,
+      "cumulative_pct": 134.64,
+      "annualized_pct": 57.97,
+      "max_open_to_open_drawdown_pct": -32.13,
+      "sharpe_0pct_cash": 1.58,
+      "avg_stock_exposure_pct": 96.9,
+      "rebalanced_weeks": 96,
+      "gross_turnover": 93.07
+    },
+    {
+      "period": "evaluation",
+      "strategy": "hold0050",
+      "weeks": 44,
+      "cumulative_pct": 48.39,
+      "annualized_pct": 59.43,
+      "max_open_to_open_drawdown_pct": -17.37,
+      "sharpe_0pct_cash": 1.66,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 1,
+      "gross_turnover": 1.0
+    },
+    {
+      "period": "evaluation",
+      "strategy": "composite",
+      "weeks": 44,
+      "cumulative_pct": 154.7,
+      "annualized_pct": 201.89,
+      "max_open_to_open_drawdown_pct": -61.25,
+      "sharpe_0pct_cash": 1.54,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 44.86
+    },
+    {
+      "period": "evaluation",
+      "strategy": "equal",
+      "weeks": 44,
+      "cumulative_pct": 103.19,
+      "annualized_pct": 131.14,
+      "max_open_to_open_drawdown_pct": -36.39,
+      "sharpe_0pct_cash": 1.62,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 3.44
+    },
+    {
+      "period": "evaluation",
+      "strategy": "foreign",
+      "weeks": 44,
+      "cumulative_pct": 45.6,
+      "annualized_pct": 55.89,
+      "max_open_to_open_drawdown_pct": -58.69,
+      "sharpe_0pct_cash": 0.92,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 55.89
+    },
+    {
+      "period": "evaluation",
+      "strategy": "foreignPositive",
+      "weeks": 44,
+      "cumulative_pct": 163.31,
+      "annualized_pct": 213.99,
+      "max_open_to_open_drawdown_pct": -33.91,
+      "sharpe_0pct_cash": 1.69,
+      "avg_stock_exposure_pct": 90.9,
+      "rebalanced_weeks": 43,
+      "gross_turnover": 50.34
+    },
+    {
+      "period": "evaluation",
+      "strategy": "margin",
+      "weeks": 44,
+      "cumulative_pct": 154.76,
+      "annualized_pct": 201.98,
+      "max_open_to_open_drawdown_pct": -50.5,
+      "sharpe_0pct_cash": 1.61,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 57.96
+    },
+    {
+      "period": "evaluation",
+      "strategy": "momentum",
+      "weeks": 44,
+      "cumulative_pct": 277.69,
+      "annualized_pct": 380.92,
+      "max_open_to_open_drawdown_pct": -47.69,
+      "sharpe_0pct_cash": 2.01,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 23.33
+    },
+    {
+      "period": "evaluation",
+      "strategy": "trust",
+      "weeks": 44,
+      "cumulative_pct": 13.96,
+      "annualized_pct": 16.71,
+      "max_open_to_open_drawdown_pct": -58.76,
+      "sharpe_0pct_cash": 0.57,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 49.5
+    },
+    {
+      "period": "evaluation",
+      "strategy": "trustPositive",
+      "weeks": 44,
+      "cumulative_pct": 70.81,
+      "annualized_pct": 88.28,
+      "max_open_to_open_drawdown_pct": -48.02,
+      "sharpe_0pct_cash": 1.29,
+      "avg_stock_exposure_pct": 100.0,
+      "rebalanced_weeks": 44,
+      "gross_turnover": 39.07
+    }
+  ],
+  "informationCoefficients": [
+    {
+      "period": "all",
+      "feature": "foreign",
+      "weeks": 141,
+      "mean_weekly_IC": -0.0002,
+      "IC_positive_fraction": 0.4965,
+      "IC_t_stat_descriptive": -0.005
+    },
+    {
+      "period": "all",
+      "feature": "trust",
+      "weeks": 141,
+      "mean_weekly_IC": -0.0015,
+      "IC_positive_fraction": 0.4894,
+      "IC_t_stat_descriptive": -0.038
+    },
+    {
+      "period": "all",
+      "feature": "margin",
+      "weeks": 141,
+      "mean_weekly_IC": 0.0176,
+      "IC_positive_fraction": 0.5106,
+      "IC_t_stat_descriptive": 0.475
+    },
+    {
+      "period": "all",
+      "feature": "momentum",
+      "weeks": 141,
+      "mean_weekly_IC": 0.0681,
+      "IC_positive_fraction": 0.5461,
+      "IC_t_stat_descriptive": 1.72
+    },
+    {
+      "period": "development",
+      "feature": "foreign",
+      "weeks": 97,
+      "mean_weekly_IC": 0.0109,
+      "IC_positive_fraction": 0.5052,
+      "IC_t_stat_descriptive": 0.235
+    },
+    {
+      "period": "development",
+      "feature": "trust",
+      "weeks": 97,
+      "mean_weekly_IC": -0.0099,
+      "IC_positive_fraction": 0.4845,
+      "IC_t_stat_descriptive": -0.213
+    },
+    {
+      "period": "development",
+      "feature": "margin",
+      "weeks": 97,
+      "mean_weekly_IC": 0.0333,
+      "IC_positive_fraction": 0.5052,
+      "IC_t_stat_descriptive": 0.697
+    },
+    {
+      "period": "development",
+      "feature": "momentum",
+      "weeks": 97,
+      "mean_weekly_IC": 0.0507,
+      "IC_positive_fraction": 0.5464,
+      "IC_t_stat_descriptive": 1.071
+    },
+    {
+      "period": "evaluation",
+      "feature": "foreign",
+      "weeks": 44,
+      "mean_weekly_IC": -0.0247,
+      "IC_positive_fraction": 0.4773,
+      "IC_t_stat_descriptive": -0.335
+    },
+    {
+      "period": "evaluation",
+      "feature": "trust",
+      "weeks": 44,
+      "mean_weekly_IC": 0.0169,
+      "IC_positive_fraction": 0.5,
+      "IC_t_stat_descriptive": 0.211
+    },
+    {
+      "period": "evaluation",
+      "feature": "margin",
+      "weeks": 44,
+      "mean_weekly_IC": -0.0169,
+      "IC_positive_fraction": 0.5227,
+      "IC_t_stat_descriptive": -0.303
+    },
+    {
+      "period": "evaluation",
+      "feature": "momentum",
+      "weeks": 44,
+      "mean_weekly_IC": 0.1065,
+      "IC_positive_fraction": 0.5455,
+      "IC_t_stat_descriptive": 1.464
+    }
+  ],
+  "exclusions": [
+    "Not the 45/35/20 homepage score",
+    "No historical broker EPS consensus, company news or macro backtesting",
+    "Only six pre-selected surviving stocks; strong sample selection bias",
+    "No cash dividends/slippage and incomplete corporate-action audit",
+    "Research-only and not evidence of out-of-sample predictive accuracy"
+  ],
+  "dataSource": "https://github.com/joy40217/TWSE-daily"
+}
