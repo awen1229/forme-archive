@@ -12,6 +12,8 @@ on:
       - 'market-radar/scripts/sync.mjs'
       - 'market-radar/scripts/sync-earnings.mjs'
       - 'market-radar/scripts/archive-chip.mjs'
+      - 'market-radar/scripts/archive-picks.mjs'
+      - 'market-radar/scripts/forward-validate.mjs'
 permissions:
   contents: write
 concurrency:
@@ -39,6 +41,10 @@ jobs:
         continue-on-error: true
       - name: Build daily research candidates, event notes and macro risk overlay
         run: node market-radar/scripts/build-picks.mjs
+      - name: Archive today's actual Top 10 for unbiased future evaluation
+        run: node market-radar/scripts/archive-picks.mjs
+      - name: Evaluate matured 5 20 60-day historical recommendation cohorts
+        run: node market-radar/scripts/forward-validate.mjs
       - name: Commit refreshed public snapshots
         run: |
           git config user.name "market-radar-bot"
@@ -47,6 +53,7 @@ jobs:
           if [ -f market-radar/data/earnings.json ]; then git add market-radar/data/earnings.json; fi
           git add market-radar/data/picks.json market-radar/data/macro.json
           git add market-radar/data/history/
+          git add market-radar/data/picks-history/ market-radar/data/forward-validation.json
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh MARKET RADAR official EOD snapshot"
             # Another site update can land during collection. Rebase before publish.
