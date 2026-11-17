@@ -57,6 +57,26 @@ function pricesOtc(a){
  if(!Array.isArray(a))return [];
  return a.map(r=>base('上櫃',code(field(r,['SecuritiesCompanyCode','SecuritiesCode','StockCode','Code'])),field(r,['CompanyName','SecuritiesCompanyName','SecuritiesName','Name']),date(field(r,['Date','TradingDate','TradeDate'])),num(field(r,['Close','ClosingPrice','ClosePrice'])),num(field(r,['Change','ChangePrice','PriceChange'])),num(field(r,['TradingShares','TradeVolume','TradeShares','TradingVolume'])),num(field(r,['TransactionAmount','TradingAmount','TradeValue'])))).filter(Boolean);
 }
+function pricesRwd(j, requestedDate){
+ if(j?.stat!=='OK'||!Array.isArray(j.tables))return [];
+ const officialDate=date(j.date);
+ if(officialDate&&officialDate!==requestedDate)return [];
+ const t=j.tables.find(t=>Array.isArray(t.fields)&&Array.isArray(t.data)&&t.fields.some(x=>String(x).includes('證券代號'))&&t.fields.some(x=>String(x).includes('收盤價')));
+ if(!t)return [];
+ const ix=needle=>t.fields.findIndex(x=>String(x).includes(needle));
+ const cix=ix('證券代號'),nix=ix('證券名稱'),pix=ix('收盤價'),vix=ix('成交股數'),aix=ix('成交金額'),dix=ix('漲跌價差');
+ const six=t.fields.findIndex(x=>String(x).includes('漲跌(+/-)')||String(x).includes('漲跌(+/-)'));
+ const plain=x=>String(x??'').replace(/<[^>]*>/g,'').trim();
+ return t.data.map(r=>{
+  const c=code(plain(r[cix])),p=num(plain(r[pix]));
+  const raw=plain(r[dix]),diff=num(raw.replace(/^[+-]/,''));
+  const sign=six>=0?plain(r[six]):raw;
+  const symbol=sign.match(/^[+-]/)?.[0]||null;
+  // When the exchange's signed marker cannot be parsed, leave change null.
+  const ch=diff===0?0:diff!==null&&symbol?(symbol==='-'?-diff:diff):null;
+  return base('上市',c,plain(r[nix]),requestedDate,p,ch,num(plain(r[vix])),num(plain(r[aix])));
+ }).filter(Boolean);
+}
 function listedInstitutions(j){
  const m=new Map(); if(!Array.isArray(j?.data)||!Array.isArray(j?.fields))return m;
  const keys=j.fields.map(s=>key(s));
@@ -110,7 +130,22 @@ async function main(){
   raw[name]=good?fetched[i].value:null;
   sourceStatus[name]={ok:good,url,error:good?null:String(fetched[i].reason.message||'擷取失敗').slice(0,100)};
  });
- const listed=pricesListed(raw.twsePrices),otc=pricesOtc(raw.tpexPrices);
+ let listed=pricesListed(raw.twsePrices);
+ const otc=pricesOtc(raw.tpexPrices);
+ const latestListed=listed.map(x=>x.date).filter(Boolean).sort().at(-1);
+ const latestOtc=otc.map(x=>x.date).filter(Boolean).sort().at(-1);
+ if(latestOtc&&(!latestListed||latestListed<latestOtc)){
+  const rwdUrl='https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date='+latestOtc.replace(/-/g,'')+'&type=ALLBUT0999&response=json';
+  try{
+    const rwd=await getJSON(rwdUrl),fallback=pricesRwd(rwd,latestOtc);
+    if(fallback.length>=500){
+      listed=fallback;
+      sourceStatus.twsePrices={ok:true,url:rwdUrl,error:null,note:'上市當日行情改由 TWSE 官方日期查詢補齊'};
+    }else{
+      console.warn('TWSE RWD fallback produced',fallback.length,'valid records');
+    }
+  }catch(e){console.warn('TWSE RWD fallback error:',e.message);}
+ }
  if(listed.length<500&&otc.length<300)throw new Error('Listed and OTC snapshots unavailable; will not overwrite good data');
  const asOf=[...listed,...otc].map(x=>x.date).filter(Boolean).sort().at(-1);
  if(!asOf)throw new Error('No trustworthy trade date');
