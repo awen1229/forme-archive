@@ -1,0 +1,216 @@
+{
+  "schema": 1,
+  "status": "preliminary_chip_only",
+  "asOf": "2026-11-16",
+  "generatedAt": "2026-11-17",
+  "title": "長期法人籌碼｜試驗回測",
+  "sample": {
+    "signalStart": "2026-09-04",
+    "lastExit": "2026-11-16",
+    "weeks": 10,
+    "eligiblePerWeek": 177,
+    "stockPool": "2026-11-17 現存 MARK​ET RADAR 觀察池內具完整20日法人紀錄的股票（非完整歷史全市場）"
+  },
+  "model": {
+    "included": [
+      "外資／投信近 5、20、60 個交易日買賣超符號與買超天數，沿用首頁 45 分籌碼規則"
+    ],
+    "excluded": [
+      "基本面 35 分：缺少完整歷史公告時間序列",
+      "相對強弱／流動性 20 分：本次未計分",
+      "法人 2027／2028 EPS 預估修正：無歷史時點共識資料",
+      "總經、新聞：尚無當時可取得的標準化事件資料"
+    ],
+    "selection": "每個星期最後交易日收盤後根據已完成的法人紀錄評分；選最高 10 檔等權；下一週首個交易日收盤價進場參考，下一次週首交易日收盤價出場／換股",
+    "fees": "選股組合估算買進 0.1425%、賣出 0.4425%，按每週更換持股比例估算；0050 與等權股票池基準未扣交易成本",
+    "corporateActions": "報酬尚未全面調整配息、配股、減資、股票分割，單週絕對報酬超過 35% 的樣本以品管規則排除；需做公司行動稽核",
+    "limit": "這是特定歷史區間的探索性試驗，不可視為完整 100 分選股模型的事前績效或真正盲測"
+  },
+  "result": {
+    "chipTop10CumulativePct": -7.04,
+    "equalUniversePct": -13.06,
+    "etf0050Pct": -12.24,
+    "top10ContainsEstimatedSwitchCost": true,
+    "benchmarksContainEstimatedTradeCost": false
+  },
+  "weekly": [
+    {
+      "signalDate": "2026-09-04",
+      "entryDate": "2026-09-07",
+      "exitDate": "2026-09-14",
+      "top10GrossPct": -3.18,
+      "universeEqualPct": -2.85,
+      "etf0050Pct": -2.73,
+      "top10EstimatedSwitchCostPct": 0.14,
+      "eligible": 177,
+      "top4Tickers": [
+        "2542",
+        "2382",
+        "2353",
+        "9910"
+      ]
+    },
+    {
+      "signalDate": "2026-09-11",
+      "entryDate": "2026-09-14",
+      "exitDate": "2026-09-21",
+      "top10GrossPct": 3,
+      "universeEqualPct": 2.55,
+      "etf0050Pct": 4.16,
+      "top10EstimatedSwitchCostPct": 0.35,
+      "eligible": 177,
+      "top4Tickers": [
+        "2618",
+        "2382",
+        "2603",
+        "2542"
+      ]
+    },
+    {
+      "signalDate": "2026-09-18",
+      "entryDate": "2026-09-21",
+      "exitDate": "2026-09-29",
+      "top10GrossPct": -1.97,
+      "universeEqualPct": -0.34,
+      "etf0050Pct": -0.04,
+      "top10EstimatedSwitchCostPct": 0.29,
+      "eligible": 177,
+      "top4Tickers": [
+        "2891",
+        "2382",
+        "2618",
+        "2353"
+      ]
+    },
+    {
+      "signalDate": "2026-09-24",
+      "entryDate": "2026-09-29",
+      "exitDate": "2026-10-05",
+      "top10GrossPct": 1.77,
+      "universeEqualPct": 2.77,
+      "etf0050Pct": 4.18,
+      "top10EstimatedSwitchCostPct": 0.29,
+      "eligible": 177,
+      "top4Tickers": [
+        "2891",
+        "2892",
+        "4736",
+        "2618"
+      ]
+    },
+    {
+      "signalDate": "2026-10-02",
+      "entryDate": "2026-10-05",
+      "exitDate": "2026-10-12",
+      "top10GrossPct": 1.06,
+      "universeEqualPct": 1.22,
+      "etf0050Pct": -0.99,
+      "top10EstimatedSwitchCostPct": 0.35,
+      "eligible": 177,
+      "top4Tickers": [
+        "2892",
+        "3189",
+        "2454",
+        "2609"
+      ]
+    },
+    {
+      "signalDate": "2026-10-08",
+      "entryDate": "2026-10-12",
+      "exitDate": "2026-10-19",
+      "top10GrossPct": -0.71,
+      "universeEqualPct": -3,
+      "etf0050Pct": -5.79,
+      "top10EstimatedSwitchCostPct": 0.41,
+      "eligible": 177,
+      "top4Tickers": [
+        "2892",
+        "3189",
+        "6213",
+        "8046"
+      ]
+    },
+    {
+      "signalDate": "2026-10-16",
+      "entryDate": "2026-10-19",
+      "exitDate": "2026-10-27",
+      "top10GrossPct": 0.32,
+      "universeEqualPct": -1.23,
+      "etf0050Pct": -1.43,
+      "top10EstimatedSwitchCostPct": 0.29,
+      "eligible": 177,
+      "top4Tickers": [
+        "2892",
+        "3189",
+        "8046",
+        "2379"
+      ]
+    },
+    {
+      "signalDate": "2026-10-22",
+      "entryDate": "2026-10-27",
+      "exitDate": "2026-11-02",
+      "top10GrossPct": -0.82,
+      "universeEqualPct": -2.41,
+      "etf0050Pct": -2.35,
+      "top10EstimatedSwitchCostPct": 0.35,
+      "eligible": 177,
+      "top4Tickers": [
+        "3189",
+        "8046",
+        "2379",
+        "2637"
+      ]
+    },
+    {
+      "signalDate": "2026-10-30",
+      "entryDate": "2026-11-02",
+      "exitDate": "2026-11-09",
+      "top10GrossPct": -7.24,
+      "universeEqualPct": -7.98,
+      "etf0050Pct": -6.39,
+      "top10EstimatedSwitchCostPct": 0.18,
+      "eligible": 177,
+      "top4Tickers": [
+        "5880",
+        "2603",
+        "3034",
+        "4961"
+      ]
+    },
+    {
+      "signalDate": "2026-11-06",
+      "entryDate": "2026-11-09",
+      "exitDate": "2026-11-16",
+      "top10GrossPct": 3.85,
+      "universeEqualPct": -2.17,
+      "etf0050Pct": -1.03,
+      "top10EstimatedSwitchCostPct": 0.23,
+      "eligible": 177,
+      "top4Tickers": [
+        "5880",
+        "2603",
+        "2002",
+        "9945"
+      ]
+    }
+  ],
+  "missingWeeks": [
+    "2026-08-28：未滿足當期可用樣本條件"
+  ],
+  "sources": [
+    {
+      "title": "MARKET RADAR 官方法人歷史快照",
+      "url": "./data/series.json"
+    },
+    {
+      "title": "TWSE-daily 歷史上市行情封存",
+      "url": "https://github.com/joy40217/TWSE-daily"
+    },
+    {
+      "title": "臺灣證券交易所三大法人",
+      "url": "https://www.twse.com.tw/zh/trading/foreign/t86.html"
+    }
+  ],
+  "interpretation": "前十名組合跌幅較少，僅顯示這十週的觀察池內相對防守性；沒有足夠證據支持長期因果或推論高勝率"
+}
