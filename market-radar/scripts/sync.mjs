@@ -77,6 +77,21 @@ function pricesRwd(j, requestedDate){
   return base('上市',c,plain(r[nix]),requestedDate,p,ch,num(plain(r[vix])),num(plain(r[aix])));
  }).filter(Boolean);
 }
+function indicesRwd(j,officialDate){
+ if(!Array.isArray(j?.tables))return [];
+ const t=j.tables.find(t=>Array.isArray(t.fields)&&t.fields.some(f=>String(f).includes('指數'))&&t.fields.some(f=>String(f).includes('收盤指數'))&&Array.isArray(t.data));
+ if(!t)return [];
+ const ix=s=>t.fields.findIndex(f=>String(f).includes(s));
+ const name=ix('指數'),close=ix('收盤指數'),diff=ix('漲跌點數'),sign=ix('漲跌(+/-)'),ratio=ix('漲跌百分比');
+ const text=x=>String(x??'').replace(/<[^>]*>/g,'').trim();
+ const row=t.data.find(r=>text(r[name])==='發行量加權股價指數');
+ if(!row)return [];
+ const v=num(text(row[close]));if(v===null)return [];
+ const symbol=sign>=0?text(row[sign]):text(row[diff]);
+ const d=num(text(row[diff])),p=num(text(row[ratio]));
+ const factor=symbol.startsWith('-')?-1:symbol.startsWith('+')?1:null;
+ return [{name:'發行量加權股價指數',date:officialDate,value:v,change:d!==null&&factor!==null?d*factor:null,pct:p!==null&&factor!==null?p*factor:null}];
+}
 function listedInstitutions(j){
  const m=new Map(); if(!Array.isArray(j?.data)||!Array.isArray(j?.fields))return m;
  const keys=j.fields.map(s=>key(s));
@@ -183,10 +198,12 @@ async function main(){
  const otc=pricesOtc(raw.tpexPrices);
  const latestListed=listed.map(x=>x.date).filter(Boolean).sort().at(-1);
  const latestOtc=otc.map(x=>x.date).filter(Boolean).sort().at(-1);
+ let rwdIndex=[];
  if(latestOtc&&(!latestListed||latestListed<latestOtc)){
   const rwdUrl='https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date='+latestOtc.replace(/-/g,'')+'&type=ALLBUT0999&response=json';
   try{
     const rwd=await getJSON(rwdUrl),fallback=pricesRwd(rwd,latestOtc);
+    rwdIndex=indicesRwd(rwd,latestOtc);
     if(fallback.length>=500){
       listed=fallback;
       sourceStatus.twsePrices={ok:true,url:rwdUrl,error:null,note:'上市當日行情改由 TWSE 官方日期查詢補齊'};
@@ -213,14 +230,15 @@ async function main(){
  const oiDate=date(field(raw.tpexInst?.[0],['Date','TradingDate','TradeDate']));
  if(!oiDate||oiDate!==asOf){oi.clear();sourceStatus.tpexInst={...sourceStatus.tpexInst,ok:false,error:oiDate?'法人資料日期不同':'無法驗證法人日期'};}
  const indexDate=date(raw.twseIndex?.[0]?.['日期']);
- if(indexDate&&indexDate!==asOf){sourceStatus.twseIndex={...sourceStatus.twseIndex,ok:false,error:'指數日期不符'};}
+ if(rwdIndex.length){sourceStatus.twseIndex={ok:true,url:'https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date='+asOf.replace(/-/g,'')+'&type=ALLBUT0999&response=json',error:null};}
+ else if(indexDate&&indexDate!==asOf){sourceStatus.twseIndex={...sourceStatus.twseIndex,ok:false,error:'指數日期不符'};}
  const resultRows=rows.map(r=>{
   const inst=(r.market==='上市'?li:oi).get(r.code)||{};
   const rev=(r.market==='上市'?lr:or).get(r.code)||{};
   return {...r,...inst,...rev,pe:r.market==='上市'?(pm.get(r.code)??null):null};
  });
  const summary={total:resultRows.length,up:resultRows.filter(x=>x.pct!==null&&x.pct>0).length,down:resultRows.filter(x=>x.pct!==null&&x.pct<0).length,flat:resultRows.filter(x=>x.pct===0).length,withInst:resultRows.filter(x=>x.foreign!==null&&x.trust!==null).length,withRevenue:resultRows.filter(x=>x.revYoY!==null).length};
- const snapshot={asOf,generatedAt:new Date().toISOString(),indices:indexMap(raw.twseIndex,asOf),rows:resultRows,summary,sourceStatus,origin:'official',disclaimer:'交易所官方盤後資料，非即時行情；法人買賣超以張為單位。若某來源日期不一致或無法驗證，會保留空值。'};
+ const snapshot={asOf,generatedAt:new Date().toISOString(),indices:rwdIndex.length?rwdIndex:indexMap(raw.twseIndex,asOf),rows:resultRows,summary,sourceStatus,origin:'official',disclaimer:'交易所官方盤後資料，非即時行情；法人買賣超以張為單位。若某來源日期不一致或無法驗證，會保留空值。'};
  await fs.mkdir(ROOT,{recursive:true});
  const latestFile=path.join(ROOT,'latest.json'),seriesFile=path.join(ROOT,'series.json');
  let prior=null,series=[];
