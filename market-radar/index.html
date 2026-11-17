@@ -184,7 +184,7 @@ function renderJournal(){const journals=[...state.journal].sort((a,b)=>String(b.
  +'<p class="small muted">最後同步：'+esc(state.feedUpdatedAt?state.feedUpdatedAt.replace('T',' ').slice(0,16)+' UTC':'尚未取得')+'。公司「發言日期」不一定等於「事實發生日」。</p>'
  +((state.feed||[]).length?(state.feed||[]).slice(0,28).map(n=>'<div class="saved-card"><div class="saved-card-header"><strong>'+esc(n.code?n.company+' '+n.code+'｜'+n.title:n.title)+'</strong><time>'+esc(n.date||'—')+'</time></div><span class="mini-tag">'+esc(n.category||'官方原始資料')+'</span><p class="small muted margintop">來源：'+esc(n.source||'—')+(n.eventDate?'｜事實發生：'+esc(n.eventDate):'')+'</p>'+(sourceSafe(n.url)?'<a class="source-chip" href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">查看官方原始來源 ↗</a>':'')+'</div>').join(''):empty('尚無官方消息快照','待 GitHub 同步流程首次取得官方公告。'))
  +'</section>'
- +'<div class="panel-grid"><section class="panel">${panelHeader('每日研究摘要','可貼上 ChatGPT 每日報告或自己的筆記')}
+ +`<div class="panel-grid"><section class="panel">${panelHeader('每日研究摘要','可貼上 ChatGPT 每日報告或自己的筆記')}
  <div class="btn-group" style="margin-bottom:15px"><button class="btn btn-primary btn-small" data-action="addNote">＋ 新增日報筆記</button><button class="btn btn-small" data-action="export">匯出備份</button></div>
  ${journals.length?journals.slice(0,15).map(j=>`<div class="saved-card"><div class="saved-card-header"><strong>${esc(j.title)}</strong><time>${esc(j.date)}</time></div><p>${esc(j.text)}</p><div class="item-actions"><button data-action="deleteNote" data-id="${esc(j.id)}">刪除</button></div></div>`).join(''):empty('還沒有研究紀錄','新增一篇日報，記錄最關鍵的利多、利空與反證。')}
  </section><section class="panel">${panelHeader('消息來源與可信度','這一區保存你手動查證的消息；上方另有官方標題自動同步')}
