@@ -26,6 +26,16 @@
 </div>
 </section>
 <section><h2>07 / 長期因子測試（獨立研究）</h2><div class="panel"><p><strong>2024–2025 開發觀察、2026 後段檢驗：</strong>此外獨立測試六檔股票的外資、投信、融資與四週動能因子。使用隔週開盤進出與估計手續費，且與首頁 45／35／20 配分不同，不會混稱為完整模型。</p><div id="longterm"><p class="sub">歷史全量檔案尚未完成驗證，暫不展示長期績效。</p></div></div></section>
+<section id="forwardValidation">
+<div class="bar"><h2>08 / 真正前向檢驗：每日推薦之後發生了什麼？</h2><span class="tag">APPEND-ONLY / OUT-OF-SAMPLE</span></div>
+<div class="panel">
+<p>自 2026/11/17 起，系統保存每天首頁<strong>當時真正顯示的前十名</strong>。不允許在價格漲跌後重選當年的股票，再用未來 5／20／60 個交易日的實際收盤價，對照 0050 檢驗平均超額報酬。</p>
+<p class="sub tiny" id="forwardStatus">確認前向資料中…</p>
+<div class="table-scroll"><table><thead><tr><th>持有期</th><th class="num">已完成樣本</th><th class="num">平均淨報酬</th><th class="num">0050平均淨報酬</th><th class="num">平均超額</th><th class="num">跑贏0050比例</th></tr></thead><tbody id="forwardTable"></tbody></table></div>
+<p id="forwardResearchNotes" class="sub tiny" style="margin-top:15px">前向樣本需要時間自然成熟。尚未完成時不估算勝率、不先填報酬。</p>
+<details style="margin-top:13px"><summary style="cursor:pointer;font-weight:750">查看已完成的前向樣本</summary><div id="forwardRecent" class="table-scroll" style="margin-top:12px"></div></details>
+<p class="tiny sub" style="margin-top:14px"><a href="./data/picks-history/2026-11.json" target="_blank" rel="noopener">檢視第一份不可事後覆寫的推薦紀錄</a>。目前以次一交易日收盤作進場參考，淨報酬計入估計手續費、股票證交稅與 0050 證交稅；未計配息、滑價、完整公司行動。每日樣本高度重疊，不應把樣本數直接當成獨立觀測。</p>
+</div></section>
 <footer class="sub tiny" style="margin-top:36px">MARKET RADAR, / 實驗性量化研究。不是投資建議、買賣建議或收益保證。</footer></main>
 <script>
 const f=x=>Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'--';
@@ -88,5 +98,27 @@ fetch('./data/backtest.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok
   weeks.innerHTML=x.weekly.map(w=>'<tr><td>'+escapeText(w.signalDate)+'</td><td>'+escapeText(w.entryDate)+' → '+escapeText(w.exitDate)+'</td><td class="num">'+pct(w.models.fullDiv.netPct)+'</td><td class="num">'+pct(w.etf0050GrossPct)+'</td><td>'+w.models.fullDiv.codes.map(escapeText).join(' · ')+'</td></tr>').join('');
   document.getElementById('factorAuditLink').innerHTML='<a href="./data/backtest-multifactor-signals.json" target="_blank" rel="noopener">檢視每週選股原始訊號</a>　·　<a href="./data/history/2026-09.json" target="_blank" rel="noopener">歷史籌碼封存</a>　·　<a href="https://github.com/joy40217/TWSE-daily" target="_blank" rel="noopener">股價／財報來源</a><br>資料風險：今天仍存在的觀察池造成存活者偏差；無法完全確定財報未經事後修正；無配息、滑價及完整公司行動調整。';
  }).catch(err=>status.textContent='尚無通過基本完整度檢查的修正版資料：'+err.message);
+})();
+</script><script>
+(function(){
+ const status=document.getElementById('forwardStatus'),tbody=document.getElementById('forwardTable'),
+  note=document.getElementById('forwardResearchNotes'),recent=document.getElementById('forwardRecent');
+ const safe=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const fmt=x=>Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'--';
+ fetch('./data/forward-validation.json?v='+Date.now(),{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()})
+ .then(d=>{
+  if(!d.horizons||!d.firstRecordedSignal)throw Error('前向封存資料尚未完成');
+  status.textContent='首次實際推薦紀錄：'+d.firstRecordedSignal+'；最新封存：'+d.lastRecordedSignal+'；已保存 '+d.observations+' 個真實每日候選名單。';
+  tbody.innerHTML=[5,20,60].map(k=>{
+   const m=d.horizons[String(k)];
+   if(!m)return '<tr><td>'+k+'交易日</td><td colspan="5">資料尚未建立</td></tr>';
+   return '<tr><td><strong>'+k+' 個交易日</strong></td><td class="num">'+m.completedCohorts+(m.pendingCohorts?'（待成熟 '+m.pendingCohorts+'）':'')+'</td><td class="num">'+fmt(m.meanStockNetPct)+'</td><td class="num">'+fmt(m.mean0050NetPct)+'</td><td class="num">'+fmt(m.meanExcessNetPpt)+'</td><td class="num">'+fmt(m.beat0050RatePct)+'</td></tr>';
+  }).join('');
+  const n=[5,20,60].map(k=>d.horizons[String(k)]?.completedCohorts||0);
+  note.textContent=n.every(x=>x===0)?'目前沒有任何到期樣本。尚未看到之後的股價，就不公布勝率或預測報酬。':'各持有期回報是已到期「每日推薦名單」的平均報酬，不是實際連續投資的累積績效。平均超額報酬採股票組合與 0050 各自估計成本後比較。';
+  const ready=Object.entries(d.recentCompletions||{}).flatMap(([h,rows])=>(rows||[]).map(x=>({...x,horizon:h}))).sort((a,b)=>b.signalDate.localeCompare(a.signalDate)).slice(0,30);
+  recent.innerHTML=ready.length?'<table><thead><tr><th>訊號日期</th><th>期間</th><th class="num">名單淨報酬</th><th class="num">0050淨報酬</th><th class="num">超額</th></tr></thead><tbody>'+ready.map(x=>'<tr><td>'+safe(x.signalDate)+'</td><td>'+safe(x.horizon)+'日：'+safe(x.entryDate)+' → '+safe(x.exitDate)+'</td><td class="num">'+fmt(x.stockNetPct)+'</td><td class="num">'+fmt(x.etf0050NetPct)+'</td><td class="num">'+fmt(x.excessNetPpt)+'</td></tr>').join('')+'</tbody></table>':'<p class="tiny sub">尚無到期樣本，此處不顯示任何模擬成績。</p>';
+ }).catch(err=>{status.textContent='前向評估資料尚未可用：'+err.message;tbody.innerHTML='';});
 })();
 </script></body></html>
