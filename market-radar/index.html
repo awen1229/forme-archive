@@ -1327,7 +1327,7 @@ async function refresh(options={}){
   }catch(e){console.warn('每日研究名單尚未同步',e);}
   try{
     const tr=await fetch('./data/tdcc/latest.json?v='+Date.now(),{cache:'no-store'});
-    if(tr.ok){const td=await tr.json();if(/^\\d{4}-\\d{2}-\\d{2}$/.test(td.asOf)&&td.rows&&Object.keys(td.rows).length>=800)state.tdcc=td;}
+    if(tr.ok){const td=await tr.json();if(/^\d{4}-\d{2}-\d{2}$/.test(td.asOf)&&td.rows&&Object.keys(td.rows).length>=800)state.tdcc=td;}
   }catch(e){console.warn('集保週籌碼資料暫不可用',e);}
   registerSnapshot(data);
   window.marketRadarLastSyncCheck=Date.now();
