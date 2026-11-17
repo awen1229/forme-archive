@@ -26,7 +26,7 @@ jobs:
           node-version: '22'
       - name: Verify and import historical institutional flows
         env:
-          BACKFILL_CALENDAR_DAYS: '112'
+          BACKFILL_CALENDAR_DAYS: '190'
         run: node market-radar/scripts/backfill-chip.mjs
       - name: Commit audited time series
         run: |
