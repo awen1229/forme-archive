@@ -990,7 +990,10 @@ function catSector(){const rows=rowMap();return Object.entries(SECTOR_POOL).conc
   const validI=available.filter(r=>r.foreign!=null&&r.trust!=null);
   const foreign=validI.length?validI.reduce((s,r)=>s+r.foreign,0):null;
   const trust=validI.length?validI.reduce((s,r)=>s+r.trust,0):null;
-  return {sector,count:pairs.length,valid:available.length,avg,foreign,trust,up:available.filter(r=>r.pct>0).length};
+  const chip=pairs.map(([code])=>({f:historyFlow(code,20,'foreign'),t:historyFlow(code,20,'trust')})).filter(x=>x.f!==null&&x.t!==null);
+  return {sector,count:pairs.length,valid:available.length,avg,foreign,trust,up:available.filter(r=>r.pct>0).length,
+    chipCoverage20:chip.length,foreign20:chip.length?chip.reduce((v,x)=>v+x.f,0):null,
+    trust20:chip.length?chip.reduce((v,x)=>v+x.t,0):null};
  }).sort((a,b)=> (b.avg??-1e6)-(a.avg??-1e6));}
 function snapshotSummary(){const s=state.data?.summary||{};return {up:s.up??null,down:s.down??null,total:s.total??null,withInst:s.withInst??null};}
 function historyFlow(code,n,who){return MarketChip.sum(code,n,who);}
@@ -1021,9 +1024,9 @@ function renderOverview(){
 function stockBrief(rows){if(!rows.length)return empty('沒有可排序的盤後資料');return rows.map((r,i)=>`<div class="metric-inline"><div class="label"><span class="muted small">${String(i+1).padStart(2,'0')} /</span> <button class="stock-link" data-action="stock" data-code="${esc(r.code)}">${esc(r.name)}</button><span class="sub">${esc(r.code)} ・${esc(r.sector)}</span></div><div class="value ${color(r.pct)}">${percentage(r.pct)}</div></div>`).join('');}
 function renderSectors(){const sectors=catSector(),ready=sectors.some(s=>s.valid);
  return sectionTitle('SECTOR ROTATION','產業雷達','掃描 AI 與非 AI 的資金移動，觀察哪些產業開始相對抗跌。')
- +`<div class="lead-note"> <strong>閱讀方法：</strong>「平均漲跌」是觀察池成分股的單日等權平均，不是官方類股指數。「外資／投信」是該產業觀察池個股的淨買賣張數合計。未涵蓋完整市場，也不等同法人投入金額。</div>
+ +`<div class="lead-note"> <strong>閱讀方法：</strong>「平均漲跌」是觀察池成分股的單日等權平均，不是官方類股指數。「外資／投信」是觀察池個股的淨買賣張數合計，並非完整市場的產業統計。20日累計僅包含資料完整的成分股，請同時檢查有效樣本數；不同股價的張數不能直接當資金金額比較。</div>
  <section class="panel">${panelHeader('全產業掃描',`${sectors.length} 個觀察主題 ・ ${allPool().length} 檔研究池股票（另有全市場掃描）`)}
- <div class="table-wrap"><table><thead><tr><th>產業</th><th>追蹤檔數</th><th>上漲／有效</th><th>平均漲跌</th><th>外資淨買超（張）</th><th>投信淨買超（張）</th></tr></thead><tbody>${sectors.map(s=>`<tr><td class="name-cell">${esc(s.sector)}</td><td>${s.count}</td><td>${s.valid?`${s.up}/${s.valid}`:'—'}</td><td class="${color(s.avg)}">${percentage(s.avg)}</td><td class="${color(s.foreign)}">${sign(s.foreign,0)}</td><td class="${color(s.trust)}">${sign(s.trust,0)}</td></tr>`).join('')}</tbody></table></div>
+ <div class="table-wrap"><table><thead><tr><th>產業</th><th>追蹤檔數</th><th>上漲／有效</th><th>平均漲跌</th><th>外資淨買超（張）</th><th>投信淨買超（張）</th><th>外資20日</th><th>投信20日</th><th>20日有效檔數</th></tr></thead><tbody>${sectors.map(s=>`<tr><td class="name-cell">${esc(s.sector)}</td><td>${s.count}</td><td>${s.valid?`${s.up}/${s.valid}`:'—'}</td><td class="${color(s.avg)}">${percentage(s.avg)}</td><td class="${color(s.foreign)}">${sign(s.foreign,0)}</td><td class="${color(s.trust)}">${sign(s.trust,0)}</td><td class="${color(s.foreign20)}">${sign(s.foreign20,0)}</td><td class="${color(s.trust20)}">${sign(s.trust20,0)}</td><td>${s.chipCoverage20}/${s.count}</td></tr>`).join('')}</tbody></table></div>
  ${!ready?'<p class="warning-note margintop">產業漲跌尚無市場資料，顯示的只有預先建立的研究分類。</p>':''}</section>
  <div class="panel-grid equal"><section class="panel">${panelHeader('潛在主流：篩選邏輯')}
  <div class="metric-inline"><div class="label">基本面<span class="sub">營收成長、獲利率、EPS 共識上修</span></div><span class="mini-tag">必要條件</span></div>
@@ -1111,7 +1114,7 @@ function renderAutoDigest(){
   +'<p><strong>相對強：</strong>'+line(top)+'</p><p><strong>相對弱：</strong>'+line(bottom)+'</p>'
   +'<div class="metric-inline"><div class="label">觀察池外資＋投信單日買賣超（張）</div></div>'
   +'<p><strong>淨買超：</strong>'+stocks(buy)+'</p><p><strong>淨賣超：</strong>'+stocks(sell)+'</p>'
-  +'<p class="small muted">排行只依觀察池有資料的個股計算，並非全市場產業排行；單日籌碼不能判斷連續建倉。更多 5／10／20 日分析需累積後續交易日。</p>'
+  +'<p class="small muted">排行只依觀察池有資料的個股計算，並非全市場產業排行；單日籌碼不能判斷連續建倉。中長期分析使用已補抓的歷史交易日，缺少連續區間資料時會留空。</p>'
   +'</section>';
 }
 function renderJournal(){const journals=[...state.journal].sort((a,b)=>String(b.date).localeCompare(String(a.date))),news=[...state.news].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -1134,7 +1137,7 @@ function renderSettings(){const statuses=state.data?.sourceStatus||{};
  return sectionTitle('PREFERENCES & SOURCES','資料管理','資料來源、匯入匯出、觀察名單，以及目前尚未自動化的部分。')
  +`<div class="panel-grid"><section class="panel">${panelHeader('連線來源狀態')}
  ${sources.map(([k,n])=>`<div class="data-item"><div><strong>${n}</strong><span class="mini-tag ${statuses[k]?.ok?'':'amber'}">${!state.data?'未取得':statuses[k]?.ok?'取得成功':'不可用／未匯入'}</span></div><p>${statuses[k]?.url?`<a href="${esc(statuses[k].url)}" target="_blank" rel="noopener noreferrer">官方來源 ↗</a>`:'資料未連線或手動匯入'}</p></div>`).join('')}
- <p class="small muted">已使用 GitHub Actions 自動抓取官方盤後快照；網頁開啟時會同步最新 JSON，並保存最多 160 個交易日的觀察池籌碼紀錄。若當日擷取失敗，會保留先前交易日並明確顯示日期，不把舊資料冒充最新。</p>
+ <p class="small muted">已使用 GitHub Actions 自動抓取官方盤後快照及上市、上櫃歷史籌碼，目前可保存最多 160 個交易日。歷史日會透過證交所 T86 與櫃買中心網頁版三大法人日報表回補，僅驗證過的有效交易日才納入統計。若當日擷取失敗，會保留先前交易日並明確顯示日期，不把舊資料冒充最新。</p>
  </section><section class="panel">${panelHeader('匯入與備份','只在此裝置瀏覽器保存')}
  <div class="btn-group"><button class="btn btn-primary btn-small" data-action="refresh">取得官方盤後資料</button><button class="btn btn-small" data-action="importCsv">匯入行情 CSV</button><button class="btn btn-small" data-action="export">匯出完整 JSON</button><button class="btn btn-small" data-action="importJson">還原 JSON 備份</button></div>
  <div class="warning-note margintop">本機儲存不等於雲端同步。更換手機、清除瀏覽器資料、重新安裝 App，可能失去自選股與研究日誌。請定期匯出備份。每日的 ChatGPT 自動報告不會自動寫入這個 App，需手動貼入日誌。</div>
