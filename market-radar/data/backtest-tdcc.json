@@ -1,0 +1,473 @@
+{
+  "asOf": "2026-11-16",
+  "period": {
+    "signals": 10,
+    "stockWeekObservations": 1770,
+    "corporateActionOrExtremeExcluded": 37
+  },
+  "avgSignalCorrelation": 0.0406,
+  "strategy": {
+    "high": {
+      "netCumulativePct": -18.33,
+      "wins": 4,
+      "beatBenchmarkWeeks": 4,
+      "weekly": [
+        {
+          "signalDate": "2026-09-04",
+          "netPct": -3.12,
+          "buyPpt": 100,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-11",
+          "netPct": 3.09,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-18",
+          "netPct": 0.96,
+          "buyPpt": 30,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-24",
+          "netPct": 6.28,
+          "buyPpt": 20,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-02",
+          "netPct": -3.52,
+          "buyPpt": 60,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-08",
+          "netPct": -4.88,
+          "buyPpt": 40,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-16",
+          "netPct": -3.65,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-22",
+          "netPct": -2.48,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-30",
+          "netPct": -14.15,
+          "buyPpt": 40,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-11-06",
+          "netPct": 2.94,
+          "buyPpt": 50,
+          "hold": 10
+        }
+      ]
+    },
+    "low": {
+      "netCumulativePct": -28.76,
+      "wins": 3,
+      "beatBenchmarkWeeks": 2,
+      "weekly": [
+        {
+          "signalDate": "2026-09-04",
+          "netPct": -5.02,
+          "buyPpt": 100,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-11",
+          "netPct": 1.73,
+          "buyPpt": 20,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-18",
+          "netPct": -1.38,
+          "buyPpt": 40,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-24",
+          "netPct": 5.67,
+          "buyPpt": 70,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-02",
+          "netPct": 1.54,
+          "buyPpt": 30,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-08",
+          "netPct": -6.79,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-16",
+          "netPct": -2.14,
+          "buyPpt": 60,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-22",
+          "netPct": -4.58,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-30",
+          "netPct": -16.16,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-11-06",
+          "netPct": -4.53,
+          "buyPpt": 30,
+          "hold": 10
+        }
+      ]
+    },
+    "baseline": {
+      "netCumulativePct": -7.98,
+      "wins": 4,
+      "beatBenchmarkWeeks": 5,
+      "weekly": [
+        {
+          "signalDate": "2026-09-04",
+          "netPct": -1.78,
+          "buyPpt": 100,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-11",
+          "netPct": 2.67,
+          "buyPpt": 60,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-18",
+          "netPct": -0.33,
+          "buyPpt": 60,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-09-24",
+          "netPct": 3.22,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-02",
+          "netPct": -0.11,
+          "buyPpt": 80,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-08",
+          "netPct": 0.02,
+          "buyPpt": 60,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-16",
+          "netPct": -3.47,
+          "buyPpt": 80,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-22",
+          "netPct": -1.24,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-10-30",
+          "netPct": -8.25,
+          "buyPpt": 50,
+          "hold": 10
+        },
+        {
+          "signalDate": "2026-11-06",
+          "netPct": 1.48,
+          "buyPpt": 60,
+          "hold": 10
+        }
+      ]
+    }
+  },
+  "etf0050GrossPct": -12.24,
+  "flags": {
+    "concentration": {
+      "stockWeeks": 367,
+      "avgReturnAcrossWeeksPct": -1.54,
+      "positiveWeeks": 3,
+      "pooledAvgPct": -1.59
+    },
+    "distribution": {
+      "stockWeeks": 329,
+      "avgReturnAcrossWeeksPct": -1.9,
+      "positiveWeeks": 4,
+      "pooledAvgPct": -1.69
+    },
+    "other": {
+      "stockWeeks": 1037,
+      "avgReturnAcrossWeeksPct": -1.09,
+      "positiveWeeks": 3,
+      "pooledAvgPct": -1.11
+    }
+  },
+  "weekly": [
+    {
+      "signalDate": "2026-09-04",
+      "available": 174,
+      "benchPct": -2.73,
+      "concentrationN": 51,
+      "concentrationAvgPct": -3.05,
+      "distributionN": 24,
+      "distributionAvgPct": -3.75,
+      "fullDivSelected": 10,
+      "rankCorrelation": 0.0531,
+      "tdccTop10": [
+        "6213",
+        "3006",
+        "6214",
+        "2408",
+        "2421",
+        "2313",
+        "2609",
+        "2301",
+        "3037",
+        "2603"
+      ]
+    },
+    {
+      "signalDate": "2026-09-11",
+      "available": 174,
+      "benchPct": 4.16,
+      "concentrationN": 40,
+      "concentrationAvgPct": 2.36,
+      "distributionN": 36,
+      "distributionAvgPct": 2.4,
+      "fullDivSelected": 10,
+      "rankCorrelation": 0.0524,
+      "tdccTop10": [
+        "6214",
+        "3406",
+        "6213",
+        "2421",
+        "1717",
+        "2455",
+        "6782",
+        "2609",
+        "2603",
+        "2727"
+      ]
+    },
+    {
+      "signalDate": "2026-09-18",
+      "available": 174,
+      "benchPct": -0.04,
+      "concentrationN": 26,
+      "concentrationAvgPct": -1.05,
+      "distributionN": 41,
+      "distributionAvgPct": 1.02,
+      "fullDivSelected": 10,
+      "rankCorrelation": -0.1609,
+      "tdccTop10": [
+        "6214",
+        "3406",
+        "2455",
+        "2421",
+        "2409",
+        "6782",
+        "2609",
+        "3653",
+        "2603",
+        "3037"
+      ]
+    },
+    {
+      "signalDate": "2026-09-24",
+      "available": 171,
+      "benchPct": 4.18,
+      "concentrationN": 34,
+      "concentrationAvgPct": 4.7,
+      "distributionN": 36,
+      "distributionAvgPct": 4.99,
+      "fullDivSelected": 10,
+      "rankCorrelation": -0.0167,
+      "tdccTop10": [
+        "2455",
+        "6214",
+        "3406",
+        "2421",
+        "6782",
+        "2409",
+        "4916",
+        "2609",
+        "3653",
+        "3008"
+      ]
+    },
+    {
+      "signalDate": "2026-10-02",
+      "available": 172,
+      "benchPct": -0.99,
+      "concentrationN": 36,
+      "concentrationAvgPct": 0.17,
+      "distributionN": 35,
+      "distributionAvgPct": 1.79,
+      "fullDivSelected": 10,
+      "rankCorrelation": -0.03,
+      "tdccTop10": [
+        "2409",
+        "2449",
+        "8021",
+        "3035",
+        "6214",
+        "2421",
+        "6770",
+        "2455",
+        "4961",
+        "5608"
+      ]
+    },
+    {
+      "signalDate": "2026-10-08",
+      "available": 173,
+      "benchPct": -5.79,
+      "concentrationN": 31,
+      "concentrationAvgPct": -4.39,
+      "distributionN": 26,
+      "distributionAvgPct": -4.97,
+      "fullDivSelected": 10,
+      "rankCorrelation": -0.0376,
+      "tdccTop10": [
+        "8021",
+        "2409",
+        "3035",
+        "3189",
+        "6214",
+        "6770",
+        "4961",
+        "2492",
+        "4967",
+        "2327"
+      ]
+    },
+    {
+      "signalDate": "2026-10-16",
+      "available": 172,
+      "benchPct": -1.43,
+      "concentrationN": 35,
+      "concentrationAvgPct": -2.45,
+      "distributionN": 26,
+      "distributionAvgPct": -0.3,
+      "fullDivSelected": 10,
+      "rankCorrelation": -0.0756,
+      "tdccTop10": [
+        "3035",
+        "3189",
+        "8021",
+        "6214",
+        "4958",
+        "8046",
+        "2449",
+        "2492",
+        "1802",
+        "3576"
+      ]
+    },
+    {
+      "signalDate": "2026-10-22",
+      "available": 174,
+      "benchPct": -2.35,
+      "concentrationN": 35,
+      "concentrationAvgPct": -1.9,
+      "distributionN": 35,
+      "distributionAvgPct": -3.77,
+      "fullDivSelected": 10,
+      "rankCorrelation": 0.1649,
+      "tdccTop10": [
+        "3035",
+        "3189",
+        "2492",
+        "6213",
+        "2727",
+        "6214",
+        "4961",
+        "8046",
+        "2609",
+        "3029"
+      ]
+    },
+    {
+      "signalDate": "2026-10-30",
+      "available": 174,
+      "benchPct": -6.39,
+      "concentrationN": 38,
+      "concentrationAvgPct": -9.48,
+      "distributionN": 34,
+      "distributionAvgPct": -12.22,
+      "fullDivSelected": 10,
+      "rankCorrelation": 0.1625,
+      "tdccTop10": [
+        "4566",
+        "2492",
+        "4958",
+        "2727",
+        "3406",
+        "3035",
+        "2609",
+        "2313",
+        "6214",
+        "3029"
+      ]
+    },
+    {
+      "signalDate": "2026-11-06",
+      "available": 175,
+      "benchPct": -1.03,
+      "concentrationN": 41,
+      "concentrationAvgPct": -0.28,
+      "distributionN": 36,
+      "distributionAvgPct": -4.23,
+      "fullDivSelected": 10,
+      "rankCorrelation": 0.2935,
+      "tdccTop10": [
+        "3035",
+        "4916",
+        "3406",
+        "3029",
+        "2609",
+        "4566",
+        "6782",
+        "4967",
+        "4977",
+        "2603"
+      ]
+    }
+  ],
+  "issues": [
+    "stock pool only current watchlist survivors",
+    "TDCC source release lag conservatively uses date before signal",
+    "small sample only 10 weeks",
+    "price-only, no dividends and complete corporate actions",
+    "4-week TDCC changes with >=5% total share count change excluded",
+    "not independently matched to complete 177-stock financial universe"
+  ]
+}
