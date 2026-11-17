@@ -167,7 +167,7 @@ const second=known.filter(x=>x.financial?.epsYtd>0).slice(0,6).map((x,i)=>({...x
 const info={
  schema:1,asOf:reportDate,generatedAt:now,
  headline:'依官方資料建立每日持續研究名單，非當日買賣建議',
- methodology:{score:'籌碼45＋基本面35＋相對強弱與流動性20；此為未回測的規則式研究優先度，不是報酬預測。',news:'僅使用已收錄的公司官方公告，標示風險及事件，不根據標題推測利多。',macro:'美債殖利率與台股市場廣度為全市場風險提醒，並未驗證所有總經變數。',consensus:'未取得合法授權的2027／2028法人共識，不納入評分。'},
+ methodology:{score:'籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。',news:'僅使用已收錄的公司官方公告，標示風險及事件，不根據標題推測利多。',macro:'美債殖利率與台股市場廣度為全市場風險提醒，並未驗證所有總經變數。',consensus:'未取得合法授權的2027／2028法人共識，不納入評分。'},
  macro:{...macro,marketBreadth:breadth===null?null:round(breadth*100,1),taiwanMarketDate:reportDate,indexChangePct:idx,marketCaution:breadth!==null&&breadth<.4?'市場廣度偏弱，候選僅供追蹤、不宜直接視為進場訊號':null},
  news:{updatedAt:news?.generatedAt||null,records:headlines.length,latestByCompany:currentAnnounced.length,
   global:currentAnnounced.filter(x=>!x.code).slice(0,4).map(x=>({date:x.date,title:x.title,url:safeURL(x.url),source:x.source}))},
