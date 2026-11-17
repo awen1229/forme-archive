@@ -1000,6 +1000,18 @@ function historyFlow(code,n,who){return MarketChip.sum(code,n,who);}
 function miniBars(arr,maxBars=8){const a=arr.slice(0,maxBars);const max=Math.max(1,...a.map(s=>Math.abs(s.avg??0)));return a.map(s=>`<div class="sect-row"><div class="sect-label">${esc(s.sector)}<small>${s.valid}/${s.count} 檔有行情</small></div><div class="bar-bg"><div class="bar-fill ${s.avg!=null&&s.avg<0?'negativebar':''}" style="width:${Math.max(0,Math.min(100,Math.abs(s.avg??0)/max*100))}%"></div></div><div class="sect-number ${color(s.avg)}">${percentage(s.avg)}</div></div>`).join('');}
 function watchToggle(code){state.watch=state.watch.includes(code)?state.watch.filter(c=>c!==code):[...state.watch,code];persist();render();}
 function sourceLinks(){return `<div class="links-grid">${[['台灣證交所','https://www.twse.com.tw/zh/'],['櫃買中心','https://www.tpex.org.tw/'],['公開資訊觀測站','https://mops.twse.com.tw/'],['費城半導體 SOX','https://www.nasdaq.com/market-activity/index/sox'],['Nasdaq 100','https://www.nasdaq.com/market-activity/index/ndx'],['FedWatch','https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html'],['美國公債殖利率 FRED','https://fred.stlouisfed.org/series/DGS10'],['NVIDIA 投資人關係','https://investor.nvidia.com/'],['IMF 全球經濟','https://www.imf.org/en/Publications/WEO']].map(([n,u])=>`<a class="external-card" target="_blank" rel="noopener noreferrer" href="${u}">${n}<span>↗</span></a>`).join('')}</div>`;}
+
+function renderLongTermOverview(){
+ const rows=allPool().map(s=>({code:s.code,name:s.name,sector:s.sector,trust20:historyFlow(s.code,20,'trust'),foreign20:historyFlow(s.code,20,'foreign')}))
+  .filter(r=>r.trust20!==null&&r.foreign20!==null);
+ const topTrust=[...rows].sort((a,b)=>b.trust20-a.trust20).slice(0,6);
+ const topForeign=[...rows].sort((a,b)=>b.foreign20-a.foreign20).slice(0,6);
+ const view=(xs,field)=>xs.length?xs.map((r,i)=>'<div class="metric-inline"><div class="label">'+(i+1)+'. <button class="stock-link" data-action="stock" data-code="'+esc(r.code)+'">'+esc(r.name)+'</button><span class="sub">'+esc(r.code)+' / '+esc(r.sector)+'</span></div><strong class="'+color(r[field])+'">'+sign(r[field],0)+' 張</strong></div>').join(''):empty('資料不足','需要完整20個有效交易日資料。');
+ return '<section class="panel"><div class="panel-header"><h2>20日資金流向雷達</h2><span class="panel-note">'+rows.length+' 檔具有完整20日籌碼</span></div>'
+  +'<p class="small muted">依追蹤股票的20日淨買超張數排列。張數非資金金額，不能直接跨高低價股票評價強弱，也不是買進排名。</p>'
+  +'<div class="panel-grid equal"><div><h3>投信20日淨買前六</h3>'+view(topTrust,'trust20')+'</div><div><h3>外資20日淨買前六</h3>'+view(topForeign,'foreign20')+'</div></div></section>';
+}
+
 function renderOverview(){
  const idx=state.data?.indices?.[0],summary=snapshotSummary(),sectors=catSector(),isConnected=!!state.data?.rows?.length;
  const focus=allPool().map(s=>({...s,...(rowMap().get(s.code)||{})})).filter(s=>s.pct!=null).sort((a,b)=>b.pct-a.pct);
@@ -1018,6 +1030,7 @@ function renderOverview(){
   ${isConnected?`<div class="metric-inline"><div class="label">市場廣度<span class="sub">上漲家數／上漲與下跌家數</span></div><div class="value ${color(breadth!=null?breadth-50:null)}">${breadth==null?'未知':breadth>=60?'偏強':breadth>=40?'分歧':'偏弱'}</div></div><div class="metric-inline"><div class="label">法人資料覆蓋<span class="sub">以個股實際回傳的外資、投信資料為準</span></div><div class="value">${fmt(summary.withInst,0)} 檔</div></div><div class="metric-inline"><div class="label">短線強勢候選<span class="sub">僅單日相對強勢，尚不能證明主流</span></div><div class="value">${topFocus.length?esc(topFocus[0].name):'—'}</div></div>`:empty('資料尚未接入','進入「資料管理」可了解自動更新與 CSV 匯入方式。')}
   <div class="warning-note margintop"><strong>研究原則：</strong>單日上漲、投信買超不代表長期主流。5／10／20 筆籌碼累積需要逐日保存資料。</div></section></div>
   <div class="panel-grid equal"><section class="panel">${panelHeader('觀察池領先股','單日漲跌，不代表建倉')}${stockBrief(topFocus)}</section><section class="panel">${panelHeader('觀察池落後股','注意是否基本面轉弱')}${stockBrief(bottomFocus)}</section></div>
+  ${renderLongTermOverview()}
   <section class="panel">${panelHeader('國際市場與政策追蹤','全球盤勢目前提供官方／主要來源連結，不冒充即時美股報價')}${sourceLinks()}</section>
   <div class="lead-note"><strong>今天該如何使用這個 App？</strong> 先看產業相對強弱，再到「個股籌碼」核對外資與投信的買賣方向；到「EPS 估值」查看自動抓取的官方累計 EPS 與機械式年度情境，最後把重大消息與反證條件寫進「研究日誌」。</div>`;
 }
