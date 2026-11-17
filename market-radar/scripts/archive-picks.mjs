@@ -38,7 +38,7 @@ function makeRecord(picks,market){
   marketBreadth:finite(picks.macro?.marketBreadth),
   sourceDates:picks.sourceDates||null,rule:picks.methodology?.score||null,
   selectedCount:items.length,selected:items,
-  note:'Append-only historical research observation. Not a trade or performance claim.'];
+  note:'Append-only historical research observation. Not a trade or performance claim.'};
 }
 function test(){
  const m={asOf:'2026-11-17',rows:[{code:'0050',close:94},...Array.from({length:6},(_,i)=>({code:'123'+i,close:70+i,date:'2026-11-17'}))]};
