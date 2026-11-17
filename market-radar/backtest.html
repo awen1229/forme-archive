@@ -36,6 +36,15 @@
 <details style="margin-top:13px"><summary style="cursor:pointer;font-weight:750">查看已完成的前向樣本</summary><div id="forwardRecent" class="table-scroll" style="margin-top:12px"></div></details>
 <p class="tiny sub" style="margin-top:14px"><a href="./data/picks-history/2026-11.json" target="_blank" rel="noopener">檢視第一份不可事後覆寫的推薦紀錄</a>。目前以次一交易日收盤作進場參考，淨報酬計入估計手續費、股票證交稅與 0050 證交稅；未計配息、滑價、完整公司行動。每日樣本高度重疊，不應把樣本數直接當成獨立觀測。</p>
 </div></section>
+<section id="tdccBacktest">
+<div class="bar"><h2>09 / 集保大戶與散戶：是否真的增加預測力？</h2><span class="tag">SHAREHOLDER DISTRIBUTION / SHADOW</span></div>
+<div class="panel">
+<p>依 TDCC 股權分散表，觀察 <strong>千張以上持股比例變化</strong>與<strong>10 張以下持股比例變化</strong>。用歷史訊號日之前已公布的週資料，計算近四期變化，與後續一週收盤報酬比對。</p>
+<p class="sub tiny" id="tdccBacktestStatus">集保歷史研究資料載入中…</p>
+<div class="table-scroll"><table><thead><tr><th>研究假設／基準</th><th class="num">10週累積報酬</th><th class="num">勝過0050週數</th></tr></thead><tbody id="tdccBacktestTable"></tbody></table></div>
+<p id="tdccBacktestIC" style="margin-top:15px;font-weight:700"></p>
+<p class="sub tiny" style="margin-top:12px">單因子前十名是追蹤研究，不是可直接交易的模型。股東級距變化不是主力買賣的直接證據。原始資料來自 <a target="_blank" rel="noopener" href="https://www.tdcc.com.tw/portal/zh/smWeb/qryStock">臺灣集保結算所</a>，歷史週檔以 <a target="_blank" rel="noopener" href="https://github.com/wirelessr/tdcc-opendata-archive">公開封存來源</a>配對。期末價格未全面還原股利、公司行動與滑價；股票池有存活者偏差。</p>
+</div></section>
 <footer class="sub tiny" style="margin-top:36px">MARKET RADAR, / 實驗性量化研究。不是投資建議、買賣建議或收益保證。</footer></main>
 <script>
 const f=x=>Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'--';
@@ -120,5 +129,26 @@ fetch('./data/backtest.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok
   const ready=Object.entries(d.recentCompletions||{}).flatMap(([h,rows])=>(rows||[]).map(x=>({...x,horizon:h}))).sort((a,b)=>b.signalDate.localeCompare(a.signalDate)).slice(0,30);
   recent.innerHTML=ready.length?'<table><thead><tr><th>訊號日期</th><th>期間</th><th class="num">名單淨報酬</th><th class="num">0050淨報酬</th><th class="num">超額</th></tr></thead><tbody>'+ready.map(x=>'<tr><td>'+safe(x.signalDate)+'</td><td>'+safe(x.horizon)+'日：'+safe(x.entryDate)+' → '+safe(x.exitDate)+'</td><td class="num">'+fmt(x.stockNetPct)+'</td><td class="num">'+fmt(x.etf0050NetPct)+'</td><td class="num">'+fmt(x.excessNetPpt)+'</td></tr>').join('')+'</tbody></table>':'<p class="tiny sub">尚無到期樣本，此處不顯示任何模擬成績。</p>';
  }).catch(err=>{status.textContent='前向評估資料尚未可用：'+err.message;tbody.innerHTML='';});
+})();
+</script><script>
+(function(){
+ const $=id=>document.getElementById(id);
+ const escape=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const fmt=x=>Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'--';
+ fetch('./data/backtest-tdcc.json?v='+Date.now(),{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()})
+ .then(o=>{
+  if(!o.period?.signals||!o.strategy?.high||!o.strategy?.baseline)throw Error('樣本資料不足');
+  $('tdccBacktestStatus').textContent='歷史區間截至 '+escape(o.asOf)+'；'+o.period.signals+' 週，配對 '+o.period.stockWeekObservations+' 筆股票週資料，排除 '+o.period.corporateActionOrExtremeExcluded+' 筆資料品質異常樣本。';
+  const models=[
+   ['原始 45／35／20＋產業分散',o.strategy.baseline.netCumulativePct,o.strategy.baseline.beatBenchmarkWeeks],
+   ['近四週大戶集中程度前十名',o.strategy.high.netCumulativePct,o.strategy.high.beatBenchmarkWeeks],
+   ['近四週大戶分散程度前十名',o.strategy.low.netCumulativePct,o.strategy.low.beatBenchmarkWeeks],
+   ['0050價格報酬（未扣費）',o.etf0050GrossPct,null]
+  ];
+  $('tdccBacktestTable').innerHTML=models.map(x=>'<tr><td>'+escape(x[0])+'</td><td class="num">'+fmt(x[1])+'</td><td class="num">'+(x[2]===null?'基準':x[2]+'／'+o.period.signals)+'</td></tr>').join('');
+  $('tdccBacktestIC').textContent='大戶集中減散戶增加的平均每週排序相關（Spearman IC）：'+o.avgSignalCorrelation.toFixed(4)+'。接近零，目前尚不能確認獨立預測力。';
+ })
+ .catch(e=>{$('tdccBacktestStatus').textContent='集保回測尚未通過資料可用性檢查：'+escape(e.message);});
 })();
 </script></body></html>
