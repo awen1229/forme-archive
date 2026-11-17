@@ -1,0 +1,154 @@
+/**
+ * MARKET RADAR, official Taiwan market end-of-day collection.
+ * Public data only. No financial forecasts or inferred values.
+ * Dates / data quality are checked before merging.
+ */
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const ROOT = 'market-radar/data';
+const WATCH = new Set('2330 2317 2382 3231 6669 2376 2356 3706 8210 2059 3661 3443 3035 6223 6510 2360 3131 3583 2467 2408 2344 8299 3260 2383 6274 6213 3037 8046 3189 2368 2327 3026 2492 2308 3017 3324 2421 2301 2345 3665 3081 3163 4979 1519 1503 1513 1514 1476 1477 9904 9910 9921 2603 2609 2615 2618 2891 2886 6414 3005 3231 2371 2002 2610 2882'.split(' '));
+const URLS = {
+  twsePrices: 'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL',
+  tpexPrices: 'https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes',
+  twseIndex: 'https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX',
+  twsePe: 'https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL',
+  twseRevenue: 'https://openapi.twse.com.tw/v1/opendata/t187ap05_L',
+  tpexRevenue: 'https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap05_O',
+  tpexInst: 'https://www.tpex.org.tw/openapi/v1/tpex_3insti_daily_trading'
+};
+const key = s => String(s).toLowerCase().replace(/[\s_()（）－\-]/g,'');
+const field=(r,names)=> { if (!r||typeof r!=='object') return undefined;for(const name of names){const k=Object.keys(r).find(k=>key(k)===key(name));if(k!==undefined)return r[k];}return undefined;};
+const num=x=>{const s=String(x??'').trim().replace(/,/g,'');const n=Number(s);return s!==''&&s!=='--'&&Number.isFinite(n)?n:null;};
+const code=x=>/^\d{4}$/.test(String(x??'').trim())?String(x).trim():null;
+const lots=x=>x===null?null:Math.round(x/10)/100;
+const pct=(p,ch)=>p!==null&&ch!==null&&p-ch!==0?Math.round(ch/(p-ch)*10000)/100:null;
+const date=x=>{
+ const v=String(x??'').replace(/\D/g,'');
+ if(v.length===7) return String(Number(v.slice(0,3))+1911)+'-'+v.slice(3,5)+'-'+v.slice(5,7);
+ if(v.length===8) return v.slice(0,4)+'-'+v.slice(4,6)+'-'+v.slice(6,8);
+ return null;
+};
+const month=x=>{const v=String(x??'').replace(/\D/g,'');return v.length===5?String(Number(v.slice(0,3))+1911)+'-'+v.slice(3,5):v.length===6?v.slice(0,4)+'-'+v.slice(4,6):null;};
+async function getJSON(url){
+ let err;
+ for(let n=0;n<2;n++){
+  try{
+   const res=await fetch(url,{signal:AbortSignal.timeout(25000),headers:{'accept':'application/json','user-agent':'MarketRadar/1.0 (+public market research dashboard)'}});
+   if(!res.ok)throw new Error('HTTP '+res.status);
+   const raw=await res.text();
+   const val=JSON.parse(raw);
+   if(!val||typeof val!=='object')throw new Error('Invalid JSON');
+   return val;
+  }catch(e){err=e;if(n===0)await new Promise(r=>setTimeout(r,1500));}
+ }
+ throw err;
+}
+function base(mkt,c,n,d,p,ch,vol,value) {
+ if(!c||p===null||!d)return null;
+ return {code:c,name:String(n??c).trim(),market:mkt,date:d,close:p,change:ch,pct:pct(p,ch),volume:lots(vol),value,
+ foreign:null,trust:null,dealer:null,pe:null,revMonth:null,revYoY:null,revMoM:null};
+}
+function pricesListed(a){
+ if(!Array.isArray(a))return [];
+ return a.map(r=>base('上市',code(r.Code),r.Name,date(r.Date),num(r.ClosingPrice),num(r.Change),num(r.TradeVolume),num(r.TradeValue))).filter(Boolean);
+}
+function pricesOtc(a){
+ if(!Array.isArray(a))return [];
+ return a.map(r=>base('上櫃',code(field(r,['SecuritiesCompanyCode','SecuritiesCode','StockCode','Code'])),field(r,['CompanyName','SecuritiesCompanyName','SecuritiesName','Name']),date(field(r,['Date','TradingDate','TradeDate'])),num(field(r,['Close','ClosingPrice','ClosePrice'])),num(field(r,['Change','ChangePrice','PriceChange'])),num(field(r,['TradingShares','TradeVolume','TradeShares','TradingVolume'])),num(field(r,['TransactionAmount','TradingAmount','TradeValue'])))).filter(Boolean);
+}
+function listedInstitutions(j){
+ const m=new Map(); if(!Array.isArray(j?.data)||!Array.isArray(j?.fields))return m;
+ const keys=j.fields.map(s=>key(s));
+ const at=s=>keys.findIndex(x=>x===key(s));
+ const fi=at('外陸資買賣超股數(不含外資自營商)'), ti=at('投信買賣超股數');
+ const fd=at('外資自營商買賣超股數'),di=at('自營商買賣超股數(自行買賣)'),dh=at('自營商買賣超股數(避險)');
+ if(fi<0||ti<0) return m;
+ for(const a of j.data){const c=code(a[0]);if(!c)continue;const f=num(a[fi]),t=num(a[ti]);const f2=fd<0?0:num(a[fd]);const d1=di<0?null:num(a[di]),d2=dh<0?null:num(a[dh]);
+  m.set(c,{foreign:f===null?null:lots(f+(f2??0)),trust:lots(t),dealer:d1===null||d2===null?null:lots(d1+d2)});
+ }
+ return m;
+}
+function otcInstitutions(a){
+ const m=new Map();if(!Array.isArray(a))return m;
+ for(const r of a){
+  const c=code(field(r,['SecuritiesCompanyCode','SecuritiesCode','StockCode','Code']));if(!c)continue;
+  const f=num(field(r,['ForeignInvestorsIncludeMainlandAreaInvestors-Difference','ForeignInvestorsIncludeMainlandAreaInvestorsDifference','ForeignInvestorsDifference']));
+  const t=num(field(r,['InvestmentTrust-Difference','InvestmentTrustDifference','SecuritiesInvestmentTrustCompanies-Difference']));
+  const d=num(field(r,['DealerDifference','DealersDifference','Dealers-Difference']));
+  if(f!==null||t!==null||d!==null)m.set(c,{foreign:lots(f),trust:lots(t),dealer:lots(d)});
+ }
+ return m;
+}
+function revMap(a){
+ const m=new Map();if(!Array.isArray(a))return m;
+ for(const r of a){
+  const c=code(field(r,['公司代號','公司代碼','CompanyCode','SecuritiesCompanyCode']));if(!c)continue;
+  const mo=month(field(r,['資料年月','DataYearMonth','YearMonth']));
+  const yoy=num(field(r,['營業收入-去年同月增減(%)','營業收入－去年同月增減(%)','YearOverYearRevenueChange','MonthlyRevenueYoY']));
+  const mom=num(field(r,['營業收入-上月比較增減(%)','營業收入－上月比較增減(%)','MonthOverMonthRevenueChange','MonthlyRevenueMoM']));
+  if(mo&&(yoy!==null||mom!==null))m.set(c,{revMonth:mo,revYoY:yoy,revMoM:mom});
+ }
+ return m;
+}
+function peMap(a){
+ const m=new Map();if(!Array.isArray(a))return m;
+ for(const r of a){const c=code(field(r,['Code','StockCode','證券代號'])),p=num(field(r,['PEratio','PERatio','本益比']));if(c&&p!==null&&p>0)m.set(c,p);}
+ return m;
+}
+function indexMap(a,asOf){
+ if(!Array.isArray(a))return [];
+ return a.filter(r=>String(r['指數']??'')==='發行量加權股價指數'&&date(r['日期'])===asOf).slice(0,1).map(r=>{
+ const sign=r['漲跌']==='-'?-1:1;return {name:String(r['指數']),date:asOf,value:num(r['收盤指數']),change:num(r['漲跌點數'])===null?null:num(r['漲跌點數'])*sign,pct:num(r['漲跌百分比'])===null?null:num(r['漲跌百分比'])*sign};
+ });
+}
+async function main(){
+ const fetched=await Promise.allSettled(Object.values(URLS).map(getJSON));
+ const raw={},sourceStatus={};
+ Object.entries(URLS).forEach(([name,url],i)=>{
+  const good=fetched[i].status==='fulfilled';
+  raw[name]=good?fetched[i].value:null;
+  sourceStatus[name]={ok:good,url,error:good?null:String(fetched[i].reason.message||'擷取失敗').slice(0,100)};
+ });
+ const listed=pricesListed(raw.twsePrices),otc=pricesOtc(raw.tpexPrices);
+ if(listed.length<500&&otc.length<300)throw new Error('Listed and OTC snapshots unavailable; will not overwrite good data');
+ const asOf=[...listed,...otc].map(x=>x.date).filter(Boolean).sort().at(-1);
+ if(!asOf)throw new Error('No trustworthy trade date');
+ // Never merge listed and OTC prices from different trading days.
+ const rows=[...listed,...otc].filter(r=>r.date===asOf);
+ if(listed.length&&listed[0].date!==asOf)sourceStatus.twsePrices={...sourceStatus.twsePrices,ok:false,error:'上市資料日期落後，未合併'};
+ if(otc.length&&otc[0].date!==asOf)sourceStatus.tpexPrices={...sourceStatus.tpexPrices,ok:false,error:'上櫃資料日期落後，未合併'};
+ if(rows.length<300)throw new Error('Insufficient aligned price records');
+ // TWSE T86 is date-scoped, not a generic latest-record feed.
+ const t86Url='https://www.twse.com.tw/rwd/zh/fund/T86?date='+asOf.replace(/-/g,'')+'&selectType=ALLBUT0999&response=json';
+ let t86=null;
+ try{t86=await getJSON(t86Url);sourceStatus.twseInst={ok:t86?.stat==='OK',url:t86Url,error:t86?.stat==='OK'?null:'交易所暫未公布或回傳錯誤'};}
+ catch(e){sourceStatus.twseInst={ok:false,url:t86Url,error:String(e.message).slice(0,100)};}
+ const li=listedInstitutions(t86),oi=otcInstitutions(raw.tpexInst),lr=revMap(raw.twseRevenue),or=revMap(raw.tpexRevenue),pm=peMap(raw.twsePe);
+ // These latest-only endpoints require date alignment, or institutional fields are withheld.
+ const oiDate=date(field(raw.tpexInst?.[0],['Date','TradingDate','TradeDate']));
+ if(!oiDate||oiDate!==asOf){oi.clear();sourceStatus.tpexInst={...sourceStatus.tpexInst,ok:false,error:oiDate?'法人資料日期不同':'無法驗證法人日期'};}
+ const indexDate=date(raw.twseIndex?.[0]?.['日期']);
+ if(indexDate&&indexDate!==asOf){sourceStatus.twseIndex={...sourceStatus.twseIndex,ok:false,error:'指數日期不符'};}
+ const resultRows=rows.map(r=>{
+  const inst=(r.market==='上市'?li:oi).get(r.code)||{};
+  const rev=(r.market==='上市'?lr:or).get(r.code)||{};
+  return {...r,...inst,...rev,pe:r.market==='上市'?(pm.get(r.code)??null):null};
+ });
+ const summary={total:resultRows.length,up:resultRows.filter(x=>x.pct!==null&&x.pct>0).length,down:resultRows.filter(x=>x.pct!==null&&x.pct<0).length,flat:resultRows.filter(x=>x.pct===0).length,withInst:resultRows.filter(x=>x.foreign!==null&&x.trust!==null).length,withRevenue:resultRows.filter(x=>x.revYoY!==null).length};
+ const snapshot={asOf,generatedAt:new Date().toISOString(),indices:indexMap(raw.twseIndex,asOf),rows:resultRows,summary,sourceStatus,origin:'official',disclaimer:'交易所官方盤後資料，非即時行情；法人買賣超以張為單位。若某來源日期不一致或無法驗證，會保留空值。'};
+ await fs.mkdir(ROOT,{recursive:true});
+ const latestFile=path.join(ROOT,'latest.json'),seriesFile=path.join(ROOT,'series.json');
+ let prior=null,series=[];
+ try{prior=JSON.parse(await fs.readFile(latestFile,'utf8'));}catch{}
+ try{series=JSON.parse(await fs.readFile(seriesFile,'utf8'));if(!Array.isArray(series))series=[];}catch{}
+ if(prior?.asOf&&prior.asOf>asOf)throw new Error('New data is older than published data; aborting');
+ // Keep globally shared tracking history small, preserve only verified data and timestamps.
+ const short={date:asOf,rows:Object.fromEntries(resultRows.filter(x=>WATCH.has(x.code)).map(x=>[x.code,{foreign:x.foreign,trust:x.trust,close:x.close,pct:x.pct}]))};
+ series=series.filter(x=>x.date!==asOf);
+ series.push(short);series.sort((a,b)=>b.date.localeCompare(a.date));series=series.slice(0,80);
+ await fs.writeFile(latestFile,JSON.stringify(snapshot)+'\n');
+ await fs.writeFile(seriesFile,JSON.stringify({asOf,generatedAt:snapshot.generatedAt,days:series})+'\n');
+ console.log(JSON.stringify({asOf,total:summary.total,withInst:summary.withInst,withRevenue:summary.withRevenue,sources:sourceStatus},null,2));
+}
+main().catch(e=>{console.error('SYNC FAILED:',e);process.exitCode=1;});
