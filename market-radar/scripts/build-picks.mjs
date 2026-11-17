@@ -137,7 +137,7 @@ function scoreOne(r){
   newsWarning:risks.length>0,sourceNote:'官方盤後與公告財報；研究優先度為規則式篩選，非法人 EPS 共識或買進建議'};
 }
 const ranked=market.rows.filter(r=>r?.code&&r.close>0).map(scoreOne);
-const core=ranked.filter(x=>watchHit.has(x.code)&&x.dataChecks.chip20&&x.dataChecks.financial&&x.score>=48)
+const core=ranked.filter(x=>watchHit.has(x.code)&&x.dataChecks.chip20&&x.dataChecks.financial)
  .sort((a,b)=>b.score-a.score);
 const known=ranked.filter(x=>!watchHit.has(x.code)&&x.score>=25&&x.monthly.yoy!==null)
  .sort((a,b)=>b.score-a.score);
@@ -161,7 +161,8 @@ if(source){try{const p=JSON.parse(source[1]);for(const [cat,arr] of Object.entri
 for(const a of ranked)a.sector=codeToSector.get(a.code)||null;
 const previous=await load('picks.json',true);
 const prevCodes=new Map((previous?.tracking||[]).map(x=>[x.code,x.rank]));
-const selected=diverse(core,10,2).map((x,i)=>({...x,rank:i+1,change:prevCodes.has(x.code)?'持續追蹤':'新進觀察'}));
+const sameDate=previous?.asOf===reportDate;
+const selected=diverse(core,10,2).map((x,i)=>({...x,rank:i+1,change:sameDate?(previous.tracking.find(z=>z.code===x.code)?.change||'同日重新評估'):(prevCodes.has(x.code)?'持續追蹤':'新進觀察')}));
 const second=known.filter(x=>x.financial?.epsYtd>0).slice(0,6).map((x,i)=>({...x,rank:i+1,change:'新發現'}));
 const info={
  schema:1,asOf:reportDate,generatedAt:now,
@@ -171,12 +172,12 @@ const info={
  news:{updatedAt:news?.generatedAt||null,records:headlines.length,latestByCompany:currentAnnounced.length,
   global:currentAnnounced.filter(x=>!x.code).slice(0,4).map(x=>({date:x.date,title:x.title,url:safeURL(x.url),source:x.source}))},
  tracking:selected,emerging:second,
- removed:(previous?.tracking||[]).filter(x=>!selected.some(c=>c.code===x.code)).slice(0,15).map(x=>({code:x.code,name:x.name,formerRank:x.rank})),
+ removed:(sameDate?[]:previous?.tracking||[]).filter(x=>!selected.some(c=>c.code===x.code)).slice(0,15).map(x=>({code:x.code,name:x.name,formerRank:x.rank})),
  sourceDates:{prices:market.asOf,chip:history.asOf,earnings:earnings?.generatedAt||null,news:news?.generatedAt||null,macro:now},
  universeCount:market.rows.length,qualifiedHistory:ranked.filter(x=>x.dataChecks.chip20).length,
  disclaimer:'研究持續追蹤名單，不是買進或目標價；單日相對強弱不等於中長期強勢；新聞原始標題不代表證實其對EPS的因果。外資買賣超非主動基金持股的完整代理。'
 };
-if(selected.length<3)throw Error('Not enough qualifying candidates to publish, preserving previous recommendations');
+if(selected.length<1)throw Error('No companies have both official 20d flows and financial evidence; retaining previous list');
 await fs.writeFile(DIR+'/macro.json',JSON.stringify(macro)+'\n');
 await fs.writeFile(DIR+'/picks.json',JSON.stringify(info)+'\n');
 console.log(JSON.stringify({asOf:reportDate,tracking:selected.map(x=>({code:x.code,score:x.score,rank:x.rank})),emerging:second.length,qualifiedHistory:info.qualifiedHistory,macro:macro.sourceStatus,marketBreadth:info.macro.marketBreadth},null,2));
