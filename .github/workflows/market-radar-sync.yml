@@ -1,0 +1,42 @@
+name: MARKET RADAR data sync
+on:
+  workflow_dispatch:
+  schedule:
+    # 19:35 Taiwan time; schedule may be delayed by GitHub
+    - cron: '35 11 * * 1-5'
+    # Retry at 21:05 Taiwan time for delayed official feeds
+    - cron: '5 13 * * 1-5'
+  push:
+    paths:
+      - '.github/workflows/market-radar-sync.yml'
+permissions:
+  contents: write
+concurrency:
+  group: market-radar-data-sync
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect verified TWSE and TPEx close data
+        run: node market-radar/scripts/sync.mjs
+      - name: Commit refreshed public snapshots
+        run: |
+          git config user.name "market-radar-bot"
+          git config user.email "market-radar-bot@users.noreply.github.com"
+          git add market-radar/data/latest.json market-radar/data/series.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: refresh MARKET RADAR official EOD snapshot"
+            git push
+          else
+            echo "No changes to the public snapshots"
+          fi
