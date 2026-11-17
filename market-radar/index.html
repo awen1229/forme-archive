@@ -993,7 +993,7 @@ const baseWatch=['2330','3231','2382','2376','2327','3026','2383','2308'];
 const STORE_KEY='market-radar-app-v1';
 const deepClone=x=>JSON.parse(JSON.stringify(x));
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY))||{};}catch{return {};}})();
-const state={tab:'overview',data:saved.data||null,history:Array.isArray(saved.history)?saved.history:[],watch:Array.isArray(saved.watch)?saved.watch:baseWatch,eps:saved.eps||{},journal:saved.journal||[],news:saved.news||[],custom:saved.custom||[],filter:'',sector:'全部',sort:'value',watchOnly:false,stockScope:'pool',activeStock:'2330',earnings:null,picks:saved.picks||null,refreshing:false};
+const state={tab:'overview',data:saved.data||null,history:Array.isArray(saved.history)?saved.history:[],watch:Array.isArray(saved.watch)?saved.watch:baseWatch,eps:saved.eps||{},journal:saved.journal||[],news:saved.news||[],custom:saved.custom||[],filter:'',sector:'全部',sort:'value',watchOnly:false,stockScope:'pool',activeStock:'2330',earnings:null,picks:saved.picks||null,tdcc:null,refreshing:false};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const fmt=(x,d=1)=>x==null||!Number.isFinite(+x)?'—':Number(x).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -1062,11 +1062,17 @@ function renderDailyWatchlist(){
   const chips=[];
   if(r.chip?.t20?.net!=null)chips.push('投信20日 '+sign(r.chip.t20.net,0)+' 張');
   if(r.chip?.f20?.net!=null)chips.push('外資20日 '+sign(r.chip.f20.net,0)+' 張');
+  const owner=state.tdcc?.rows?.[r.code];
+  if(owner){
+    chips.push('千張以上 '+fmt(owner.largePct,2)+'%'+(owner.w4?.comparable?'（4週 '+sign(owner.w4.largePpt,2)+' 百分點）':''));
+    chips.push('10張以下 '+fmt(owner.retail10Pct,2)+'%'+(owner.w4?.comparable?'（4週 '+sign(owner.w4.retail10Ppt,2)+' 百分點）':''));
+  }
   const event=r.events?.[0];
   const eventLink=event&&sourceSafe(event.url)?'<a href="'+esc(event.url)+'" target="_blank" rel="noopener noreferrer">官方公告：'+esc(event.title.slice(0,46))+' ↗</a>':event?'<span>官方公告：'+esc(event.title.slice(0,46))+'</span>':'<span>近7日未收錄該公司官方重大公告</span>';
   return '<article class="radar-watch-card">'
    +'<div class="radar-watch-card-head"><div><span class="radar-watch-rank">'+String(i+1).padStart(2,'0')+'</span><button class="stock-link" data-action="stock" data-code="'+esc(r.code)+'">'+esc(r.name)+'</button><span class="code-small"> '+esc(r.code)+' ・'+esc(r.sector||r.market||'未分類')+'</span></div><div class="radar-score">'+fmt(r.score,0)+'<small>/100</small></div></div>'
    +'<div class="radar-watch-tags"><span class="mini-tag">'+esc(r.status||'持續研究')+'</span><span class="mini-tag">'+esc(r.change||'資料更新')+'</span><span class="mini-tag">籌碼 '+fmt(r.scoreComponents?.institutional,0)+'/45</span><span class="mini-tag">基本面 '+fmt(r.scoreComponents?.financial,0)+'/35</span><span class="mini-tag">量價 '+fmt(r.scoreComponents?.relativeAction,0)+'/20</span></div>'
+   +(owner?.hint==='籌碼相對分散'?'<div class="radar-watch-tags"><span class="mini-tag amber">集保籌碼相對分散・觀察警示（未納入評分）</span></div>':'')
    +'<div class="radar-watch-chips">'+chips.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>'
    +(one.length?'<p class="radar-watch-reasons"><strong>追蹤原因：</strong>'+one.map(esc).join('；')+'</p>':'<p class="radar-watch-reasons">尚無足夠正向數據，僅供條件觀察。</p>')
    +(r.risks?.length?'<p class="radar-watch-risk"><strong>反證／風險：</strong>'+r.risks.slice(0,2).map(esc).join('；')+'</p>':'')
@@ -1087,6 +1093,21 @@ function renderDailyWatchlist(){
   +(p.removed?.length?'<p class="radar-watch-method">本次未續列：'+p.removed.slice(0,8).map(x=>esc(x.name+' '+x.code)).join('、')+'。退出只是規則式名單變化，並非賣出訊號。</p>':'')
   +'<p class="radar-watch-method">更新來源：<a href="https://www.twse.com.tw/" target="_blank" rel="noopener">證交所</a>、<a href="https://www.tpex.org.tw/" target="_blank" rel="noopener">櫃買中心</a>、公司重大訊息與美國公債資料。沒有取得2027／2028法人共識，不會以模型數據冒充。</p></section>';
 }
+function renderTDCCOverview(){
+ const tdcc=state.tdcc;
+ if(!tdcc?.asOf||!tdcc.rows)return '<section class="panel"><div class="panel-header"><h2>集保大戶／散戶結構</h2><span class="panel-note">資料尚未載入</span></div><p class="small muted">每週依集保公布的級距持股比例計算。與單日法人買賣超分開觀察，不會在資料不足時增加選股分數。</p></section>';
+ const focus=[...new Set([...state.watch,...baseWatch])].filter(code=>tdcc.rows[code]).slice(0,8);
+ const rows=focus.map(code=>{
+  const owner=tdcc.rows[code],r=poolItem(code),up=owner.w4?.comparable;
+  return '<div class="metric-inline"><div class="label"><button class="stock-link" data-action="stock" data-code="'+esc(code)+'">'+esc(r.name||code)+'</button><span class="sub"> '+esc(code)+' · '+esc(owner.hint)+'</span></div>'
+  +'<div style="text-align:right"><strong>千張 '+fmt(owner.largePct,2)+'%</strong><span class="sub">（4週 '+(up?sign(owner.w4.largePpt,2)+'pp':'資料不足')+'）</span><br>'
+  +'<span class="small muted">10張以下 '+fmt(owner.retail10Pct,2)+'%（4週 '+(up?sign(owner.w4.retail10Ppt,2)+'pp':'資料不足')+'）</span></div></div>';
+ }).join('');
+ return '<section class="panel"><div class="panel-header"><h2>集保大戶／散戶持股雷達</h2><span class="panel-note">最近公布 '+esc(tdcc.asOf)+' ・每週更新</span></div>'
+  +'<p class="small muted">千張以上／10張以下為集保各持股級距占比。近期減少大額持股、增加小額持股只代表籌碼分散，<strong>不代表已證實出貨或預測跌幅</strong>；目前為研究警示，尚不改動首頁45／35／20權重。</p>'
+  +(rows||'<p class="small muted">觀察名單尚無可比較的集保資料。</p>')
+  +'<p class="small muted" style="margin-top:12px">資料：<a href="https://www.tdcc.com.tw/portal/zh/smWeb/qryStock" target="_blank" rel="noopener">TDCC 集保戶股權分散表</a>。單位 pp＝百分點。股數異動超過 5% 暫停趨勢判讀。</p></section>';
+}
 function renderOverview(){
  const idx=state.data?.indices?.[0],summary=snapshotSummary(),sectors=catSector(),isConnected=!!state.data?.rows?.length;
  const focus=allPool().map(s=>({...s,...(rowMap().get(s.code)||{})})).filter(s=>s.pct!=null).sort((a,b)=>b.pct-a.pct);
@@ -1094,6 +1115,7 @@ function renderOverview(){
  const breadth = summary.up!=null && summary.down!=null && (summary.up+summary.down)>0?(summary.up/(summary.up+summary.down)*100):null;
  return sectionTitle('THE DAILY PULSE','市場總覽','全球訊號 × 台股類股強弱 × 法人籌碼。只顯示可核對的資料。',`<div class="date-label">最新交易日<br><b>${fmtDate(state.data?.asOf)}</b></div>`)
  +renderDailyWatchlist()
+ +renderTDCCOverview()
  +`<div class="summary-grid">
    ${kpi('加權指數 · 收盤',idx?.value!=null?fmt(idx.value,2):'—',idx?.pct!=null?`<span class="${color(idx.pct)}">${percentage(idx.pct)}</span> ｜官方指數`:'等待官方資料',color(idx?.pct))}
    ${kpi('全市場上漲家數',summary.up!=null?fmt(summary.up,0):'—',summary.down!=null?`下跌 ${fmt(summary.down,0)} 家`:'無法核實',color(breadth!=null?breadth-50:null))}
@@ -1303,6 +1325,10 @@ async function refresh(options={}){
     const pr=await fetch('./data/picks.json?v='+Date.now(),{cache:'no-store'});
     if(pr.ok){const p=await pr.json();if(p?.asOf&&Array.isArray(p.tracking)){state.picks=p;}}
   }catch(e){console.warn('每日研究名單尚未同步',e);}
+  try{
+    const tr=await fetch('./data/tdcc/latest.json?v='+Date.now(),{cache:'no-store'});
+    if(tr.ok){const td=await tr.json();if(/^\\d{4}-\\d{2}-\\d{2}$/.test(td.asOf)&&td.rows&&Object.keys(td.rows).length>=800)state.tdcc=td;}
+  }catch(e){console.warn('集保週籌碼資料暫不可用',e);}
   registerSnapshot(data);
   window.marketRadarLastSyncCheck=Date.now();
   setNotice('<strong>官方盤後資料已同步。</strong> 交易日 '+esc(data.asOf)+'，股票 '+fmt(data.rows.length,0)+' 檔，法人資料覆蓋 '+fmt(data.summary?.withInst,0)+' 檔。網站上傳時間：'+esc((data.generatedAt||'').replace('T',' ').slice(0,16))+' UTC。非盤中即時報價；若資料來源異常，請查看「資料管理」。','success');
