@@ -52,6 +52,7 @@
   <button data-tab="settings"><b>⚙</b><span>設定</span></button>
 </nav>
 <dialog id="dialog" class="modal"><div id="dialogInner"></div></dialog>
+<script src="./chip-core.js"></script>
 <script>
 const SECTOR_POOL = {
  "AI 伺服器／機櫃": [
@@ -991,12 +992,7 @@ function catSector(){const rows=rowMap();return Object.entries(SECTOR_POOL).conc
   return {sector,count:pairs.length,valid:available.length,avg,foreign,trust,up:available.filter(r=>r.pct>0).length};
  }).sort((a,b)=> (b.avg??-1e6)-(a.avg??-1e6));}
 function snapshotSummary(){const s=state.data?.summary||{};return {up:s.up??null,down:s.down??null,total:s.total??null,withInst:s.withInst??null};}
-function historyFlow(code,n,who){
-  const candidates=state.history.filter(h=>h?.date&&h.rows?.[code]&&typeof h.rows[code][who]==='number').sort((a,b)=>b.date.localeCompare(a.date));
-  if(candidates.length<n)return null;
-  const recent=candidates.slice(0,n);
-  return recent.reduce((sum,r)=>sum+r.rows[code][who],0);
-}
+function historyFlow(code,n,who){return MarketChip.sum(code,n,who);}
 function miniBars(arr,maxBars=8){const a=arr.slice(0,maxBars);const max=Math.max(1,...a.map(s=>Math.abs(s.avg??0)));return a.map(s=>`<div class="sect-row"><div class="sect-label">${esc(s.sector)}<small>${s.valid}/${s.count} 檔有行情</small></div><div class="bar-bg"><div class="bar-fill ${s.avg!=null&&s.avg<0?'negativebar':''}" style="width:${Math.max(0,Math.min(100,Math.abs(s.avg??0)/max*100))}%"></div></div><div class="sect-number ${color(s.avg)}">${percentage(s.avg)}</div></div>`).join('');}
 function watchToggle(code){state.watch=state.watch.includes(code)?state.watch.filter(c=>c!==code):[...state.watch,code];persist();render();}
 function sourceLinks(){return `<div class="links-grid">${[['台灣證交所','https://www.twse.com.tw/zh/'],['櫃買中心','https://www.tpex.org.tw/'],['公開資訊觀測站','https://mops.twse.com.tw/'],['費城半導體 SOX','https://www.nasdaq.com/market-activity/index/sox'],['Nasdaq 100','https://www.nasdaq.com/market-activity/index/ndx'],['FedWatch','https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html'],['美國公債殖利率 FRED','https://fred.stlouisfed.org/series/DGS10'],['NVIDIA 投資人關係','https://investor.nvidia.com/'],['IMF 全球經濟','https://www.imf.org/en/Publications/WEO']].map(([n,u])=>`<a class="external-card" target="_blank" rel="noopener noreferrer" href="${u}">${n}<span>↗</span></a>`).join('')}</div>`;}
@@ -1137,7 +1133,7 @@ function renderSettings(){const statuses=state.data?.sourceStatus||{};
  return sectionTitle('PREFERENCES & SOURCES','資料管理','資料來源、匯入匯出、觀察名單，以及目前尚未自動化的部分。')
  +`<div class="panel-grid"><section class="panel">${panelHeader('連線來源狀態')}
  ${sources.map(([k,n])=>`<div class="data-item"><div><strong>${n}</strong><span class="mini-tag ${statuses[k]?.ok?'':'amber'}">${!state.data?'未取得':statuses[k]?.ok?'取得成功':'不可用／未匯入'}</span></div><p>${statuses[k]?.url?`<a href="${esc(statuses[k].url)}" target="_blank" rel="noopener noreferrer">官方來源 ↗</a>`:'資料未連線或手動匯入'}</p></div>`).join('')}
- <p class="small muted">已使用 GitHub Actions 自動抓取官方盤後快照；網頁開啟時會同步最新 JSON，並保存最多 80 個交易日的觀察池籌碼紀錄。若當日擷取失敗，會保留先前交易日並明確顯示日期，不把舊資料冒充最新。</p>
+ <p class="small muted">已使用 GitHub Actions 自動抓取官方盤後快照；網頁開啟時會同步最新 JSON，並保存最多 160 個交易日的觀察池籌碼紀錄。若當日擷取失敗，會保留先前交易日並明確顯示日期，不把舊資料冒充最新。</p>
  </section><section class="panel">${panelHeader('匯入與備份','只在此裝置瀏覽器保存')}
  <div class="btn-group"><button class="btn btn-primary btn-small" data-action="refresh">取得官方盤後資料</button><button class="btn btn-small" data-action="importCsv">匯入行情 CSV</button><button class="btn btn-small" data-action="export">匯出完整 JSON</button><button class="btn btn-small" data-action="importJson">還原 JSON 備份</button></div>
  <div class="warning-note margintop">本機儲存不等於雲端同步。更換手機、清除瀏覽器資料、重新安裝 App，可能失去自選股與研究日誌。請定期匯出備份。每日的 ChatGPT 自動報告不會自動寫入這個 App，需手動貼入日誌。</div>
@@ -1164,8 +1160,8 @@ function registerSnapshot(data){
  const date=data.asOf; if(!date || !Array.isArray(data.rows) || !data.rows.length) throw new Error('缺少日期或有效行情。');
  const snap={date,rows:Object.fromEntries(data.rows.filter(x=>x.code&&x.close!=null).map(r=>[r.code,{foreign:typeof r.foreign==='number'?r.foreign:null,trust:typeof r.trust==='number'?r.trust:null,close:r.close,pct:r.pct}]))};
  const ix=state.history.findIndex(s=>s.date===date);if(ix>=0)state.history[ix]=snap;else state.history.push(snap);
- state.history.sort((a,b)=>b.date.localeCompare(a.date));state.history=state.history.slice(0,80);
- state.data=data;persist();render();
+ state.history.sort((a,b)=>b.date.localeCompare(a.date));state.history=state.history.slice(0,160);
+ state.data=data;MarketChip.init(state.history,data.asOf);persist();render();
 }
 async function refresh(options={}){
  if(state.refreshing)return;
@@ -1194,7 +1190,7 @@ async function refresh(options={}){
           else if(Object.keys(item.rows).length>Object.keys(state.history[i].rows||{}).length)state.history[i]=item;
         }
         state.history.sort((a,b)=>b.date.localeCompare(a.date));
-        state.history=state.history.slice(0,80);
+        state.history=state.history.slice(0,160);
       }
     }
   }catch(e){console.warn('籌碼歷史暫時無法載入',e);}
@@ -1259,6 +1255,7 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=new
 });
 $('refreshBtn').addEventListener('click',refresh);
 $('dialog').addEventListener('click',e=>{if(e.target===$('dialog'))closeModal();});
+MarketChip.init(state.history,state.data?.asOf);
 if(state.data?.rows?.length){setNotice(`<strong>已恢復本機快照。</strong> 最後存檔交易日 ${esc(state.data.asOf)}。這是快取，請按「更新資料」取得最近已公布的官方盤後數字。`,'success');}
 render();
 // Official end-of-day JSON is served from the same GitHub Pages path.
