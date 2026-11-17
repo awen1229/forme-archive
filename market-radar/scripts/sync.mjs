@@ -90,7 +90,7 @@ function indicesRwd(j,officialDate){
  const symbol=sign>=0?text(row[sign]):text(row[diff]);
  const d=num(text(row[diff])),p=num(text(row[ratio]));
  const factor=symbol.startsWith('-')?-1:symbol.startsWith('+')?1:null;
- return [{name:'發行量加權股價指數',date:officialDate,value:v,change:d!==null&&factor!==null?d*factor:null,pct:p!==null&&factor!==null?p*factor:null}];
+ return [{name:'發行量加權股價指數',date:officialDate,value:v,change:d!==null&&factor!==null?d*factor:null,pct:p===null?null:(p<0?p:(factor!==null?p*factor:null))}];
 }
 function listedInstitutions(j){
  const m=new Map(); if(!Array.isArray(j?.data)||!Array.isArray(j?.fields))return m;
