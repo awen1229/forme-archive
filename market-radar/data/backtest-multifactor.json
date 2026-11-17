@@ -1594,5 +1594,91 @@
       "name": "Auditable selected signals",
       "url": "./data/backtest-multifactor-signals.json"
     }
-  ]
+  ],
+  "marketRegimes": {
+    "marketUp": {
+      "weeks": 2,
+      "signalDates": [
+        "2026-09-11",
+        "2026-09-24"
+      ],
+      "strategies": {
+        "fullDiv": {
+          "weeks": 2,
+          "meanWeeklyNetPct": 2.943,
+          "meanWeeklyExcessVs0050Ppt": -1.228,
+          "beat0050Weeks": 0
+        },
+        "full": {
+          "weeks": 2,
+          "meanWeeklyNetPct": 3.029,
+          "meanWeeklyExcessVs0050Ppt": -1.142,
+          "beat0050Weeks": 0
+        },
+        "chip": {
+          "weeks": 2,
+          "meanWeeklyNetPct": 1.26,
+          "meanWeeklyExcessVs0050Ppt": -2.911,
+          "beat0050Weeks": 0
+        },
+        "fundamental": {
+          "weeks": 2,
+          "meanWeeklyNetPct": 4.844,
+          "meanWeeklyExcessVs0050Ppt": 0.673,
+          "beat0050Weeks": 1
+        },
+        "relative": {
+          "weeks": 2,
+          "meanWeeklyNetPct": 4.201,
+          "meanWeeklyExcessVs0050Ppt": 0.03,
+          "beat0050Weeks": 1
+        }
+      }
+    },
+    "marketDown": {
+      "weeks": 8,
+      "signalDates": [
+        "2026-09-04",
+        "2026-09-18",
+        "2026-10-02",
+        "2026-10-08",
+        "2026-10-16",
+        "2026-10-22",
+        "2026-10-30",
+        "2026-11-06"
+      ],
+      "strategies": {
+        "fullDiv": {
+          "weeks": 8,
+          "meanWeeklyNetPct": -1.708,
+          "meanWeeklyExcessVs0050Ppt": 0.886,
+          "beat0050Weeks": 5
+        },
+        "full": {
+          "weeks": 8,
+          "meanWeeklyNetPct": -2.501,
+          "meanWeeklyExcessVs0050Ppt": 0.093,
+          "beat0050Weeks": 3
+        },
+        "chip": {
+          "weeks": 8,
+          "meanWeeklyNetPct": -1.909,
+          "meanWeeklyExcessVs0050Ppt": 0.685,
+          "beat0050Weeks": 5
+        },
+        "fundamental": {
+          "weeks": 8,
+          "meanWeeklyNetPct": -5.031,
+          "meanWeeklyExcessVs0050Ppt": -2.437,
+          "beat0050Weeks": 1
+        },
+        "relative": {
+          "weeks": 8,
+          "meanWeeklyNetPct": -2.77,
+          "meanWeeklyExcessVs0050Ppt": -0.177,
+          "beat0050Weeks": 4
+        }
+      }
+    }
+  }
 }
