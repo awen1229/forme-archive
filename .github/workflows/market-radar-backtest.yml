@@ -1,0 +1,79 @@
+name: MARKET RADAR historical factor backtest
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market-radar/scripts/backtest-longterm.py'
+      - '.github/workflows/market-radar-backtest.yml'
+  schedule:
+    # Sunday 21:30 Taiwan time. GitHub cron execution can be delayed.
+    - cron: '30 13 * * 0'
+permissions:
+  contents: write
+concurrency:
+  group: market-radar-historical-backtest
+  cancel-in-progress: false
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout current App
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install tested dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install 'pandas>=2.2,<3' 'numpy>=1.26,<3' 'requests>=2.31,<3'
+      - name: Recheck ranking, split, date and fee logic
+        run: python market-radar/scripts/backtest-longterm.py --self-test
+      - name: Cache audited raw daily archives
+        uses: actions/cache@v4
+        with:
+          path: market-radar/.backtest-cache
+          key: market-radar-backtest-2024-2026-v1
+      - name: Backtest 2024-2025 development and 2026 evaluation
+        run: |
+          python market-radar/scripts/backtest-longterm.py \
+            --start-year 2024 \
+            --end-year 2026 \
+            --asof "$(date -u +%F)" \
+            --workers 6 \
+            --cache market-radar/.backtest-cache \
+            --out market-radar/.backtest-output
+      - name: Record metrics artifact and transparency manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-radar-factor-backtest
+          path: |
+            market-radar/.backtest-output/strategy_metrics.csv
+            market-radar/.backtest-output/information_coefficients.csv
+            market-radar/.backtest-output/weekly_portfolio_targets.csv
+            market-radar/.backtest-output/manifest.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish research-only summary
+        run: |
+          git config user.name "market-radar-bot"
+          git config user.email "market-radar-bot@users.noreply.github.com"
+          git add market-radar/data/backtest-longterm.json
+          if ! git diff --cached --quiet; then
+            git commit -m "research: refresh MARKET RADAR long-term factor results"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              sleep "$attempt"
+            done
+            echo "Could not publish backtest summary after rebase retries"
+            exit 1
+          fi
+          echo "No changes to long-term metrics"
