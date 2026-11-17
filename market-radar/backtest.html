@@ -13,10 +13,27 @@
 <section><h2>03 / 每週選股與報酬</h2><div class="panel table-scroll"><table><thead><tr><th>訊號日期</th><th>交易期間</th><th class="num">前十名毛報酬</th><th class="num">換股成本</th><th class="num">0050</th><th>當週前四檔</th></tr></thead><tbody id="weekly"></tbody></table></div></section>
 <section><h2>04 / 因子回測範圍</h2><div class="fact-grid"><div class="fact"><strong>法人籌碼｜45分 <span class="tag">已測試</span></strong><p class="sub">外資與投信 5／20／60 日方向、20 日買超天數；只驗證本段十週。</p></div><div class="fact"><strong>基本面｜35分 <span class="tag off">尚未測試</span></strong><p class="sub">月營收、EPS、營益率與毛利率需依歷史公告時點回填，不能使用今天的財報。</p></div><div class="fact"><strong>相對強弱｜20分 <span class="tag off">尚未測試</span></strong><p class="sub">當日相對強弱與成交金額尚未加入這次子模型排名。</p></div><div class="fact"><strong>消息、總經、法人 EPS 共識 <span class="tag off">尚未測試</span></strong><p class="sub">缺少完整的歷史事件版本與當時的法人預估快照，暫不輸出預測勝率。</p></div></div></section>
 <section><h2>05 / 方法與資料限制</h2><div class="panel"><p><strong>事件時間軸：</strong>先等週末盤後法人資料公布，才建構名單；下週首個交易日收盤價為進場參考，再持有約一週。這是價格回測假設，不代表保證能於收盤價成交。</p><p><strong>交易成本：</strong>股票買進 0.1425%，股票賣出 0.1425% 手續費 + 0.3% 證交稅，按換手比例估算。0050、股票池等權基準未扣交易成本，所以口徑不完全相同。</p><p><strong>樣本限制：</strong>樣本只包含今天觀察池內歷史紀錄完整者；存活者與觀察池選擇偏誤可能影響結果。尚未全面處理所有公司行動、配息、滑價與盤中回撤。</p><p class="sub">未取得的因子不補假數字，不把2027／2028情境 EPS 冒充法人預估；未通過歷史資料完整度檢查，不公布正式績效。</p><div id="sources"></div></div></section>
+<section><h2>06 / 長期因子測試（獨立研究）</h2><div class="panel"><p><strong>2024–2025 開發觀察、2026 後段檢驗：</strong>此外獨立測試六檔股票的外資、投信、融資與四週動能因子。使用隔週開盤進出與估計手續費，且與首頁 45／35／20 配分不同，不會混稱為完整模型。</p><div id="longterm"><p class="sub">歷史全量檔案尚未完成驗證，暫不展示長期績效。</p></div></div></section>
 <footer class="sub tiny" style="margin-top:36px">MARKET RADAR, / 實驗性量化研究。不是投資建議、買賣建議或收益保證。</footer></main>
 <script>
 const f=x=>Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'--';
 const el=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function lineChart(rows){const series=[{k:'top10GrossPct',fee:'top10EstimatedSwitchCostPct',color:'#167c63'},{k:'universeEqualPct',color:'#c18e63'},{k:'etf0050Pct',color:'#727d99'}];const all=series.map(s=>{let equity=100;return [100,...rows.map(r=>{equity*=1+(r[s.k]-(s.fee?r[s.fee]:0))/100;return equity})]});const lo=Math.floor(Math.min(...all.flat())-2),hi=Math.ceil(Math.max(...all.flat())+2),w=860,h=290,x=i=>38+(w-57)*i/rows.length,y=v=>h-34-(v-lo)/(hi-lo)*(h-60),path=a=>a.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ');let chart='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="策略與基準的每週累積報酬折線圖">';for(let i=0;i<=4;i++){let v=lo+(hi-lo)*i/4;chart+='<line x1="38" x2="'+(w-20)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#e2e5df"/><text x="2" y="'+(y(v)+4)+'" font-size="11" fill="#7d897f">'+v.toFixed(0)+'</text>';}for(let i=0;i<all.length;i++)chart+='<path fill="none" stroke="'+series[i].color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="'+path(all[i])+'"/>';chart+='</svg>';el('plot').innerHTML=chart;}
 fetch('./data/backtest.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(o=>{el('rTop').textContent=f(o.result.chipTop10CumulativePct);el('rPool').textContent=f(o.result.equalUniversePct);el('rETF').textContent=f(o.result.etf0050Pct);el('sampleDates').textContent=o.sample.signalStart+' → '+o.sample.lastExit+' / '+o.sample.weeks+' 週';el('weekly').innerHTML=o.weekly.map(x=>'<tr><td>'+esc(x.signalDate)+'</td><td>'+esc(x.entryDate)+' → '+esc(x.exitDate)+'</td><td class="num">'+f(x.top10GrossPct)+'</td><td class="num">'+x.top10EstimatedSwitchCostPct.toFixed(2)+'%</td><td class="num">'+f(x.etf0050Pct)+'</td><td>'+x.top4Tickers.map(esc).join(' · ')+'</td></tr>').join('');el('sources').innerHTML='<div class="tiny sub" style="margin-top:12px">資料來源：'+o.sources.map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.title)+'</a>').join('　/　')+'</div>';lineChart(o.weekly)}).catch(e=>el('plot').innerHTML='<p class="error">回測檔讀取失敗：'+esc(e.message)+'</p>');
-</script></body></html>
+</script><script>
+(function(){
+ const root=document.getElementById('longterm');
+ fetch('./data/backtest-longterm.json?v='+Date.now(),{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw Error('尚無通過資料稽核的長期研究結果');return r.json()})
+ .then(o=>{
+  if(o.status!=='completed'||!o.coverage?.weeks||o.coverage?.failures>0)throw Error('長期資料完整度未通過驗證');
+  const evalRows=(o.strategyMetrics||[]).filter(x=>x.period==='evaluation');
+  const selected=['hold0050','equal','foreign','trust','margin','momentum','composite'];
+  const names={hold0050:'0050 持有',equal:'六檔等權',foreign:'外資',trust:'投信',margin:'融資',momentum:'四週動能',composite:'四因子綜合'};
+  const trs=selected.map(k=>{let x=evalRows.find(r=>r.strategy===k);if(!x||x.error)return '';return '<tr><td>'+names[k]+'</td><td class="num">'+f(x.cumulative_pct)+'</td><td class="num">'+f(x.max_open_to_open_drawdown_pct)+'</td><td class="num">'+(Number.isFinite(x.sharpe_0pct_cash)?x.sharpe_0pct_cash.toFixed(2):'--')+'</td></tr>'}).join('');
+  root.innerHTML='<p class="tiny sub">資料截止 '+o.asOf+' ｜有效訊號 '+o.coverage.weeks+' 週 ｜下載 '+o.coverage.fetchedFiles+'/'+o.coverage.requiredFiles+' 個原始檔。樣本僅六股，含存活者偏誤。</p><div class="table-scroll"><table><thead><tr><th>2026 後段驗證</th><th class="num">累積報酬</th><th class="num">最大週度回撤</th><th class="num">Sharpe</th></tr></thead><tbody>'+trs+'</tbody></table></div><p class="tiny sub">此表不能用於推論全市場，且不含配息、滑價、完整公司行動調整。相同期間才具可比性。</p>';
+ })
+ .catch(e=>{root.innerHTML='<p class="sub">'+esc(e.message)+'。這個區塊會保留空白，不以估算值代替回測績效。</p>'});
+})();
+</script>
+</body></html>
