@@ -18,11 +18,11 @@ async function json(url) {
  return data;
 }
 function parse(r,url,sector){
- const code=String(r["公司代號"]??"").trim(),fy=readNum(r["年度"]),q=readNum(r["季別"]),eps=readNum(find(r,/^基本每股盈餘/)),rev=readNum(find(r,/^營業收入$/)),op=readNum(find(r,/^營業利益/)),gross=readNum(find(r,/^營業毛利（毛損）淨額$/))??readNum(find(r,/^營業毛利（毛損）$/));
+ const code=String(r["公司代號"]??r.SecuritiesCompanyCode??r.Code??"").trim(),fy=readNum(r["年度"]??r.Year),q=readNum(r["季別"]??r.Season),eps=readNum(find(r,/^基本每股盈餘/)),rev=readNum(find(r,/^營業收入$/)),op=readNum(find(r,/^營業利益/)),gross=readNum(find(r,/^營業毛利（毛損）淨額$/))??readNum(find(r,/^營業毛利（毛損）$/));
  if(!/^\d{4}$/.test(code)||!Number.isInteger(fy)||!Number.isInteger(q)||q<1||q>4||eps===null||fy<110||fy>140)return null;
  const reportYear=fy+1911;
  const period=reportYear+"Q"+q;
- return {code,name:String(r["公司名稱"]||code),reportYear,quarter:q,period,epsYtd:eps,epsKind:"已公告當年度累計EPS（非單季、非TTM）",revenueYtd:rev,operatingMargin:rev!==null&&rev>0&&op!==null?Math.round(op/rev*10000)/100:null,grossMargin:rev!==null&&rev>0&&gross!==null?Math.round(gross/rev*10000)/100:null,source:url,segment:sector,extractedAt:now};
+ return {code,name:String(r["公司名稱"]??r.CompanyName??code),reportYear,quarter:q,period,epsYtd:eps,epsKind:"已公告當年度累計EPS（非單季、非TTM）",revenueYtd:rev,operatingMargin:rev!==null&&rev>0&&op!==null?Math.round(op/rev*10000)/100:null,grossMargin:rev!==null&&rev>0&&gross!==null?Math.round(gross/rev*10000)/100:null,source:url,segment:sector,extractedAt:now};
 }
 function model(row,market){
  // Scenario for comparing sensitivity only. NO model when EPS is negative or period too thin.
@@ -56,7 +56,6 @@ async function main(){
   const x=endpoints[i];
   sourceStatus[x.k+"_"+x.seg]={ok:o.status==="fulfilled",url:x.url,records:o.status==="fulfilled"?o.value.length:0,error:o.status==="rejected"?String(o.reason?.message||o.reason).slice(0,150):null};
   if(o.status!=="fulfilled")return;
-  if(x.k==='tpex'&&x.seg==='ci'&&o.value.length)console.log('TPEx EPS schema sample:',JSON.stringify(o.value[0]).slice(0,900));
   for(const item of o.value){
    const r=parse(item,x.url,x.k+"/"+x.seg);
    if(!r)continue;
