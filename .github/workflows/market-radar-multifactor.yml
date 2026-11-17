@@ -1,0 +1,59 @@
+name: MARKET RADAR weekly multi-factor model validation
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market-radar/scripts/backtest-multifactor.mjs'
+      - '.github/workflows/market-radar-multifactor.yml'
+  schedule:
+    # Monday 21:15 Taipei local time. GitHub can delay scheduled starts.
+    - cron: '15 13 * * 1'
+permissions:
+  contents: write
+concurrency:
+  group: market-radar-multifactor
+  cancel-in-progress: false
+jobs:
+  ablation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout data and durable official-chip history
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate historical release lags and independent tie-breaks
+        run: node market-radar/scripts/backtest-multifactor.mjs --self-test
+      - name: Restore public archive file cache
+        uses: actions/cache@v4
+        with:
+          path: market-radar/.backtest-cache/multifactor
+          key: market-radar-historical-v1-${{ github.run_id }}
+          restore-keys: |
+            market-radar-historical-v1-
+      - name: Evaluate long-term factor history without forward data
+        run: node market-radar/scripts/backtest-multifactor.mjs
+      - name: Publish auditable study results
+        run: |
+          git config user.name "market-radar-bot"
+          git config user.email "market-radar-bot@users.noreply.github.com"
+          git add market-radar/data/backtest-multifactor.json market-radar/data/backtest-multifactor-signals.json
+          if ! git diff --cached --quiet; then
+            git commit -m "research: extend MARKET RADAR multivariate factor backtest"
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "Published fresh historic multi-factor result"
+                exit 0
+              fi
+              sleep "$attempt"
+            done
+            echo "Historical study was valid but could not publish"
+            exit 1
+          fi
+          echo "No new completed weeks to publish"
