@@ -14,6 +14,35 @@
 @media(max-width:760px){:root{--nav-w:0px}.sidebar{display:none}.main{margin:0;width:100%}.topbar{padding:12px 17px}.crumb{font-size:9px;letter-spacing:.06em}.top-actions{gap:7px}.status-pill{padding:8px;font-size:10px}.btn{padding:9px 10px}.top-actions .btn span{display:none}.content{padding:24px 15px 108px}.notice{padding:11px 16px}.page-heading{align-items:start}.page-heading h1{font-size:31px}.page-heading p{font-size:12px}.date-label{font-size:10px}.date-label b{font-size:13px}.summary-grid{gap:8px;margin-bottom:13px}.kpi{min-height:108px;padding:15px}.kpi-value{font-size:25px}.kpi-label{margin-bottom:12px}.panel{padding:16px;margin-bottom:10px}.links-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sect-row{grid-template-columns:98px 1fr 67px;gap:8px}.form-grid{grid-template-columns:repeat(2,1fr)}.scenario-grid{grid-template-columns:repeat(2,1fr)}.footer{padding:0 15px 107px}.mobile-nav{position:fixed;inset:auto 0 0 0;padding:8px 5px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(6,1fr);background:#f8f8f3eF;backdrop-filter:blur(16px);border-top:1px solid #daddd5;z-index:12}.mobile-nav button{display:flex;align-items:center;flex-direction:column;justify-content:center;border:0;background:transparent;color:#849088;font-size:10px;gap:3px;padding:4px 2px}.mobile-nav button b{font-family:Georgia,serif;font-size:21px;line-height:1;font-weight:400}.mobile-nav button.active{color:var(--ink);font-weight:800}.modal{padding:20px}.modal .form-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:380px){.form-grid{grid-template-columns:1fr}.links-grid{grid-template-columns:1fr}.date-label{display:none}.sect-row{grid-template-columns:90px 1fr 65px}}
 
+
+/* Research-led daily watchlist - homepage */
+.radar-watchlist{margin:4px 0 26px;padding:20px;border:1px solid var(--line,#ddd);background:var(--panel,#fff);border-radius:16px}
+.radar-watch-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:15px}
+.radar-watch-top h2{font-size:23px;margin:5px 0 5px;letter-spacing:-.03em}
+.radar-watch-date{font-size:14px;font-weight:700;white-space:nowrap;text-align:right}
+.radar-watch-date small{display:block;color:var(--muted,#718075);font-weight:400;margin-top:4px}
+.radar-macro-note{border:1px solid rgba(135,130,90,.25);border-radius:10px;background:rgba(171,151,91,.065);font-size:13px;line-height:1.6;padding:12px 14px;margin:10px 0}
+.radar-macro-note span{display:block;color:var(--muted,#718075);font-size:11px;margin-top:5px}
+.radar-watch-method{font-size:11px;color:var(--muted,#718075);line-height:1.75;margin:10px 0 15px}
+.radar-watch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.radar-watch-card{min-width:0;border:1px solid var(--line,#ddd);border-radius:12px;padding:14px;background:rgba(255,255,255,.5)}
+.radar-watch-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.radar-watch-card-head .stock-link{font-weight:800;font-size:16px}
+.radar-watch-rank{font-size:12px;color:var(--muted,#718075);margin-right:8px}
+.radar-score{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.radar-score small{font-size:11px;color:var(--muted,#718075);font-weight:400}
+.radar-watch-tags{display:flex;flex-wrap:wrap;gap:4px;margin:10px 0}
+.radar-watch-tags .mini-tag{font-size:10px}
+.radar-watch-chips{display:flex;gap:6px;flex-wrap:wrap;font-size:11px}
+.radar-watch-chips span{background:rgba(112,132,119,.075);border-radius:6px;padding:5px 7px}
+.radar-watch-reasons,.radar-watch-risk{font-size:12px;line-height:1.75;margin:10px 0 0}
+.radar-watch-risk{color:#9f5a45}
+.radar-watch-news{font-size:11px;margin-top:10px;line-height:1.6;color:var(--muted,#718075);border-top:1px solid var(--line,#ddd);padding-top:8px}
+.radar-watch-news a{word-break:break-word}
+.radar-watch-subtitle{font-size:16px;font-weight:700;margin:20px 0 10px}
+.radar-watch-subtitle span{color:var(--muted,#718075);font-size:11px;font-weight:400;margin-left:5px}
+@media(max-width:700px){.radar-watchlist{padding:14px}.radar-watch-grid{grid-template-columns:1fr}.radar-watch-top h2{font-size:19px}.radar-watch-date{font-size:12px}.radar-watch-card{padding:12px}}
+
 </style>
 <title>MARKET RADAR, | 台股產業雷達</title>
 <link rel="stylesheet" href="./chip-style.css" />
@@ -962,7 +991,7 @@ const baseWatch=['2330','3231','2382','2376','2327','3026','2383','2308'];
 const STORE_KEY='market-radar-app-v1';
 const deepClone=x=>JSON.parse(JSON.stringify(x));
 const saved=(()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY))||{};}catch{return {};}})();
-const state={tab:'overview',data:saved.data||null,history:Array.isArray(saved.history)?saved.history:[],watch:Array.isArray(saved.watch)?saved.watch:baseWatch,eps:saved.eps||{},journal:saved.journal||[],news:saved.news||[],custom:saved.custom||[],filter:'',sector:'全部',sort:'value',watchOnly:false,stockScope:'pool',activeStock:'2330',earnings:null,refreshing:false};
+const state={tab:'overview',data:saved.data||null,history:Array.isArray(saved.history)?saved.history:[],watch:Array.isArray(saved.watch)?saved.watch:baseWatch,eps:saved.eps||{},journal:saved.journal||[],news:saved.news||[],custom:saved.custom||[],filter:'',sector:'全部',sort:'value',watchOnly:false,stockScope:'pool',activeStock:'2330',earnings:null,picks:saved.picks||null,refreshing:false};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const fmt=(x,d=1)=>x==null||!Number.isFinite(+x)?'—':Number(x).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -976,7 +1005,7 @@ function allPool(){return [...defaultPool,...state.custom.filter(s=>!defaultPool
 function poolItem(code){return allPool().find(s=>s.code===code)||(state.data?.rows||[]).find(r=>r.code===code)||{code,name:code,sector:'自選'};}
 function rowMap(){return new Map((state.data?.rows||[]).map(r=>[r.code,r]));}
 function getStock(code){return rowMap().get(code)||{...poolItem(code),close:null,pct:null,foreign:null,trust:null,volume:null,pe:null,revYoY:null,revMoM:null};}
-function persist(){try{localStorage.setItem(STORE_KEY,JSON.stringify({data:state.data,history:state.history,watch:state.watch,eps:state.eps,journal:state.journal,news:state.news,custom:state.custom}));}catch(e){console.warn('本機儲存容量不足，保留近期快照',e);state.history=state.history.slice(0,15);try{localStorage.setItem(STORE_KEY,JSON.stringify({data:state.data,history:state.history,watch:state.watch,eps:state.eps,journal:state.journal,news:state.news,custom:state.custom}));}catch{}}}
+function persist(){try{localStorage.setItem(STORE_KEY,JSON.stringify({data:state.data,history:state.history,watch:state.watch,eps:state.eps,journal:state.journal,news:state.news,custom:state.custom,picks:state.picks}));}catch(e){console.warn('本機儲存容量不足，保留近期快照',e);state.history=state.history.slice(0,15);try{localStorage.setItem(STORE_KEY,JSON.stringify({data:state.data,history:state.history,watch:state.watch,eps:state.eps,journal:state.journal,news:state.news,custom:state.custom}));}catch{}}}
 function setNotice(text,type=''){const el=$('statusNotice');el.className=`notice ${type}`;el.innerHTML=text;}
 function setStatus(){const el=$('connectionBadge');const has=!!state.data?.rows?.length;el.className=`status-pill ${has?'status-live':'status-idle'}`;el.innerHTML=`<i></i> ${has?(state.data.origin==='import'?'匯入資料':'官方盤後快照'):'尚未連線'}`;}
 function activeNav(){document.querySelectorAll('[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===state.tab));$('topbarTab').textContent=({overview:'OVERVIEW',sectors:'SECTOR RADAR',stocks:'STOCK FLOWS',valuation:'VALUATION LAB',journal:'RESEARCH JOURNAL',settings:'DATA SETTINGS'})[state.tab];}
@@ -1012,12 +1041,55 @@ function renderLongTermOverview(){
   +'<div class="panel-grid equal"><div><h3>投信20日淨買前六</h3>'+view(topTrust,'trust20')+'</div><div><h3>外資20日淨買前六</h3>'+view(topForeign,'foreign20')+'</div></div></section>';
 }
 
+
+function renderDailyWatchlist(){
+ const p=state.picks;
+ if(!p?.tracking?.length){
+  return '<section class="radar-watchlist"><div class="radar-watch-top"><div><div class="eyebrow">RESEARCH RADAR / DAILY</div><h2>每日持續追蹤名單</h2></div><span class="mini-tag amber">等待首次篩選完成</span></div>'
+   +'<p class="small muted">這個區塊將依每日籌碼、已公告財報、重大消息與利率環境自動更新。只會呈現有資料依據的研究對象，不代表買賣建議。</p></section>';
+ }
+ const warning=p.asOf!==state.data?.asOf;
+ const macro=p.macro||{};
+ const macroSeries=macro.series||{};
+ const notes=[];
+ if(macroSeries.DGS10?.fresh)notes.push('美債10年期 '+fmt(macroSeries.DGS10.value,2)+'%（'+esc(macroSeries.DGS10.date)+'）');
+ if(macroSeries.DGS2?.fresh)notes.push('2年期 '+fmt(macroSeries.DGS2.value,2)+'%（'+esc(macroSeries.DGS2.date)+'）');
+ if(macro.marketBreadth!=null)notes.push('台股上漲占比 '+fmt(macro.marketBreadth,1)+'%');
+ const item=(r,i)=>{
+  const one=Array.isArray(r.why)?r.why.slice(0,3):[];
+  const chips=[];
+  if(r.chip?.t20?.net!=null)chips.push('投信20日 '+sign(r.chip.t20.net,0)+' 張');
+  if(r.chip?.f20?.net!=null)chips.push('外資20日 '+sign(r.chip.f20.net,0)+' 張');
+  const event=r.events?.[0];
+  const eventLink=event&&sourceSafe(event.url)?'<a href="'+esc(event.url)+'" target="_blank" rel="noopener noreferrer">官方公告：'+esc(event.title.slice(0,46))+' ↗</a>':event?'<span>官方公告：'+esc(event.title.slice(0,46))+'</span>':'<span>近7日未收錄該公司官方重大公告</span>';
+  return '<article class="radar-watch-card">'
+   +'<div class="radar-watch-card-head"><div><span class="radar-watch-rank">'+String(i+1).padStart(2,'0')+'</span><button class="stock-link" data-action="stock" data-code="'+esc(r.code)+'">'+esc(r.name)+'</button><span class="code-small"> '+esc(r.code)+' ・'+esc(r.sector||r.market||'未分類')+'</span></div><div class="radar-score">'+fmt(r.score,0)+'<small>/100</small></div></div>'
+   +'<div class="radar-watch-tags"><span class="mini-tag">'+esc(r.status||'持續研究')+'</span><span class="mini-tag">'+esc(r.change||'資料更新')+'</span><span class="mini-tag">籌碼 '+fmt(r.scoreComponents?.institutional,0)+'/45</span><span class="mini-tag">基本面 '+fmt(r.scoreComponents?.financial,0)+'/35</span><span class="mini-tag">量價 '+fmt(r.scoreComponents?.relativeAction,0)+'/20</span></div>'
+   +'<div class="radar-watch-chips">'+chips.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>'
+   +(one.length?'<p class="radar-watch-reasons"><strong>追蹤原因：</strong>'+one.map(esc).join('；')+'</p>':'<p class="radar-watch-reasons">尚無足夠正向數據，僅供條件觀察。</p>')
+   +(r.risks?.length?'<p class="radar-watch-risk"><strong>反證／風險：</strong>'+r.risks.slice(0,2).map(esc).join('；')+'</p>':'')
+   +'<div class="radar-watch-news">'+eventLink+'</div></article>';
+ };
+ const tracking=p.tracking.slice(0,8);
+ const discoveries=(p.emerging||[]).slice(0,3);
+ return '<section class="radar-watchlist" id="daily-watchlist">'
+  +'<div class="radar-watch-top"><div><div class="eyebrow">RESEARCH RADAR / DAILY</div><h2>每日持續追蹤名單</h2><p class="small muted">籌碼 × 財報 × 相對強度，結合最新官方消息及總經風險提醒。</p></div><div class="radar-watch-date">'+esc(p.asOf||'—')+'<small>資料交易日</small></div></div>'
+  +(warning?'<div class="warning-note">注意：篩選名單日期與最新盤後行情不同，請以標示日期為準。</div>':'')
+  +'<div class="radar-macro-note"><strong>今日市場條件：</strong>'+esc(macro.marketCaution||macro.message||'總經資料不足')
+  +(notes.length?'<span>'+notes.join('　/　')+'</span>':'<span>利率或市場廣度資料不足，暫不做總經方向判定</span>')+'</div>'
+  +'<p class="radar-watch-method">研究優先分數：20／60日法人籌碼 45 分、營收與已公告財報 35 分、當日相對強弱與流動性 20 分。<strong>尚未回測，分數不是報酬機率，也不等於分批買進條件。</strong> 公告只做事件與風險提示，不由標題直接推定利多。</p>'
+  +'<div class="radar-watch-grid">'+tracking.map(item).join('')+'</div>'
+  +(discoveries.length?'<div class="radar-watch-subtitle">全市場新發現 <span>長期法人資料尚不足，請先列觀察</span></div><div class="radar-watch-grid">'+discoveries.map((r,i)=>item(r,i)).join('')+'</div>':'')
+  +(p.removed?.length?'<p class="radar-watch-method">本次未續列：'+p.removed.slice(0,8).map(x=>esc(x.name+' '+x.code)).join('、')+'。退出只是規則式名單變化，並非賣出訊號。</p>':'')
+  +'<p class="radar-watch-method">更新來源：<a href="https://www.twse.com.tw/" target="_blank" rel="noopener">證交所</a>、<a href="https://www.tpex.org.tw/" target="_blank" rel="noopener">櫃買中心</a>、公司重大訊息與美國公債資料。沒有取得2027／2028法人共識，不會以模型數據冒充。</p></section>';
+}
 function renderOverview(){
  const idx=state.data?.indices?.[0],summary=snapshotSummary(),sectors=catSector(),isConnected=!!state.data?.rows?.length;
  const focus=allPool().map(s=>({...s,...(rowMap().get(s.code)||{})})).filter(s=>s.pct!=null).sort((a,b)=>b.pct-a.pct);
  const topFocus=focus.slice(0,5), bottomFocus=focus.slice(-5).reverse();
  const breadth = summary.up!=null && summary.down!=null && (summary.up+summary.down)>0?(summary.up/(summary.up+summary.down)*100):null;
  return sectionTitle('THE DAILY PULSE','市場總覽','全球訊號 × 台股類股強弱 × 法人籌碼。只顯示可核對的資料。',`<div class="date-label">最新交易日<br><b>${fmtDate(state.data?.asOf)}</b></div>`)
+ +renderDailyWatchlist()
  +`<div class="summary-grid">
    ${kpi('加權指數 · 收盤',idx?.value!=null?fmt(idx.value,2):'—',idx?.pct!=null?`<span class="${color(idx.pct)}">${percentage(idx.pct)}</span> ｜官方指數`:'等待官方資料',color(idx?.pct))}
    ${kpi('全市場上漲家數',summary.up!=null?fmt(summary.up,0):'—',summary.down!=null?`下跌 ${fmt(summary.down,0)} 家`:'無法核實',color(breadth!=null?breadth-50:null))}
@@ -1223,6 +1295,10 @@ async function refresh(options={}){
     const er=await fetch('./data/earnings.json?v='+Date.now(),{cache:'no-store'});
     if(er.ok){const e=await er.json();if(e.count>=200&&e.companies&&typeof e.companies==='object')state.earnings=e;}
   }catch(err){console.warn('官方財報 EPS 尚未同步',err);}
+  try{
+    const pr=await fetch('./data/picks.json?v='+Date.now(),{cache:'no-store'});
+    if(pr.ok){const p=await pr.json();if(p?.asOf&&Array.isArray(p.tracking)){state.picks=p;}}
+  }catch(e){console.warn('每日研究名單尚未同步',e);}
   registerSnapshot(data);
   window.marketRadarLastSyncCheck=Date.now();
   setNotice('<strong>官方盤後資料已同步。</strong> 交易日 '+esc(data.asOf)+'，股票 '+fmt(data.rows.length,0)+' 檔，法人資料覆蓋 '+fmt(data.summary?.withInst,0)+' 檔。網站上傳時間：'+esc((data.generatedAt||'').replace('T',' ').slice(0,16))+' UTC。非盤中即時報價；若資料來源異常，請查看「資料管理」。','success');
