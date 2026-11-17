@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - '.github/workflows/market-radar-sync.yml'
+      - 'market-radar/scripts/sync.mjs'
 permissions:
   contents: write
 concurrency:
