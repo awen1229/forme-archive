@@ -40,10 +40,25 @@ fetch('./data/backtest.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok
  .then(o=>{
   if(o.status!=='completed'||!o.coverage?.weeks||o.coverage?.failures>0)throw Error('長期資料完整度未通過驗證');
   const evalRows=(o.strategyMetrics||[]).filter(x=>x.period==='evaluation');
-  const selected=['hold0050','equal','foreign','trust','margin','momentum','composite'];
-  const names={hold0050:'0050 持有',equal:'六檔等權',foreign:'外資',trust:'投信',margin:'融資',momentum:'四週動能',composite:'四因子綜合'};
-  const trs=selected.map(k=>{let x=evalRows.find(r=>r.strategy===k);if(!x||x.error)return '';return '<tr><td>'+names[k]+'</td><td class="num">'+f(x.cumulative_pct)+'</td><td class="num">'+f(x.max_open_to_open_drawdown_pct)+'</td><td class="num">'+(Number.isFinite(x.sharpe_0pct_cash)?x.sharpe_0pct_cash.toFixed(2):'--')+'</td></tr>'}).join('');
-  root.innerHTML='<p class="tiny sub">資料截止 '+o.asOf+' ｜有效訊號 '+o.coverage.weeks+' 週 ｜下載 '+o.coverage.fetchedFiles+'/'+o.coverage.requiredFiles+' 個原始檔。樣本僅六股，含存活者偏誤。</p><div class="table-scroll"><table><thead><tr><th>2026 後段驗證</th><th class="num">累積報酬</th><th class="num">最大週度回撤</th><th class="num">Sharpe</th></tr></thead><tbody>'+trs+'</tbody></table></div><p class="tiny sub">此表不能用於推論全市場，且不含配息、滑價、完整公司行動調整。相同期間才具可比性。</p>';
+  const devRows=(o.strategyMetrics||[]).filter(x=>x.period==='development');
+  const selected=['hold0050','equal','momentum','composite','foreignPositive','trustPositive','foreign','trust','margin'];
+  const names={hold0050:'0050 持有',equal:'六檔等權',foreign:'外資單週買超排名',trust:'投信單週買超排名',margin:'融資增量較少',momentum:'過去四週動能',composite:'四因子綜合',foreignPositive:'外資淨買為正',trustPositive:'投信淨買為正'};
+  const trs=selected.map(k=>{
+   const x=evalRows.find(r=>r.strategy===k),d=devRows.find(r=>r.strategy===k);
+   if(!x||x.error||!d||d.error)return '';
+   return '<tr><td>'+esc(names[k])+'</td><td class="num">'+f(d.cumulative_pct)+'</td><td class="num">'+f(x.cumulative_pct)+'</td><td class="num" style="color:#b8463d">'+f(x.max_open_to_open_drawdown_pct)+'</td><td class="num">'+(Number.isFinite(x.sharpe_0pct_cash)?x.sharpe_0pct_cash.toFixed(2):'--')+'</td></tr>';
+  }).join('');
+  const ic=(o.informationCoefficients||[]).filter(x=>x.period==='evaluation');
+  const factorNames={foreign:'外資淨買',trust:'投信淨買',margin:'融資餘額變化',momentum:'過去四週動能'};
+  const icRows=ic.map(x=>'<tr><td>'+esc(factorNames[x.feature]||x.feature)+'</td><td class="num">'+Number(x.mean_weekly_IC).toFixed(4)+'</td><td class="num">'+(x.IC_positive_fraction*100).toFixed(1)+'%</td><td class="num">'+(x.IC_t_stat_descriptive==null?'--':Number(x.IC_t_stat_descriptive).toFixed(2))+'</td></tr>').join('');
+  root.innerHTML='<p class="tiny sub">歷史區間：2024–2025 開發觀察 '+(devRows[0]?.weeks||'--')+' 週；2026 後段獨立年份比較 '+(evalRows[0]?.weeks||'--')+' 週。累積 '+o.coverage.weeks+' 個有效週期，原始 CSV '+o.coverage.fetchedFiles+'/'+o.coverage.requiredFiles+' 份，缺檔 '+o.coverage.failures+'。截至 '+esc(o.asOf)+'。</p>'+
+   '<div class="notice" style="margin:12px 0"><strong>高報酬不等於已驗證策略。</strong> 本研究僅六檔事後選定、仍然存續的個股，產業與股票本身有強烈選擇偏誤。2026 動能報酬雖高，但其最大週度回撤也非常大。不能直接套用至全市場選股。</div>'+
+   '<div class="table-scroll"><table><thead><tr><th>策略／基準</th><th class="num">2024–25累積</th><th class="num">2026累積</th><th class="num">2026最大週回撤</th><th class="num">2026 Sharpe</th></tr></thead><tbody>'+trs+'</tbody></table></div>'+
+   '<h3 style="margin:21px 0 8px">2026 年每週排名相關性（Spearman IC）</h3>'+
+   '<p class="sub tiny">IC 越接近 0，代表該因子對下一週相對報酬的排序能力越弱；單一年度的數值不足以證明穩定預測力。</p>'+
+   '<div class="table-scroll"><table><thead><tr><th>因子</th><th class="num">平均每週 IC</th><th class="num">IC為正的比例</th><th class="num">描述性 t 值</th></tr></thead><tbody>'+icRows+'</tbody></table></div>'+
+   '<p class="sub tiny" style="margin-top:15px">成交條件：週末訊號、隔週開盤進出、每週重新配置，估計券商手續費與股票交易稅；未計配息、滑價、盤中回撤或完整公司行動。六檔為 2330、2383、2327、3026、2308、2317。此研究與首頁 45／35／20 分數不同，不可混合勝率。</p>';
+
  })
  .catch(e=>{root.innerHTML='<p class="sub">'+esc(e.message)+'。這個區塊會保留空白，不以估算值代替回測績效。</p>'});
 })();
