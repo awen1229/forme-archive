@@ -16,6 +16,7 @@
 
 </style>
 <title>MARKET RADAR, | 台股產業雷達</title>
+<link rel="stylesheet" href="./chip-style.css" />
 </head>
 <body>
 <div class="shell">
@@ -1217,7 +1218,46 @@ function showModal(html){$('dialogInner').innerHTML=html;$('dialog').showModal()
 function closeModal(){$('dialog').close();}
 function fieldHtml(name,label,val='',type='text',attrs=''){return `<div class="field"><label for="f_${name}">${label}</label><input class="form-control" id="f_${name}" name="${name}" type="${type}" value="${esc(val)}" ${attrs}></div>`;}
 function editEps(){const code=state.activeStock,d=state.eps[code]||{};showModal(`<button class="modal-close" data-action="close">×</button><h2>${esc(poolItem(code).name)} EPS 預估</h2><p>請使用可核對的法人研究或自行建立的假設，並保留來源與日期。預估不會自動更新。</p><form id="epsForm"><div class="form-grid">${fieldHtml('eps27','2027E EPS（元）',d.eps27||'','number','step="0.01" min="0"')}${fieldHtml('eps28','2028E EPS（元）',d.eps28||'','number','step="0.01" min="0"')}${fieldHtml('date','預估日期',d.date||today(),'date')}</div>${fieldHtml('source','資料來源網址／機構',d.source||'')}${fieldHtml('memo','備註（例如上修原因）',d.memo||'')}<div class="form-actions"><button class="btn" type="button" data-action="close">取消</button><button class="btn btn-primary" type="submit">儲存預估</button></div></form>`);}
-function showStock(code){state.activeStock=code;const s=getStock(code),pool=poolItem(code),hist5=historyFlow(code,5,'trust'),hist10=historyFlow(code,10,'trust');const e=state.eps[code]||{};const v=getValuation(code);showModal(`<button class="modal-close" data-action="close">×</button><div class="eyebrow">STOCK DETAIL / ${esc(pool.sector)}</div><h2>${esc(pool.name)} <span class="small muted">${code}</span></h2><div class="summary-grid" style="grid-template-columns:repeat(2,1fr)">${kpi('收盤價',fmt(s.close,2),state.data?.asOf||'—')}${kpi('當日漲跌',percentage(s.pct),'官方盤後',color(s.pct))}${kpi('外資 1 日（張）',sign(s.foreign,0),'含外資自營商（有數據時）',color(s.foreign))}${kpi('投信 1 日（張）',sign(s.trust,0),'非必然主動建倉',color(s.trust))}</div><div class="metric-inline"><div class="label">投信近 5 筆</div><strong class="${color(hist5)}">${sign(hist5,0)} 張</strong></div><div class="metric-inline"><div class="label">投信近 10 筆</div><strong class="${color(hist10)}">${sign(hist10,0)} 張</strong></div><div class="metric-inline"><div class="label">最新月營收年增</div><strong class="${color(s.revYoY)}">${percentage(s.revYoY)} ${s.revMonth?`(${s.revMonth})`:''}</strong></div><div class="metric-inline"><div class="label">已公告累計 EPS</div><strong>${v.reported?fmt(v.reported.epsYtd,2)+'（'+esc(v.reported.period)+' 累計）':'—'}</strong></div><div class="metric-inline"><div class="label">2027 模型情境 EPS（非法人共識）</div><strong>${fmt(v.d.eps27,2)}</strong></div><div class="metric-inline"><div class="label">歷史 PE</div><strong>${fmt(s.pe,1)}</strong></div><div class="metric-inline"><div class="label">2027 模型 PE（非共識）</div><strong>${v.pe27==null?'—':fmt(v.pe27,1)}</strong></div><div class="warning-note margintop">單日買超與近 N 筆快照無法推論主力真正成本。法人共識需合法資料授權，本頁機械情境不是分析師預估。</div><div class="form-actions"><button class="btn btn-small" data-action="watch" data-code="${code}">${state.watch.includes(code)?'★ 移除自選':'☆ 加入自選'}</button><button class="btn btn-primary btn-small" data-action="goValuation" data-code="${code}">EPS 試算 ↗</button></div>`);}
+
+function renderLongChip(code){
+ const periods=[5,10,20,60,120];
+ const header=periods.map(n=>'<th>'+n+'日</th>').join('');
+ const cells=who=>periods.map(n=>{
+  const v=MarketChip.sum(code,n,who);
+  return '<td class="'+color(v)+'">'+sign(v,0)+'</td>';
+ }).join('');
+ const t20=MarketChip.stats(code,20,'trust'),f20=MarketChip.stats(code,20,'foreign');
+ const st=MarketChip.streak(code,'trust'),sf=MarketChip.streak(code,'foreign');
+ const metric=(label,value)=>'<div class="metric-inline"><div class="label">'+esc(label)+'</div><strong>'+esc(value)+'</strong></div>';
+ let body='<section class="chip-long-term"><h3>法人中長期籌碼</h3>'
+  +'<p class="chip-flow-caption">單位：張。5／10／20／60／120 日累積「淨買賣超」，僅在有足夠連續有效交易日資料時顯示；不代表法人持股水位或成本。</p>'
+  +'<div class="table-wrap"><table><thead><tr><th>法人</th>'+header+'</tr></thead>'
+  +'<tbody><tr><td>外資</td>'+cells('foreign')+'</tr><tr><td>投信</td>'+cells('trust')+'</tr></tbody></table></div>';
+ body+=metric('20日法人方向',MarketChip.interpretation(code));
+ body+=metric('近20日投信買超天數',t20?t20.positive+'／20':'資料不足');
+ body+=metric('近20日外資買超天數',f20?f20.positive+'／20':'資料不足');
+ body+=metric('投信連續買賣',st?st.kind+' '+st.days+' 日':'資料不足');
+ body+=metric('外資連續買賣',sf?sf.kind+' '+sf.days+' 日':'資料不足');
+ body+=metric('投信近20日淨額／同期成交量',t20?.portion!=null?percentage(t20.portion):'同期成交量資料不足');
+ const win=MarketChip.window(code,20,'trust');
+ if(!win||!MarketChip.window(code,20,'foreign')){
+  body+='<div class="warning-note margintop">近20日籌碼或部分日期尚未驗證，無法畫完整歷史圖。</div>';
+ }else{
+  const max=Math.max(1,...win.flatMap(z=>[Math.abs(z.foreign||0),Math.abs(z.trust||0)]));
+  function bar(v,label){
+   const n=Math.min(49,Math.abs(v)/max*49),left=v<0?50-n:50;
+   const title=esc(label)+' '+sign(v,0)+' 張';
+   return '<div class="chip-flow-track" title="'+title+'"><span class="chip-flow-mid"></span><span class="chip-flow-fill '+(v>=0?'chip-flow-buy':'chip-flow-sell')+'" style="width:'+Math.max(.2,n)+'%;left:'+left+'%"></span></div>';
+  }
+  body+='<h3>近20個交易日籌碼流向</h3><div class="chip-series-head"><span>日期</span><span>外資</span><span>投信</span></div><div class="chip-series-scroll">'
+  +[...win].reverse().map(z=>'<div class="chip-series-row"><time>'+esc(z.date.slice(5))+'</time>'+bar(z.foreign,'外資')+bar(z.trust,'投信')+'</div>').join('')+'</div>'
+  +'<p class="chip-flow-caption">綠色為淨買，紅色為淨賣。長條以近20日最大絕對值縮放，各日均有官方來源；非股價線圖。</p>';
+ }
+ body+='<p class="chip-flow-caption">解讀注意：投信可能受到 ETF 換股、申贖影響，外資可能是避險與跨市場配置。不能僅用累積買超推論主動建倉。</p></section>';
+ return body;
+}
+
+function showStock(code){state.activeStock=code;const s=getStock(code),pool=poolItem(code),hist5=historyFlow(code,5,'trust'),hist10=historyFlow(code,10,'trust');const e=state.eps[code]||{};const v=getValuation(code);showModal(`<button class="modal-close" data-action="close">×</button><div class="eyebrow">STOCK DETAIL / ${esc(pool.sector)}</div><h2>${esc(pool.name)} <span class="small muted">${code}</span></h2><div class="summary-grid" style="grid-template-columns:repeat(2,1fr)">${kpi('收盤價',fmt(s.close,2),state.data?.asOf||'—')}${kpi('當日漲跌',percentage(s.pct),'官方盤後',color(s.pct))}${kpi('外資 1 日（張）',sign(s.foreign,0),'含外資自營商（有數據時）',color(s.foreign))}${kpi('投信 1 日（張）',sign(s.trust,0),'非必然主動建倉',color(s.trust))}</div><div class="metric-inline"><div class="label">投信近 5 筆</div><strong class="${color(hist5)}">${sign(hist5,0)} 張</strong></div><div class="metric-inline"><div class="label">投信近 10 筆</div><strong class="${color(hist10)}">${sign(hist10,0)} 張</strong></div><div class="metric-inline"><div class="label">最新月營收年增</div><strong class="${color(s.revYoY)}">${percentage(s.revYoY)} ${s.revMonth?`(${s.revMonth})`:''}</strong></div><div class="metric-inline"><div class="label">已公告累計 EPS</div><strong>${v.reported?fmt(v.reported.epsYtd,2)+'（'+esc(v.reported.period)+' 累計）':'—'}</strong></div><div class="metric-inline"><div class="label">2027 模型情境 EPS（非法人共識）</div><strong>${fmt(v.d.eps27,2)}</strong></div><div class="metric-inline"><div class="label">歷史 PE</div><strong>${fmt(s.pe,1)}</strong></div><div class="metric-inline"><div class="label">2027 模型 PE（非共識）</div><strong>${v.pe27==null?'—':fmt(v.pe27,1)}</strong></div>${renderLongChip(code)}<div class="warning-note margintop">單日買超與近 N 筆快照無法推論主力真正成本。法人共識需合法資料授權，本頁機械情境不是分析師預估。</div><div class="form-actions"><button class="btn btn-small" data-action="watch" data-code="${code}">${state.watch.includes(code)?'★ 移除自選':'☆ 加入自選'}</button><button class="btn btn-primary btn-small" data-action="goValuation" data-code="${code}">EPS 試算 ↗</button></div>`);}
 function noteForm(){showModal(`<button class="modal-close" data-action="close">×</button><h2>新增研究日誌</h2><form id="noteForm"><div class="form-grid">${fieldHtml('date','日期',today(),'date')}${fieldHtml('title','標題','產業籌碼觀察','','required')}</div><div class="field"><label>內容／支持理由／反證條件</label><textarea name="text" class="form-control" rows="8" placeholder="今日市場在反映什麼？哪些族群變強？什麼情況證明我判斷錯了？" required></textarea></div><div class="form-actions"><button class="btn" type="button" data-action="close">取消</button><button class="btn btn-primary" type="submit">存入日誌</button></div></form>`);}
 function newsForm(){showModal(`<button class="modal-close" data-action="close">×</button><h2>新增消息查證</h2><p>把消息來源和可信度存下來，未證實事項不可當成既定事實。</p><form id="newsForm"><div class="form-grid">${fieldHtml('date','日期',today(),'date')}${fieldHtml('title','事件標題','','text','required')}<div class="field"><label>可信度</label><select class="form-control" name="level"><option>官方公告</option><option>媒體報導</option><option>未證實傳聞</option></select></div></div>${fieldHtml('url','原始來源網址','','url')}<div class="field margintop"><label>事件內容與市場影響</label><textarea name="text" class="form-control" required placeholder="已確認的事實、未知之處、受影響的供應鏈"></textarea></div><div class="form-actions"><button class="btn" type="button" data-action="close">取消</button><button class="btn btn-primary" type="submit">儲存消息</button></div></form>`);}
 function fileDownload(name,text,type){const blob=new Blob([text],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
