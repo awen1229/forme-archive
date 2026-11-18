@@ -184,6 +184,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-18",
+      "firstCapturedAt": "2026-11-18T12:33:04.129Z",
+      "publishedPicksAt": "2026-11-18T12:33:01.193Z",
+      "benchmark0050": {
+        "close": 94.1,
+        "date": "2026-11-18"
+      },
+      "indexPct": 0.26,
+      "marketBreadth": 46.8,
+      "sourceDates": {
+        "prices": "2026-11-18",
+        "chip": "2026-11-18",
+        "earnings": "2026-11-18T12:32:56.112Z",
+        "news": "2026-11-18T12:32:55.972Z",
+        "macro": "2026-11-18T12:33:01.193Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "2379",
+          "name": "瑞昱",
+          "rank": 1,
+          "sector": "先進製程／IC 設計",
+          "score": 91,
+          "components": {
+            "institutional": 42,
+            "financial": 32,
+            "relativeAction": 17
+          },
+          "close": 734,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "3661",
+          "name": "世芯-KY",
+          "rank": 2,
+          "sector": "先進製程／IC 設計",
+          "score": 91,
+          "components": {
+            "institutional": 36,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 3950,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 3,
+          "sector": "營建／資產／建材",
+          "score": 86,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 6
+          },
+          "close": 27.1,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "3324",
+          "name": "雙鴻",
+          "rank": 4,
+          "sector": "散熱／電源／機構件",
+          "score": 86,
+          "components": {
+            "institutional": 31,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 979,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "2368",
+          "name": "金像電",
+          "rank": 5,
+          "sector": "PCB／CCL／ABF",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 877,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "2605",
+          "name": "新興",
+          "rank": 6,
+          "sector": "航運／航空運輸",
+          "score": 83,
+          "components": {
+            "institutional": 34,
+            "financial": 35,
+            "relativeAction": 14
+          },
+          "close": 32.45,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "3017",
+          "name": "奇鋐",
+          "rank": 7,
+          "sector": "散熱／電源／機構件",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 2715,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "3711",
+          "name": "日月光投控",
+          "rank": 8,
+          "sector": "封裝／半導體設備／測試",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 548,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "6510",
+          "name": "精測",
+          "rank": 9,
+          "sector": "封裝／半導體設備／測試",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 2915,
+          "market": "上櫃",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-18"
+        },
+        {
+          "code": "2451",
+          "name": "創見",
+          "rank": 10,
+          "sector": "記憶體／儲存",
+          "score": 82,
+          "components": {
+            "institutional": 33,
+            "financial": 32,
+            "relativeAction": 17
+          },
+          "close": 218.5,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-18"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
