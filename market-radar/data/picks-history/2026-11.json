@@ -367,6 +367,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-19",
+      "firstCapturedAt": "2026-11-19T14:18:49.305Z",
+      "publishedPicksAt": "2026-11-19T14:18:44.852Z",
+      "benchmark0050": {
+        "close": 90.2,
+        "date": "2026-11-19"
+      },
+      "indexPct": -4.4,
+      "marketBreadth": 6.2,
+      "sourceDates": {
+        "prices": "2026-11-19",
+        "chip": "2026-11-19",
+        "earnings": "2026-11-19T14:18:41.757Z",
+        "news": "2026-11-19T14:18:41.617Z",
+        "macro": "2026-11-19T14:18:44.852Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 1,
+          "sector": "營建／資產／建材",
+          "score": 92,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 12
+          },
+          "close": 26.6,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "1476",
+          "name": "儒鴻",
+          "rank": 2,
+          "sector": "紡織／運動／戶外",
+          "score": 88,
+          "components": {
+            "institutional": 41,
+            "financial": 27,
+            "relativeAction": 20
+          },
+          "close": 384.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "6782",
+          "name": "視陽",
+          "rank": 3,
+          "sector": "醫療／生技／醫材",
+          "score": 86,
+          "components": {
+            "institutional": 31,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 290.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "1477",
+          "name": "聚陽",
+          "rank": 4,
+          "sector": "紡織／運動／戶外",
+          "score": 85,
+          "components": {
+            "institutional": 38,
+            "financial": 27,
+            "relativeAction": 20
+          },
+          "close": 224,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "6446",
+          "name": "藥華藥",
+          "rank": 5,
+          "sector": "醫療／生技／醫材",
+          "score": 83,
+          "components": {
+            "institutional": 36,
+            "financial": 35,
+            "relativeAction": 12
+          },
+          "close": 1205,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "2379",
+          "name": "瑞昱",
+          "rank": 6,
+          "sector": "先進製程／IC 設計",
+          "score": 82,
+          "components": {
+            "institutional": 35,
+            "financial": 32,
+            "relativeAction": 15
+          },
+          "close": 726,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "4961",
+          "name": "天鈺",
+          "rank": 7,
+          "sector": "先進製程／IC 設計",
+          "score": 80,
+          "components": {
+            "institutional": 45,
+            "financial": 29,
+            "relativeAction": 6
+          },
+          "close": 171.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "1802",
+          "name": "台玻",
+          "rank": 8,
+          "sector": "營建／資產／建材",
+          "score": 79,
+          "components": {
+            "institutional": 38,
+            "financial": 35,
+            "relativeAction": 6
+          },
+          "close": 58.7,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "2027",
+          "name": "大成鋼",
+          "rank": 9,
+          "sector": "原物料／鋼鐵／石化",
+          "score": 78,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 15
+          },
+          "close": 45.8,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-19"
+        },
+        {
+          "code": "2317",
+          "name": "鴻海",
+          "rank": 10,
+          "sector": "AI 伺服器／機櫃",
+          "score": 77,
+          "components": {
+            "institutional": 33,
+            "financial": 29,
+            "relativeAction": 15
+          },
+          "close": 220.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-19"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
