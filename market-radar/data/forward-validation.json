@@ -1,11 +1,11 @@
 {
   "schema": 1,
   "status": "collecting",
-  "generatedAt": "2026-11-19T14:18:49.366Z",
-  "asOf": "2026-11-19",
+  "generatedAt": "2026-11-20T12:33:27.818Z",
+  "asOf": "2026-11-20",
   "firstRecordedSignal": "2026-11-17",
-  "lastRecordedSignal": "2026-11-19",
-  "observations": 3,
+  "lastRecordedSignal": "2026-11-20",
+  "observations": 4,
   "horizons": {
     "5": {
       "completedCohorts": 0,
@@ -17,7 +17,7 @@
       "meanTopBottomSpreadPpt": null,
       "firstSignal": null,
       "lastSignal": null,
-      "pendingCohorts": 3,
+      "pendingCohorts": 4,
       "incompleteCohorts": 0,
       "recentIncomplete": [],
       "latestCompleted": null
@@ -32,7 +32,7 @@
       "meanTopBottomSpreadPpt": null,
       "firstSignal": null,
       "lastSignal": null,
-      "pendingCohorts": 3,
+      "pendingCohorts": 4,
       "incompleteCohorts": 0,
       "recentIncomplete": [],
       "latestCompleted": null
@@ -47,7 +47,7 @@
       "meanTopBottomSpreadPpt": null,
       "firstSignal": null,
       "lastSignal": null,
-      "pendingCohorts": 3,
+      "pendingCohorts": 4,
       "incompleteCohorts": 0,
       "recentIncomplete": [],
       "latestCompleted": null
