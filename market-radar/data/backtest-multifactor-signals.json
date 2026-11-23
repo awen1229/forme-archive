@@ -12,7 +12,7 @@
     "fullDiv"
   ],
   "asOf": "2026-11-16",
-  "createdAt": "2026-11-17T12:26:30.253Z",
+  "createdAt": "2026-11-23T14:31:03.875Z",
   "formula": "chip45 + fundamental35 + 0050-relative20; ticker ascending tie break (no other factor)",
   "revenueVintage": "Per-row published date when provided, else next-month day18",
   "quarterVintage": "Quarter-end plus 55 days conservative proxy; original issuer vintages not independently audited",
