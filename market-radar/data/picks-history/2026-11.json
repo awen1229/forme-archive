@@ -733,6 +733,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-23",
+      "firstCapturedAt": "2026-11-23T22:54:20.349Z",
+      "publishedPicksAt": "2026-11-23T22:54:17.275Z",
+      "benchmark0050": {
+        "close": 87,
+        "date": "2026-11-23"
+      },
+      "indexPct": 2.16,
+      "marketBreadth": 66.4,
+      "sourceDates": {
+        "prices": "2026-11-23",
+        "chip": "2026-11-23",
+        "earnings": "2026-11-23T22:54:12.051Z",
+        "news": "2026-11-23T22:54:11.881Z",
+        "macro": "2026-11-23T22:54:17.275Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "8299",
+          "name": "群聯",
+          "rank": 1,
+          "sector": "記憶體／儲存",
+          "score": 100,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 1450,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "4961",
+          "name": "天鈺",
+          "rank": 2,
+          "sector": "先進製程／IC 設計",
+          "score": 94,
+          "components": {
+            "institutional": 45,
+            "financial": 29,
+            "relativeAction": 20
+          },
+          "close": 172,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "1802",
+          "name": "台玻",
+          "rank": 3,
+          "sector": "營建／資產／建材",
+          "score": 93,
+          "components": {
+            "institutional": 38,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 58.1,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "3661",
+          "name": "世芯-KY",
+          "rank": 4,
+          "sector": "先進製程／IC 設計",
+          "score": 91,
+          "components": {
+            "institutional": 36,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 3560,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "3260",
+          "name": "威剛",
+          "rank": 5,
+          "sector": "記憶體／儲存",
+          "score": 91,
+          "components": {
+            "institutional": 36,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 249.5,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "2472",
+          "name": "立隆電",
+          "rank": 6,
+          "sector": "被動元件／電子材料",
+          "score": 86,
+          "components": {
+            "institutional": 31,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 125,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 7,
+          "sector": "營建／資產／建材",
+          "score": 86,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 6
+          },
+          "close": 25,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "6147",
+          "name": "頎邦",
+          "rank": 8,
+          "sector": "封裝／半導體設備／測試",
+          "score": 85,
+          "components": {
+            "institutional": 33,
+            "financial": 32,
+            "relativeAction": 20
+          },
+          "close": 123,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "2059",
+          "name": "川湖",
+          "rank": 9,
+          "sector": "AI 伺服器／機櫃",
+          "score": 84,
+          "components": {
+            "institutional": 29,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 5640,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        },
+        {
+          "code": "2603",
+          "name": "長榮",
+          "rank": 10,
+          "sector": "航運／航空運輸",
+          "score": 84,
+          "components": {
+            "institutional": 38,
+            "financial": 35,
+            "relativeAction": 11
+          },
+          "close": 234.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-23"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
