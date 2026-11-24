@@ -916,6 +916,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-24",
+      "firstCapturedAt": "2026-11-24T21:29:51.166Z",
+      "publishedPicksAt": "2026-11-24T21:29:47.775Z",
+      "benchmark0050": {
+        "close": 95.7,
+        "date": "2026-11-24"
+      },
+      "indexPct": 8.99,
+      "marketBreadth": 96.9,
+      "sourceDates": {
+        "prices": "2026-11-24",
+        "chip": "2026-11-24",
+        "earnings": "2026-11-24T21:29:42.429Z",
+        "news": "2026-11-24T21:29:42.270Z",
+        "macro": "2026-11-24T21:29:47.775Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "8299",
+          "name": "群聯",
+          "rank": 1,
+          "sector": "記憶體／儲存",
+          "score": 93,
+          "components": {
+            "institutional": 41,
+            "financial": 35,
+            "relativeAction": 17
+          },
+          "close": 1595,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 2,
+          "sector": "營建／資產／建材",
+          "score": 91,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 11
+          },
+          "close": 26.7,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "1802",
+          "name": "台玻",
+          "rank": 3,
+          "sector": "營建／資產／建材",
+          "score": 87,
+          "components": {
+            "institutional": 38,
+            "financial": 35,
+            "relativeAction": 14
+          },
+          "close": 63.9,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "2603",
+          "name": "長榮",
+          "rank": 4,
+          "sector": "航運／航空運輸",
+          "score": 87,
+          "components": {
+            "institutional": 38,
+            "financial": 35,
+            "relativeAction": 14
+          },
+          "close": 257,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "5904",
+          "name": "寶雅*",
+          "rank": 5,
+          "sector": "零售／食品／觀光",
+          "score": 86,
+          "components": {
+            "institutional": 45,
+            "financial": 30,
+            "relativeAction": 11
+          },
+          "close": 71.3,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "3661",
+          "name": "世芯-KY",
+          "rank": 6,
+          "sector": "先進製程／IC 設計",
+          "score": 85,
+          "components": {
+            "institutional": 36,
+            "financial": 35,
+            "relativeAction": 14
+          },
+          "close": 3915,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "2618",
+          "name": "長榮航",
+          "rank": 7,
+          "sector": "航運／航空運輸",
+          "score": 82,
+          "components": {
+            "institutional": 38,
+            "financial": 30,
+            "relativeAction": 14
+          },
+          "close": 48.6,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "6446",
+          "name": "藥華藥",
+          "rank": 8,
+          "sector": "醫療／生技／醫材",
+          "score": 82,
+          "components": {
+            "institutional": 36,
+            "financial": 35,
+            "relativeAction": 11
+          },
+          "close": 1150,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "3029",
+          "name": "零壹",
+          "rank": 9,
+          "sector": "資服／資安／軟體",
+          "score": 81,
+          "components": {
+            "institutional": 41,
+            "financial": 29,
+            "relativeAction": 11
+          },
+          "close": 113.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        },
+        {
+          "code": "6782",
+          "name": "視陽",
+          "rank": 10,
+          "sector": "醫療／生技／醫材",
+          "score": 80,
+          "components": {
+            "institutional": 34,
+            "financial": 35,
+            "relativeAction": 11
+          },
+          "close": 292.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-24"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
