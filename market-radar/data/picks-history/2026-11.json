@@ -1099,6 +1099,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-25",
+      "firstCapturedAt": "2026-11-25T20:38:20.139Z",
+      "publishedPicksAt": "2026-11-25T20:38:16.491Z",
+      "benchmark0050": {
+        "close": 90.3,
+        "date": "2026-11-25"
+      },
+      "indexPct": -4.8,
+      "marketBreadth": 5.5,
+      "sourceDates": {
+        "prices": "2026-11-25",
+        "chip": "2026-11-25",
+        "earnings": "2026-11-25T20:38:07.329Z",
+        "news": "2026-11-25T20:38:07.158Z",
+        "macro": "2026-11-25T20:38:16.491Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 1,
+          "sector": "營建／資產／建材",
+          "score": 92,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 12
+          },
+          "close": 25.8,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "4961",
+          "name": "天鈺",
+          "rank": 2,
+          "sector": "先進製程／IC 設計",
+          "score": 86,
+          "components": {
+            "institutional": 45,
+            "financial": 29,
+            "relativeAction": 12
+          },
+          "close": 163,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "6782",
+          "name": "視陽",
+          "rank": 3,
+          "sector": "醫療／生技／醫材",
+          "score": 84,
+          "components": {
+            "institutional": 34,
+            "financial": 35,
+            "relativeAction": 15
+          },
+          "close": 292,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "1476",
+          "name": "儒鴻",
+          "rank": 4,
+          "sector": "紡織／運動／戶外",
+          "score": 83,
+          "components": {
+            "institutional": 41,
+            "financial": 27,
+            "relativeAction": 15
+          },
+          "close": 368.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "2368",
+          "name": "金像電",
+          "rank": 5,
+          "sector": "PCB／CCL／ABF",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 905,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "3653",
+          "name": "健策",
+          "rank": 6,
+          "sector": "散熱／電源／機構件",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 4170,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "3665",
+          "name": "貿聯-KY",
+          "rank": 7,
+          "sector": "高速網通／光通訊",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 1630,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "3029",
+          "name": "零壹",
+          "rank": 8,
+          "sector": "資服／資安／軟體",
+          "score": 82,
+          "components": {
+            "institutional": 41,
+            "financial": 29,
+            "relativeAction": 12
+          },
+          "close": 110,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "1477",
+          "name": "聚陽",
+          "rank": 9,
+          "sector": "紡織／運動／戶外",
+          "score": 80,
+          "components": {
+            "institutional": 38,
+            "financial": 27,
+            "relativeAction": 15
+          },
+          "close": 223,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        },
+        {
+          "code": "5904",
+          "name": "寶雅*",
+          "rank": 10,
+          "sector": "零售／食品／觀光",
+          "score": 80,
+          "components": {
+            "institutional": 38,
+            "financial": 30,
+            "relativeAction": 12
+          },
+          "close": 68.7,
+          "market": "上櫃",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-25"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
