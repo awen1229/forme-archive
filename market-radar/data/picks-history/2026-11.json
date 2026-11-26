@@ -1282,6 +1282,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-26",
+      "firstCapturedAt": "2026-11-26T20:30:41.518Z",
+      "publishedPicksAt": "2026-11-26T20:30:37.298Z",
+      "benchmark0050": {
+        "close": 92.85,
+        "date": "2026-11-26"
+      },
+      "indexPct": 2.5,
+      "marketBreadth": 87.2,
+      "sourceDates": {
+        "prices": "2026-11-26",
+        "chip": "2026-11-26",
+        "earnings": "2026-11-25T22:14:30.963Z",
+        "news": "2026-11-26T20:30:30.942Z",
+        "macro": "2026-11-26T20:30:37.298Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "4961",
+          "name": "天鈺",
+          "rank": 1,
+          "sector": "先進製程／IC 設計",
+          "score": 94,
+          "components": {
+            "institutional": 45,
+            "financial": 29,
+            "relativeAction": 20
+          },
+          "close": 172,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 2,
+          "sector": "營建／資產／建材",
+          "score": 91,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 11
+          },
+          "close": 26.05,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "6782",
+          "name": "視陽",
+          "rank": 3,
+          "sector": "醫療／生技／醫材",
+          "score": 89,
+          "components": {
+            "institutional": 34,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 310.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "6446",
+          "name": "藥華藥",
+          "rank": 4,
+          "sector": "醫療／生技／醫材",
+          "score": 88,
+          "components": {
+            "institutional": 33,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 1175,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "8299",
+          "name": "群聯",
+          "rank": 5,
+          "sector": "記憶體／儲存",
+          "score": 88,
+          "components": {
+            "institutional": 33,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 1630,
+          "market": "上櫃",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "2059",
+          "name": "川湖",
+          "rank": 6,
+          "sector": "AI 伺服器／機櫃",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 7155,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "2308",
+          "name": "台達電",
+          "rank": 7,
+          "sector": "散熱／電源／機構件",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 1120,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "2368",
+          "name": "金像電",
+          "rank": 8,
+          "sector": "PCB／CCL／ABF",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 995,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "2472",
+          "name": "立隆電",
+          "rank": 9,
+          "sector": "被動元件／電子材料",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 137.5,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-26"
+        },
+        {
+          "code": "3017",
+          "name": "奇鋐",
+          "rank": 10,
+          "sector": "散熱／電源／機構件",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 2795,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-26"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
