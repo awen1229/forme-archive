@@ -1465,6 +1465,189 @@
         }
       ],
       "note": "Append-only historical research observation. Not a trade or performance claim."
+    },
+    {
+      "date": "2026-11-27",
+      "firstCapturedAt": "2026-11-27T20:17:44.448Z",
+      "publishedPicksAt": "2026-11-27T20:17:41.460Z",
+      "benchmark0050": {
+        "close": 92.4,
+        "date": "2026-11-27"
+      },
+      "indexPct": 0.4,
+      "marketBreadth": 39.5,
+      "sourceDates": {
+        "prices": "2026-11-27",
+        "chip": "2026-11-27",
+        "earnings": "2026-11-27T20:17:34.782Z",
+        "news": "2026-11-27T20:17:34.623Z",
+        "macro": "2026-11-27T20:17:41.460Z"
+      },
+      "rule": "籌碼45＋基本面35＋相對強弱與流動性20；已進行短期歷史近似回測，但尚無完整樣本外驗證；此分數是研究排序，不是報酬預測。",
+      "selectedCount": 10,
+      "selected": [
+        {
+          "code": "4961",
+          "name": "天鈺",
+          "rank": 1,
+          "sector": "先進製程／IC 設計",
+          "score": 88,
+          "components": {
+            "institutional": 45,
+            "financial": 29,
+            "relativeAction": 14
+          },
+          "close": 173,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "9945",
+          "name": "潤泰新",
+          "rank": 2,
+          "sector": "營建／資產／建材",
+          "score": 86,
+          "components": {
+            "institutional": 45,
+            "financial": 35,
+            "relativeAction": 6
+          },
+          "close": 25.7,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "4566",
+          "name": "時碩工業",
+          "rank": 3,
+          "sector": "工業自動化／機器人",
+          "score": 83,
+          "components": {
+            "institutional": 34,
+            "financial": 32,
+            "relativeAction": 17
+          },
+          "close": 60.4,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "3260",
+          "name": "威剛",
+          "rank": 4,
+          "sector": "記憶體／儲存",
+          "score": 83,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 20
+          },
+          "close": 275.5,
+          "market": "上櫃",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "2330",
+          "name": "台積電",
+          "rank": 5,
+          "sector": "先進製程／IC 設計",
+          "score": 80,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 17
+          },
+          "close": 2180,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "1476",
+          "name": "儒鴻",
+          "rank": 6,
+          "sector": "紡織／運動／戶外",
+          "score": 79,
+          "components": {
+            "institutional": 41,
+            "financial": 27,
+            "relativeAction": 11
+          },
+          "close": 369,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "1477",
+          "name": "聚陽",
+          "rank": 7,
+          "sector": "紡織／運動／戶外",
+          "score": 79,
+          "components": {
+            "institutional": 38,
+            "financial": 27,
+            "relativeAction": 14
+          },
+          "close": 235,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "6446",
+          "name": "藥華藥",
+          "rank": 8,
+          "sector": "醫療／生技／醫材",
+          "score": 78,
+          "components": {
+            "institutional": 37,
+            "financial": 35,
+            "relativeAction": 6
+          },
+          "close": 1160,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "2308",
+          "name": "台達電",
+          "rank": 9,
+          "sector": "散熱／電源／機構件",
+          "score": 77,
+          "components": {
+            "institutional": 28,
+            "financial": 35,
+            "relativeAction": 14
+          },
+          "close": 1125,
+          "market": "上市",
+          "status": "持續追蹤",
+          "sourcePriceDate": "2026-11-27"
+        },
+        {
+          "code": "3029",
+          "name": "零壹",
+          "rank": 10,
+          "sector": "資服／資安／軟體",
+          "score": 77,
+          "components": {
+            "institutional": 34,
+            "financial": 29,
+            "relativeAction": 14
+          },
+          "close": 112,
+          "market": "上市",
+          "status": "重點持續研究",
+          "sourcePriceDate": "2026-11-27"
+        }
+      ],
+      "note": "Append-only historical research observation. Not a trade or performance claim."
     }
   ]
 }
